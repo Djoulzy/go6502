@@ -1,4 +1,4 @@
-module 6502
+module go6502
 
 go 1.15
 

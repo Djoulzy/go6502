@@ -10,14 +10,44 @@ func (C *CPU) reset(mem *Memory) {
 	C.S = 0b00000000
 
 	C.PC = 0xFF00
-	C.SP = 0x00
+	C.SP = 0xFF
+}
+
+func (C *CPU) fetchWord(mem *Memory) Word {
+	low := C.fetchByte(mem)
+	value := Word(C.fetchByte(mem)) << 8
+	value += Word(low)
+	return value
 }
 
 func (C *CPU) fetchByte(mem *Memory) Byte {
 	time.Sleep(time.Second)
-	opCode := mem.Data[C.PC]
+	value := mem.Data[C.PC]
 	C.PC++
-	return opCode
+	return value
+}
+
+func (C *CPU) pushWordStack(mem *Memory, val Word) {
+	low := Byte(val)
+	hi := Byte(val >> 8)
+	C.pushByteStack(mem, hi)
+	C.pushByteStack(mem, low)
+}
+
+func (C *CPU) pushByteStack(mem *Memory, val Byte) {
+	mem.Stack[C.SP] = val
+	C.SP--
+	if C.SP < 0 {
+		panic("Stack overflow")
+	}
+}
+
+func (C *CPU) pullByteStack(mem *Memory) Byte {
+	C.SP++
+	if C.SP > 0xFF {
+		panic("Stack overflow")
+	}
+	return mem.Stack[C.SP]
 }
 
 func (C *CPU) exec(mem *Memory) {
@@ -46,6 +76,8 @@ func (C *CPU) initLanguage() {
 
 	Mnemonic[JMP_ABS] = C.op_JMP_ABS
 	Mnemonic[JMP_IND] = C.op_JMP_IND
+	Mnemonic[JSR] = C.op_JSR
+	Mnemonic[RTS] = C.op_RTS
 }
 
 func main() {

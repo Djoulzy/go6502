@@ -69,4 +69,6 @@ const (
 
 	JMP_ABS = 0x4C
 	JMP_IND = 0x6C
+	JSR     = 0x20
+	RTS     = 0x60
 )

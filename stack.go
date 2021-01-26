@@ -8,12 +8,10 @@ func (C *CPU) op_TXS(mem *Memory) {
 
 func (C *CPU) op_PHA(mem *Memory) {
 	C.opName = "PHA     "
-	mem.Stack[C.SP] = C.A
-	C.SP++
+	C.pushByteStack(mem, C.A)
 }
 
 func (C *CPU) op_PLA(mem *Memory) {
 	C.opName = "PLA     "
-	C.SP--
-	C.A = mem.Stack[C.SP]
+	C.A = C.pullByteStack(mem)
 }
