@@ -13,25 +13,21 @@ func (C *CPU) reset(mem *Memory) {
 	C.SP = 0xFF
 }
 
-func (C *CPU) fetchWord(mem *Memory) Word {
-	low := C.fetchByte(mem)
-	value := Word(C.fetchByte(mem)) << 8
-	value += Word(low)
-	return value
-}
-
-func (C *CPU) fetchByte(mem *Memory) Byte {
-	time.Sleep(time.Second)
-	value := mem.Data[C.PC]
-	C.PC++
-	return value
-}
+//////////////////////////////////
+//////// Stack Operations ////////
+//////////////////////////////////
 
 func (C *CPU) pushWordStack(mem *Memory, val Word) {
 	low := Byte(val)
 	hi := Byte(val >> 8)
 	C.pushByteStack(mem, hi)
 	C.pushByteStack(mem, low)
+}
+
+func (C *CPU) fetchWordStack(mem *Memory) Word {
+	low := C.pullByteStack(mem)
+	hi := Word(C.pullByteStack(mem)) << 8
+	return hi + Word(low)
 }
 
 func (C *CPU) pushByteStack(mem *Memory, val Byte) {
@@ -48,6 +44,24 @@ func (C *CPU) pullByteStack(mem *Memory) Byte {
 		panic("Stack overflow")
 	}
 	return mem.Stack[C.SP]
+}
+
+//////////////////////////////////
+/////// Memory Operations ////////
+//////////////////////////////////
+
+func (C *CPU) fetchWord(mem *Memory) Word {
+	low := C.fetchByte(mem)
+	value := Word(C.fetchByte(mem)) << 8
+	value += Word(low)
+	return value
+}
+
+func (C *CPU) fetchByte(mem *Memory) Byte {
+	time.Sleep(time.Second)
+	value := mem.Data[C.PC]
+	C.PC++
+	return value
 }
 
 func (C *CPU) exec(mem *Memory) {
