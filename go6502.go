@@ -1,6 +1,9 @@
 package main
 
-import "time"
+import (
+	"os"
+	"time"
+)
 
 func (C *CPU) reset(mem *Memory) {
 	mem.Init()
@@ -11,6 +14,8 @@ func (C *CPU) reset(mem *Memory) {
 
 	C.PC = 0xFF00
 	C.SP = 0xFF
+
+	C.exit = false
 }
 
 //////////////////////////////////
@@ -65,33 +70,49 @@ func (C *CPU) fetchByte(mem *Memory) Byte {
 }
 
 func (C *CPU) exec(mem *Memory) {
+	if C.exit {
+		time.Sleep(time.Second)
+		os.Exit(1)
+	}
 	opCode := C.fetchByte(mem)
-	Mnemonic[opCode](mem)
+	Nemonic[opCode](mem)
 }
 
 func (C *CPU) initLanguage() {
-	Mnemonic = make(map[Byte]func(*Memory))
+	Nemonic = make(map[Byte]func(*Memory))
 
-	Mnemonic[NOP] = C.op_NOP
+	Nemonic[NOP] = C.op_NOP
+	Nemonic[BRK] = C.op_BRK
 
-	Mnemonic[LDA_IM] = C.op_LDA_IM
-	Mnemonic[LDA_ZP] = C.op_LDA_ZP
-	Mnemonic[LDA_ZPX] = C.op_LDA_ZPX
-	Mnemonic[LDX_IM] = C.op_LDX_IM
-	Mnemonic[LDX_ZP] = C.op_LDX_ZP
-	Mnemonic[LDX_ZPY] = C.op_LDX_ZPY
-	Mnemonic[LDY_IM] = C.op_LDY_IM
-	Mnemonic[LDY_ZP] = C.op_LDY_ZP
-	Mnemonic[LDY_ZPX] = C.op_LDY_ZPX
+	Nemonic[LDA_IM] = C.op_LDA_IM
+	Nemonic[LDA_ZP] = C.op_LDA_ZP
+	Nemonic[LDA_ZPX] = C.op_LDA_ZPX
+	Nemonic[LDA_INX] = C.op_LDA_INX
+	Nemonic[LDA_INY] = C.op_LDA_INY
+	Nemonic[LDX_IM] = C.op_LDX_IM
+	Nemonic[LDX_ZP] = C.op_LDX_ZP
+	Nemonic[LDX_ZPY] = C.op_LDX_ZPY
+	Nemonic[LDY_IM] = C.op_LDY_IM
+	Nemonic[LDY_ZP] = C.op_LDY_ZP
+	Nemonic[LDY_ZPX] = C.op_LDY_ZPX
 
-	Mnemonic[TXS] = C.op_TXS
-	Mnemonic[PHA] = C.op_PHA
-	Mnemonic[PLA] = C.op_PLA
+	Nemonic[AND_IM] = C.op_AND_IM
+	Nemonic[AND_ZP] = C.op_AND_ZP
+	Nemonic[AND_ZPX] = C.op_AND_ZPX
+	Nemonic[AND_ABS] = C.op_AND_ABS
+	Nemonic[AND_ABX] = C.op_AND_ABX
+	Nemonic[AND_ABY] = C.op_AND_ABY
+	Nemonic[AND_INX] = C.op_AND_INX
+	Nemonic[AND_INY] = C.op_AND_INY
 
-	Mnemonic[JMP_ABS] = C.op_JMP_ABS
-	Mnemonic[JMP_IND] = C.op_JMP_IND
-	Mnemonic[JSR] = C.op_JSR
-	Mnemonic[RTS] = C.op_RTS
+	Nemonic[TXS] = C.op_TXS
+	Nemonic[PHA] = C.op_PHA
+	Nemonic[PLA] = C.op_PLA
+
+	Nemonic[JMP_ABS] = C.op_JMP_ABS
+	Nemonic[JMP_IND] = C.op_JMP_IND
+	Nemonic[JSR] = C.op_JSR
+	Nemonic[RTS] = C.op_RTS
 }
 
 func main() {
@@ -99,7 +120,7 @@ func main() {
 	cpu := CPU{}
 	cpu.initLanguage()
 
-	go cpu.output()
+	go cpu.output(&mem)
 
 	cpu.reset(&mem)
 	mem.load()

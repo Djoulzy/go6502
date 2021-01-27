@@ -43,25 +43,41 @@ type CPU struct {
 	S  Byte
 
 	opName string
+	exit   bool
 }
 
-// Mnemonic :
-var Mnemonic map[Byte]func(*Memory)
+// Nemonic :
+var Nemonic map[Byte]func(*Memory)
 
 // :
 const (
 	BRK = 0x00
 	NOP = 0xEA
 
-	LDA_IM  = 0x0A
+	LDA_IM  = 0xA9
 	LDA_ZP  = 0xA5
 	LDA_ZPX = 0xB5
+	LDA_ABS = 0xAD
+	LDA_ABX = 0xBD
+	LDA_ABY = 0xB9
+	LDA_INX = 0xA1
+	LDA_INY = 0xB1
+
 	LDX_IM  = 0xA2
 	LDX_ZP  = 0xA6
 	LDX_ZPY = 0xB6
 	LDY_IM  = 0xA0
 	LDY_ZP  = 0xA4
 	LDY_ZPX = 0xB4
+
+	AND_IM  = 0x29
+	AND_ZP  = 0x25
+	AND_ZPX = 0x35
+	AND_ABS = 0x2D
+	AND_ABX = 0x3D
+	AND_ABY = 0x39
+	AND_INX = 0x21
+	AND_INY = 0x31
 
 	TXS = 0x9A
 	PHA = 0x48

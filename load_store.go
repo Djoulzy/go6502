@@ -37,6 +37,20 @@ func (C *CPU) op_LDA_ZPX(mem *Memory) {
 	C.setLDAStatus(C.A)
 }
 
+func (C *CPU) op_LDA_INX(mem *Memory) {
+	C.opName = "LDA (ZP,X)"
+	zpAddress := C.fetchByte(mem) + C.X
+	C.A = mem.Data[zpAddress]
+	C.setLDAStatus(C.A)
+}
+
+func (C *CPU) op_LDA_INY(mem *Memory) {
+	C.opName = "LDA (ZP),Y"
+	zpAddress := C.fetchByte(mem)
+	C.A = mem.Data[zpAddress] + C.Y
+	C.setLDAStatus(C.A)
+}
+
 // op_LDX_IM : LDA Immediate
 func (C *CPU) op_LDX_IM(mem *Memory) {
 	C.opName = "LDX Imm "
