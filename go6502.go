@@ -89,12 +89,37 @@ func (C *CPU) initLanguage() {
 	Nemonic[LDA_ZPX] = C.op_LDA_ZPX
 	Nemonic[LDA_INX] = C.op_LDA_INX
 	Nemonic[LDA_INY] = C.op_LDA_INY
+	Nemonic[LDA_ABS] = C.op_LDA_ABS
+	Nemonic[LDA_ABX] = C.op_LDA_ABX
+	Nemonic[LDA_ABY] = C.op_LDA_ABY
+
 	Nemonic[LDX_IM] = C.op_LDX_IM
 	Nemonic[LDX_ZP] = C.op_LDX_ZP
 	Nemonic[LDX_ZPY] = C.op_LDX_ZPY
+	Nemonic[LDX_ABS] = C.op_LDX_ABS
+	Nemonic[LDX_ABY] = C.op_LDX_ABY
+
 	Nemonic[LDY_IM] = C.op_LDY_IM
 	Nemonic[LDY_ZP] = C.op_LDY_ZP
 	Nemonic[LDY_ZPX] = C.op_LDY_ZPX
+	Nemonic[LDY_ABS] = C.op_LDY_ABS
+	Nemonic[LDY_ABX] = C.op_LDY_ABX
+
+	Nemonic[STA_ZP] = C.op_STA_ZP
+	Nemonic[STA_ZPX] = C.op_STA_ZPX
+	Nemonic[STA_INX] = C.op_STA_INX
+	Nemonic[STA_INY] = C.op_STA_INY
+	Nemonic[STA_ABS] = C.op_STA_ABS
+	Nemonic[STA_ABX] = C.op_STA_ABX
+	Nemonic[STA_ABY] = C.op_STA_ABY
+
+	Nemonic[STX_ZP] = C.op_STX_ZP
+	Nemonic[STX_ZPY] = C.op_STX_ZPY
+	Nemonic[STX_ABS] = C.op_STX_ABS
+
+	Nemonic[STY_ZP] = C.op_STY_ZP
+	Nemonic[STY_ZPX] = C.op_STY_ZPX
+	Nemonic[STY_ABS] = C.op_STY_ABS
 
 	Nemonic[AND_IM] = C.op_AND_IM
 	Nemonic[AND_ZP] = C.op_AND_ZP

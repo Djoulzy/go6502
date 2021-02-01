@@ -27,8 +27,8 @@ func (C *CPU) output(mem *Memory) {
 		}
 	}()
 
-	tbprintf(1, 0, termbox.ColorDefault, termbox.ColorDefault, "hh:mm:ss |  PC  | SP | A  | X  | Y  | NV-BDIZC")
-	tbprintf(1, 1, termbox.ColorDefault, termbox.ColorDefault, "         | #### | ## | ## | ## | ## | 00000000")
+	tbprintf(1, 0, termbox.ColorDefault, termbox.ColorDefault, "hh:mm:ss  |  PC  | SP | A  | X  | Y  | NV-BDIZC")
+	tbprintf(1, 1, termbox.ColorDefault, termbox.ColorDefault, "          | #### | ## | ## | ## | ## | 00000000")
 
 	for {
 		C.refreshScreen(mem)
@@ -41,7 +41,7 @@ func (C *CPU) refreshScreen(mem *Memory) {
 	t := time.Now()
 	status := fmt.Sprintf("%s", t.Format("15:04:05"))
 	tbprintf(1, 0, termbox.ColorDefault, termbox.ColorDefault, "%s", status)
-	status = fmt.Sprintf("%-9s| %04X | %02X | %02X | %02X | %02X | %08b", C.opName, C.PC, C.SP, C.A, C.X, C.Y, C.S)
+	status = fmt.Sprintf("%-10s| %04X | %02X | %02X | %02X | %02X | %08b", C.opName, C.PC, C.SP, C.A, C.X, C.Y, C.S)
 	tbprintf(1, 1, termbox.ColorDefault, termbox.ColorDefault, "%s", status)
 	cpt := 255
 	for y := 0; y < 16; y++ {
