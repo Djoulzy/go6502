@@ -21,14 +21,14 @@ const (
 	visibleWidth  = 320
 	visibleHeight = 200
 
-	visibleFirstLine = 51
-	visibleLastLine  = 251
+	visibleFirstLine = 55
+	visibleLastLine  = 255
 	visibleFirstCol  = 11
-	visibleLastCol   = 51
+	visibleLastCol   = 50
 )
 
 func (V *VIC) isVisibleArea(x, y int) bool {
-	if (y > visibleFirstLine) && (y < visibleLastLine) {
+	if (y >= visibleFirstLine) && (y <= visibleLastLine) {
 		if (x >= visibleFirstCol) && (x <= visibleLastCol) {
 			return true
 		}
@@ -36,11 +36,23 @@ func (V *VIC) isVisibleArea(x, y int) bool {
 	return false
 }
 
-func (V *VIC) drawByte(beamX, beamY int) {
+func (V *VIC) drawByte(mem *Memory, beamX, beamY int) {
 	if V.isVisibleArea(beamX, beamY) {
+		xPos := beamX - visibleFirstCol
+		// log.Printf("%v", beamX)
+		charRomAddr := int(V.Buffer[xPos])*8 + V.LineCounter
+		data := byte(mem.CharGen[charRomAddr])
+
 		for i := 0; i < 8; i++ {
-			setPixel(beamX*8+i, beamY, Blue)
+			shift := data & byte(0x1<<i)
+			if shift > 0 {
+				setPixel(beamX*8+i, beamY, Black)
+			} else {
+				setPixel(beamX*8+i, beamY, Blue)
+			}
 		}
+		// setPixel(beamX*8, beamY, Black)
+		// setPixel(beamX*8+7, beamY, Black)
 	} else {
 		for i := 0; i < 8; i++ {
 			setPixel(beamX*8+i, beamY, Lightblue)
@@ -53,7 +65,7 @@ func (V *VIC) run(mem *Memory) {
 	defer closeAll(win, rend, tex)
 
 	var codeA Word
-	codeA = 0x0041
+	codeA = 0x0001
 	for i := 0; i < 40; i++ {
 		V.Buffer[i] = codeA
 	}
@@ -61,6 +73,7 @@ func (V *VIC) run(mem *Memory) {
 	for {
 		HBlank := true
 		VBlank := true
+		V.LineCounter = 0
 		for beamY := 0; beamY < screenHeightPAL; beamY++ {
 			if beamY > 15 && beamY < 300 {
 				VBlank = false
@@ -79,11 +92,16 @@ func (V *VIC) run(mem *Memory) {
 						setPixel(beamX*8+i, beamY, Black)
 					}
 				} else {
-					V.drawByte(beamX, beamY)
+					V.drawByte(mem, beamX, beamY)
 				}
 			}
+			V.LineCounter++
+			if V.LineCounter == 8 {
+				V.LineCounter = 0
+			}
 		}
-		//setPixel(beamX, beamY, Red)
+		setPixel(visibleFirstCol*8, visibleFirstLine, White)
+		setPixel(visibleLastCol*8, visibleLastLine, White)
 		displayFrame(rend, tex)
 	}
 }

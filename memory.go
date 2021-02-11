@@ -1,10 +1,25 @@
 package main
 
+import "io/ioutil"
+
 // Init :
 func (m *Memory) Init() {
 	m.Stack = m.Data[stackStart : stackEnd+1]
 	for i := range m.Data {
 		m.Data[i] = NOP
+	}
+}
+
+func (m *Memory) loadCharGenRom(filename string) {
+	data, err := ioutil.ReadFile(filename); 
+	if err != nil {
+		panic(err)
+	}
+	if len(data) != 4096 {
+		panic("Bad ROM Size")
+	}
+	for i := 0; i < 4096; i++ {
+		m.CharGen[i] = Byte(data[i])
 	}
 }
 

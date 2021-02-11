@@ -17,8 +17,9 @@ type Word uint16
 
 // Memory :
 type Memory struct {
-	Data  [memorySize]Byte
-	Stack []Byte
+	Data    [memorySize]Byte
+	CharGen [4096]Byte
+	Stack   []Byte
 }
 
 //
@@ -50,7 +51,8 @@ type CPU struct {
 
 // VIC :
 type VIC struct {
-	Buffer [40]Word
+	Buffer      [40]Word
+	LineCounter int
 }
 
 // Nemonic :

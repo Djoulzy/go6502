@@ -14,11 +14,13 @@ func init() {
 
 func main() {
 	mem := Memory{}
+	mem.loadCharGenRom("char.bin")
+
 	cpu := CPU{}
 	vic := VIC{}
 
 	cpu.cycle = make(chan bool, 1)
-	cpu.display = true
+	cpu.display = false
 
 	go cpu.run(&mem)
 
