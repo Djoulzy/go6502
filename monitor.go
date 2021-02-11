@@ -9,7 +9,7 @@ import (
 	"github.com/nsf/termbox-go"
 )
 
-func (C *CPU) output(mem *Memory) {
+func (C *CPU) initOutput(mem *Memory) {
 	err := termbox.Init()
 	termbox.HideCursor()
 
@@ -30,10 +30,10 @@ func (C *CPU) output(mem *Memory) {
 	tbprintf(1, 0, termbox.ColorDefault, termbox.ColorDefault, "hh:mm:ss  |  PC  | SP | A  | X  | Y  | NV-BDIZC")
 	tbprintf(1, 1, termbox.ColorDefault, termbox.ColorDefault, "          | #### | ## | ## | ## | ## | 00000000")
 
-	for {
-		C.refreshScreen(mem)
-		time.Sleep(time.Second / 2)
-	}
+	// for {
+	// 	C.refreshScreen(mem)
+	// 	time.Sleep(time.Second / 2)
+	// }
 }
 
 // DisplayHub : Affiche l'etat du Hub

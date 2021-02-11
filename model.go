@@ -42,8 +42,10 @@ type CPU struct {
 	Y  Byte
 	S  Byte
 
-	opName string
-	exit   bool
+	opName  string
+	exit    bool
+	cycle   chan bool
+	display bool
 }
 
 // Nemonic :
@@ -83,11 +85,11 @@ const (
 	STA_INX = 0x81
 	STA_INY = 0x91
 
-	STX_ZP = 0x86
+	STX_ZP  = 0x86
 	STX_ZPY = 0x96
 	STX_ABS = 0x8E
 
-	STY_ZP = 0x84
+	STY_ZP  = 0x84
 	STY_ZPX = 0x94
 	STY_ABS = 0x8
 

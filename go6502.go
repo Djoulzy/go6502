@@ -1,9 +1,18 @@
+// http://www.obelisk.me.uk/6502/
+
 package main
 
 import (
 	"os"
+	"runtime"
 	"time"
 )
+
+func init() {
+	// This is needed to arrange that main() runs on main thread.
+	// See documentation for functions that are only allowed to be called from the main thread.
+	runtime.LockOSThread()
+}
 
 func (C *CPU) reset(mem *Memory) {
 	mem.Init()
@@ -63,7 +72,10 @@ func (C *CPU) fetchWord(mem *Memory) Word {
 }
 
 func (C *CPU) fetchByte(mem *Memory) Byte {
-	time.Sleep(time.Second)
+	if C.display {
+		C.refreshScreen(mem)
+	}
+	<-C.cycle
 	value := mem.Data[C.PC]
 	C.PC++
 	return value
@@ -140,23 +152,30 @@ func (C *CPU) initLanguage() {
 	Nemonic[RTS] = C.op_RTS
 }
 
+func (C *CPU) run(mem *Memory) {
+	C.initLanguage()
+	if C.display {
+		C.initOutput(mem)
+	}
+
+	C.reset(mem)
+	mem.load()
+
+	for {
+		C.exec(mem)
+	}
+}
+
 func main() {
 	mem := Memory{}
 	cpu := CPU{}
-	cpu.initLanguage()
+	cpu.cycle = make(chan bool, 1)
+	cpu.display = true
 
-	go cpu.output(&mem)
+	go cpu.run(&mem)
 
-	cpu.reset(&mem)
-	mem.load()
-
-	// cpu.exec(&mem)
-	// cpu.exec(&mem)
-	// cpu.exec(&mem)
-
-	// for {
-	// }
 	for {
-		cpu.exec(&mem)
+		cpu.cycle <- true
+		time.Sleep(time.Second)
 	}
 }

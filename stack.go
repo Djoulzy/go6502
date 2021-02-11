@@ -14,5 +14,5 @@ func (C *CPU) op_PHA(mem *Memory) {
 func (C *CPU) op_PLA(mem *Memory) {
 	C.opName = "PLA"
 	C.A = C.pullByteStack(mem)
-	C.setLDAStatus(C.A)
+	C.setNZStatus(C.A)
 }

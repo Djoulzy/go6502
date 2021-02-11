@@ -1,18 +1,5 @@
 package main
 
-func (C *CPU) setLDAStatus(register Byte) {
-	if register == 0 {
-		C.S |= ^Z_mask
-	} else {
-		C.S &= Z_mask
-	}
-	if register&0b10000000 > 0 {
-		C.S |= ^N_mask
-	} else {
-		C.S &= N_mask
-	}
-}
-
 //////////////////////////////////
 ///////////// LDA ////////////////
 //////////////////////////////////
@@ -21,7 +8,7 @@ func (C *CPU) setLDAStatus(register Byte) {
 func (C *CPU) op_LDA_IM(mem *Memory) {
 	C.opName = "LDA Imm"
 	C.A = C.fetchByte(mem)
-	C.setLDAStatus(C.A)
+	C.setNZStatus(C.A)
 }
 
 // op_LDA_ZP : LDA Zero Page
@@ -29,7 +16,7 @@ func (C *CPU) op_LDA_ZP(mem *Memory) {
 	C.opName = "LDA ZP"
 	zpAddress := C.fetchByte(mem)
 	C.A = mem.Data[zpAddress]
-	C.setLDAStatus(C.A)
+	C.setNZStatus(C.A)
 }
 
 // op_LDA_ZPX : LDA Zero Page,X
@@ -38,42 +25,42 @@ func (C *CPU) op_LDA_ZPX(mem *Memory) {
 	zpAddress := C.fetchByte(mem)
 	zpAddress += C.X
 	C.A = mem.Data[zpAddress]
-	C.setLDAStatus(C.A)
+	C.setNZStatus(C.A)
 }
 
 func (C *CPU) op_LDA_ABS(mem *Memory) {
 	C.opName = "LDA Abs"
 	absAddress := C.fetchWord(mem)
 	C.A = mem.Data[absAddress]
-	C.setLDAStatus(C.A)
+	C.setNZStatus(C.A)
 }
 
 func (C *CPU) op_LDA_ABX(mem *Memory) {
 	C.opName = "LDA Abs,X"
 	absAddress := C.fetchWord(mem) + Word(C.X)
 	C.A = mem.Data[absAddress]
-	C.setLDAStatus(C.A)
+	C.setNZStatus(C.A)
 }
 
 func (C *CPU) op_LDA_ABY(mem *Memory) {
 	C.opName = "LDA Abs,Y"
 	absAddress := C.fetchWord(mem) + Word(C.Y)
 	C.A = mem.Data[absAddress]
-	C.setLDAStatus(C.A)
+	C.setNZStatus(C.A)
 }
 
 func (C *CPU) op_LDA_INX(mem *Memory) {
 	C.opName = "LDA (ZP,X)"
 	zpAddress := C.fetchByte(mem) + C.X
 	C.A = mem.Data[zpAddress]
-	C.setLDAStatus(C.A)
+	C.setNZStatus(C.A)
 }
 
 func (C *CPU) op_LDA_INY(mem *Memory) {
 	C.opName = "LDA (ZP),Y"
 	zpAddress := C.fetchByte(mem)
 	C.A = mem.Data[zpAddress] + C.Y
-	C.setLDAStatus(C.A)
+	C.setNZStatus(C.A)
 }
 
 //////////////////////////////////
@@ -84,7 +71,7 @@ func (C *CPU) op_LDA_INY(mem *Memory) {
 func (C *CPU) op_LDX_IM(mem *Memory) {
 	C.opName = "LDX Imm"
 	C.X = C.fetchByte(mem)
-	C.setLDAStatus(C.X)
+	C.setNZStatus(C.X)
 }
 
 // op_LDX_ZP : LDA Zero Page
@@ -92,7 +79,7 @@ func (C *CPU) op_LDX_ZP(mem *Memory) {
 	C.opName = "LDX ZP"
 	zpAddress := C.fetchByte(mem)
 	C.X = mem.Data[zpAddress]
-	C.setLDAStatus(C.X)
+	C.setNZStatus(C.X)
 }
 
 // op_LDX_ZPY : LDA Zero Page,Y
@@ -101,19 +88,19 @@ func (C *CPU) op_LDX_ZPY(mem *Memory) {
 	zpAddress := C.fetchByte(mem)
 	zpAddress += C.Y
 	C.X = mem.Data[zpAddress]
-	C.setLDAStatus(C.X)
+	C.setNZStatus(C.X)
 }
 
 func (C *CPU) op_LDX_ABS(mem *Memory) {
 	C.opName = "LDA Abs"
 
-	C.setLDAStatus(C.A)
+	C.setNZStatus(C.A)
 }
 
 func (C *CPU) op_LDX_ABY(mem *Memory) {
 	C.opName = "LDA Abs,X"
 
-	C.setLDAStatus(C.A)
+	C.setNZStatus(C.A)
 }
 
 //////////////////////////////////
@@ -124,7 +111,7 @@ func (C *CPU) op_LDX_ABY(mem *Memory) {
 func (C *CPU) op_LDY_IM(mem *Memory) {
 	C.opName = "LDY Imm"
 	C.Y = C.fetchByte(mem)
-	C.setLDAStatus(C.Y)
+	C.setNZStatus(C.Y)
 }
 
 // op_LDY_ZP : LDA Zero Page
@@ -132,7 +119,7 @@ func (C *CPU) op_LDY_ZP(mem *Memory) {
 	C.opName = "LDY ZP"
 	zpAddress := C.fetchByte(mem)
 	C.Y = mem.Data[zpAddress]
-	C.setLDAStatus(C.Y)
+	C.setNZStatus(C.Y)
 }
 
 // op_LDY_ZPX : LDA Zero Page,X
@@ -141,19 +128,19 @@ func (C *CPU) op_LDY_ZPX(mem *Memory) {
 	zpAddress := C.fetchByte(mem)
 	zpAddress += C.X
 	C.Y = mem.Data[zpAddress]
-	C.setLDAStatus(C.Y)
+	C.setNZStatus(C.Y)
 }
 
 func (C *CPU) op_LDY_ABS(mem *Memory) {
 	C.opName = "LDA Abs"
 
-	C.setLDAStatus(C.A)
+	C.setNZStatus(C.A)
 }
 
 func (C *CPU) op_LDY_ABX(mem *Memory) {
 	C.opName = "LDA Abs,X"
 
-	C.setLDAStatus(C.A)
+	C.setNZStatus(C.A)
 }
 
 //////////////////////////////////
