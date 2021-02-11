@@ -52,7 +52,7 @@ type CPU struct {
 // VIC :
 type VIC struct {
 	Buffer      [40]Word
-	LineCounter int
+	LineCounter Word
 }
 
 // Nemonic :

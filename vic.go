@@ -38,21 +38,14 @@ func (V *VIC) isVisibleArea(x, y int) bool {
 
 func (V *VIC) drawByte(mem *Memory, beamX, beamY int) {
 	if V.isVisibleArea(beamX, beamY) {
-		xPos := beamX - visibleFirstCol
-		// log.Printf("%v", beamX)
-		charRomAddr := int(V.Buffer[xPos])*8 + V.LineCounter
-		data := byte(mem.CharGen[charRomAddr])
-
+		charRomAddr := V.Buffer[beamX - visibleFirstCol]<<3 + V.LineCounter
 		for i := 0; i < 8; i++ {
-			shift := data & byte(0x1<<i)
-			if shift > 0 {
+			if mem.CharGen[charRomAddr]&(0x1<<i) > 0 {
 				setPixel(beamX*8+i, beamY, Black)
 			} else {
 				setPixel(beamX*8+i, beamY, Blue)
 			}
 		}
-		// setPixel(beamX*8, beamY, Black)
-		// setPixel(beamX*8+7, beamY, Black)
 	} else {
 		for i := 0; i < 8; i++ {
 			setPixel(beamX*8+i, beamY, Lightblue)
@@ -65,7 +58,7 @@ func (V *VIC) run(mem *Memory) {
 	defer closeAll(win, rend, tex)
 
 	var codeA Word
-	codeA = 0x0001
+	codeA = 0x00E9 + 128
 	for i := 0; i < 40; i++ {
 		V.Buffer[i] = codeA
 	}
@@ -100,8 +93,8 @@ func (V *VIC) run(mem *Memory) {
 				V.LineCounter = 0
 			}
 		}
-		setPixel(visibleFirstCol*8, visibleFirstLine, White)
-		setPixel(visibleLastCol*8, visibleLastLine, White)
+		// setPixel(visibleFirstCol*8, visibleFirstLine, White)
+		// setPixel(visibleLastCol*8, visibleLastLine, White)
 		displayFrame(rend, tex)
 	}
 }
