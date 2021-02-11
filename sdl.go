@@ -15,7 +15,7 @@ type rgb struct {
 var (
 	Black      = rgb{r: 0, g: 0, b: 0}
 	White      = rgb{r: 255, g: 255, b: 255}
-	Red        = rgb{r:137, g:78, b:67}
+	Red        = rgb{r: 137, g: 78, b: 67}
 	Cyan       = rgb{r: 170, g: 255, b: 238}
 	Violet     = rgb{r: 204, g: 68, b: 204}
 	Green      = rgb{r: 0, g: 204, b: 85}

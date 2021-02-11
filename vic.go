@@ -7,6 +7,7 @@ const (
 	screenHeightPAL = 312
 	rasterWidthPAL  = 403
 	rasterHeightPAL = 284
+	cyclesPerLine   = 63
 
 	rasterTime = 1                  // Nb of cycle to put 1 byte on a line
 	rasterLine = rasterWidthPAL / 8 // Nb of cycle to draw a full line
@@ -21,13 +22,13 @@ const (
 	visibleHeight = 200
 
 	visibleFirstLine = 51
-	visibleLastLine  = 250
-	visibleFirstCol  = 50 + 41
-	visibleLastCol   = visibleFirstCol + 320
+	visibleLastLine  = 251
+	visibleFirstCol  = 11
+	visibleLastCol   = 51
 )
 
-func isVisibleArea(x, y int) bool {
-	if (y >= visibleFirstLine) && (y <= visibleLastLine) {
+func (V *VIC) isVisibleArea(x, y int) bool {
+	if (y > visibleFirstLine) && (y < visibleLastLine) {
 		if (x >= visibleFirstCol) && (x <= visibleLastCol) {
 			return true
 		}
@@ -35,9 +36,27 @@ func isVisibleArea(x, y int) bool {
 	return false
 }
 
-func main() {
+func (V *VIC) drawByte(beamX, beamY int) {
+	if V.isVisibleArea(beamX, beamY) {
+		for i := 0; i < 8; i++ {
+			setPixel(beamX*8+i, beamY, Blue)
+		}
+	} else {
+		for i := 0; i < 8; i++ {
+			setPixel(beamX*8+i, beamY, Lightblue)
+		}
+	}
+}
+
+func (V *VIC) run(mem *Memory) {
 	win, rend, tex := initSDL()
 	defer closeAll(win, rend, tex)
+
+	var codeA Word
+	codeA = 0x0041
+	for i := 0; i < 40; i++ {
+		V.Buffer[i] = codeA
+	}
 
 	for {
 		HBlank := true
@@ -48,30 +67,19 @@ func main() {
 			} else {
 				VBlank = true
 			}
-			charCpt := 0
-			for beamX := 0; beamX < screenWidthPAL; beamX++ {
-				if beamX > 50 && beamX < 453 {
+
+			for beamX := 0; beamX < cyclesPerLine; beamX++ {
+				if beamX > 5 && beamX < 57 {
 					HBlank = false
 				} else {
 					HBlank = true
 				}
 				if VBlank || HBlank {
-					setPixel(beamX, beamY, Black)
+					for i := 0; i < 8; i++ {
+						setPixel(beamX*8+i, beamY, Black)
+					}
 				} else {
-					if isVisibleArea(beamX, beamY) {
-						if charCpt == 7 {
-							setPixel(beamX, beamY, Black)
-						} else {
-							setPixel(beamX, beamY, Blue)
-						}
-						charCpt++
-					} else {
-						setPixel(beamX, beamY, Lightblue)
-					}
-
-					if charCpt == 8 {
-						charCpt = 0
-					}
+					V.drawByte(beamX, beamY)
 				}
 			}
 		}

@@ -48,6 +48,11 @@ type CPU struct {
 	display bool
 }
 
+// VIC :
+type VIC struct {
+	Buffer [40]Word
+}
+
 // Nemonic :
 var Nemonic map[Byte]func(*Memory)
 
