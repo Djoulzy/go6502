@@ -5,13 +5,22 @@ import "io/ioutil"
 // Init :
 func (m *Memory) Init() {
 	m.Stack = m.Data[stackStart : stackEnd+1]
+	m.Screen = m.Data[screenStart : screenEnd+1]
+	m.Color = m.Data[colorStart : colorEnd+1]
+
+	m.Vic[0] = m.Data[0x0000 : 0x3FFF]
+	m.Vic[1] = m.Data[0x4000 : 0x7FFF]
+	m.Vic[2] = m.Data[0x8000 : 0xBFFF]
+	m.Vic[3] = m.Data[0xC000 : 0xFFFF]
+
 	for i := range m.Data {
 		m.Data[i] = NOP
 	}
+	m.loadCharGenRom("char.bin")
 }
 
 func (m *Memory) loadCharGenRom(filename string) {
-	data, err := ioutil.ReadFile(filename); 
+	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		panic(err)
 	}

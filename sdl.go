@@ -69,7 +69,7 @@ func initSDL() (*sdl.Window, *sdl.Renderer, *sdl.Texture) {
 		panic(err)
 	}
 
-	tex, err := renderer.CreateTexture(sdl.PIXELFORMAT_RGB24, sdl.TEXTUREACCESS_STREAMING, int32(winWidth), int32(winHeight))
+	tex, err := renderer.CreateTexture(sdl.PIXELFORMAT_RGB24, sdl.TEXTUREACCESS_STATIC, int32(winWidth), int32(winHeight))
 	if err != nil {
 		panic(err)
 	}

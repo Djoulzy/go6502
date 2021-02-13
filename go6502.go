@@ -14,7 +14,7 @@ func init() {
 
 func main() {
 	mem := Memory{}
-	mem.loadCharGenRom("char.bin")
+	mem.Init()
 
 	cpu := CPU{}
 	vic := VIC{}

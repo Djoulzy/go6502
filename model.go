@@ -1,12 +1,16 @@
 package main
 
 const (
-	memorySize = 0xFFFF
-	stackStart = 0x0100
-	stackEnd   = 0x01FF
-	intAddr    = 0xFFFA
-	resetAddr  = 0xFFFC
-	brkAddr    = 0xFFFE
+	memorySize  = 0xFFFF
+	stackStart  = 0x0100
+	stackEnd    = 0x01FF
+	screenStart = 0x0400
+	screenEnd   = 0x07FF
+	colorStart  = 0xD800
+	colorEnd    = 0xDBFF
+	intAddr     = 0xFFFA
+	resetAddr   = 0xFFFC
+	brkAddr     = 0xFFFE
 )
 
 // Byte :
@@ -20,6 +24,9 @@ type Memory struct {
 	Data    [memorySize]Byte
 	CharGen [4096]Byte
 	Stack   []Byte
+	Screen  []Byte
+	Color   []Byte
+	Vic     [4][]Byte
 }
 
 //
@@ -51,8 +58,9 @@ type CPU struct {
 
 // VIC :
 type VIC struct {
-	Buffer      [40]Word
-	LineCounter Word
+	Buffer         [40]Word
+	BadLineCounter Word
+	RowCounter     Byte
 }
 
 // Nemonic :

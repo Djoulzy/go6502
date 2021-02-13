@@ -6,7 +6,6 @@ import (
 )
 
 func (C *CPU) reset(mem *Memory) {
-	mem.Init()
 	C.A = 0
 	C.X = 0
 	C.Y = 0

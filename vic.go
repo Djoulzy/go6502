@@ -1,5 +1,10 @@
 package main
 
+import (
+	"log"
+	"os"
+)
+
 const (
 	cpuClock        = 985248
 	cpuCycle        = 1 / float32(cpuClock)
@@ -27,6 +32,14 @@ const (
 	visibleLastCol   = 50
 )
 
+func (V *VIC) readScreenData(mem *Memory) {
+	start := int(V.RowCounter) * 40
+	for i := 0; i < 40; i++ {
+		V.Buffer[i] = Word(mem.Color[start+i]) << 8
+		V.Buffer[i] &= Word(mem.Screen[start+i])
+	}
+}
+
 func (V *VIC) isVisibleArea(x, y int) bool {
 	if (y >= visibleFirstLine) && (y <= visibleLastLine) {
 		if (x >= visibleFirstCol) && (x <= visibleLastCol) {
@@ -38,7 +51,7 @@ func (V *VIC) isVisibleArea(x, y int) bool {
 
 func (V *VIC) drawByte(mem *Memory, beamX, beamY int) {
 	if V.isVisibleArea(beamX, beamY) {
-		charRomAddr := V.Buffer[beamX - visibleFirstCol]<<3 + V.LineCounter
+		charRomAddr := V.Buffer[beamX-visibleFirstCol]<<3 + V.BadLineCounter
 		for i := 0; i < 8; i++ {
 			if mem.CharGen[charRomAddr]&(0x1<<i) > 0 {
 				setPixel(beamX*8+i, beamY, Black)
@@ -53,12 +66,28 @@ func (V *VIC) drawByte(mem *Memory, beamX, beamY int) {
 	}
 }
 
+func (V *VIC) CheckForBadLines(y int) {
+
+	if (y >= visibleFirstLine) && (y <= visibleLastLine) {
+		log.Printf("Line : %d", V.BadLineCounter)
+		if V.BadLineCounter == 8 {
+			V.BadLineCounter = 0
+			V.RowCounter++
+		}
+
+		if V.BadLineCounter == 0 {
+			log.Printf("Bad Line")
+		}
+
+	}
+}
+
 func (V *VIC) run(mem *Memory) {
 	win, rend, tex := initSDL()
 	defer closeAll(win, rend, tex)
 
 	var codeA Word
-	codeA = 0x00E9 + 128
+	codeA = 0x0043
 	for i := 0; i < 40; i++ {
 		V.Buffer[i] = codeA
 	}
@@ -66,10 +95,13 @@ func (V *VIC) run(mem *Memory) {
 	for {
 		HBlank := true
 		VBlank := true
-		V.LineCounter = 0
+		V.BadLineCounter = 0
+		V.RowCounter = 0
 		for beamY := 0; beamY < screenHeightPAL; beamY++ {
+			// log.Printf("Line : %d", V.BadLineCounter)
 			if beamY > 15 && beamY < 300 {
 				VBlank = false
+				V.CheckForBadLines(beamY)
 			} else {
 				VBlank = true
 			}
@@ -88,13 +120,14 @@ func (V *VIC) run(mem *Memory) {
 					V.drawByte(mem, beamX, beamY)
 				}
 			}
-			V.LineCounter++
-			if V.LineCounter == 8 {
-				V.LineCounter = 0
+			if VBlank == false {
+				V.BadLineCounter++
 			}
 		}
 		// setPixel(visibleFirstCol*8, visibleFirstLine, White)
 		// setPixel(visibleLastCol*8, visibleLastLine, White)
 		displayFrame(rend, tex)
+		os.Exit(1)
 	}
+
 }
