@@ -17,10 +17,11 @@ func main() {
 	mem.Init()
 
 	cpu := CPU{}
-	vic := VIC{}
 
 	cpu.cycle = make(chan bool, 1)
 	cpu.display = false
+
+	vic := VIC{}
 
 	go cpu.run(&mem)
 
@@ -28,5 +29,5 @@ func main() {
 	// 	cpu.cycle <- true
 	// 	time.Sleep(time.Second)
 	// }
-	vic.run(&mem)
+	vic.run(&mem, cpu.cycle)
 }

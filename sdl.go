@@ -6,42 +6,29 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
-type rgb struct {
-	r byte
-	g byte
-	b byte
-}
-
-var (
-	Black      = rgb{r: 0, g: 0, b: 0}
-	White      = rgb{r: 255, g: 255, b: 255}
-	Red        = rgb{r: 137, g: 78, b: 67}
-	Cyan       = rgb{r: 170, g: 255, b: 238}
-	Violet     = rgb{r: 204, g: 68, b: 204}
-	Green      = rgb{r: 0, g: 204, b: 85}
-	Blue       = rgb{r: 67, g: 60, b: 165}
-	Yellow     = rgb{r: 238, g: 238, b: 119}
-	Orange     = rgb{r: 221, g: 136, b: 85}
-	Brown      = rgb{r: 102, g: 68, b: 0}
-	Lightred   = rgb{r: 255, g: 119, b: 119}
-	Darkgrey   = rgb{r: 51, g: 51, b: 51}
-	Grey       = rgb{r: 119, g: 119, b: 119}
-	Lightgreen = rgb{r: 170, g: 255, b: 102}
-	Lightblue  = rgb{r: 132, g: 126, b: 216}
-	Lightgrey  = rgb{r: 187, g: 187, b: 187}
-)
-
 var screen []byte
 var elapsedTime float32
 
-func setPixel(x, y int, c rgb) {
-	index := (y*winWidth + x) * 3
+func setPixel(index int, c Byte) {
+	screen[index] = Colors[c].r
+	screen[index+1] = Colors[c].g
+	screen[index+2] = Colors[c].b
+}
 
-	if index < len(screen)-3 && index >= 0 {
-		screen[index] = c.r
-		screen[index+1] = c.g
-		screen[index+2] = c.b
+func draw8pixels(x, y int, fg_color, bg_color, value Byte) {
+	// t0 := time.Now()
+	index := (y*winWidth + x) * 3
+	for i := 0; i < 8; i++ {
+		base := index + (i * 3)
+		if value&(0x1<<(7-i)) > 0 {
+			setPixel(base, fg_color)
+		} else {
+			setPixel(base, bg_color)
+		}
 	}
+	// t1 := time.Now()
+	// dur := int64(cpuCycle) - t1.Sub(t0).Milliseconds()
+	// log.Printf("The call took %v to run.\n", t1.Sub(t0))
 }
 
 func closeAll(win *sdl.Window, rend *sdl.Renderer, tex *sdl.Texture) {
@@ -63,6 +50,8 @@ func initSDL() (*sdl.Window, *sdl.Renderer, *sdl.Texture) {
 	if err != nil {
 		panic(err)
 	}
+	window.SetResizable(true)
+	window.SetSize(winWidth*2, winHeight*2)
 
 	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED)
 	if err != nil {

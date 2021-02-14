@@ -149,7 +149,7 @@ func (C *CPU) run(mem *Memory) {
 	}
 
 	C.reset(mem)
-	mem.load()
+	mem.load0()
 
 	for {
 		C.exec(mem)

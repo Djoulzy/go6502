@@ -41,6 +41,50 @@ const (
 	N_mask Byte = 0b01111111
 )
 
+type rgb struct {
+	r byte
+	g byte
+	b byte
+}
+
+var (
+	Black      Byte = 0
+	White      Byte = 1
+	Red        Byte = 2
+	Cyan       Byte = 3
+	Violet     Byte = 4
+	Green      Byte = 5
+	Blue       Byte = 6
+	Yellow     Byte = 7
+	Orange     Byte = 8
+	Brown      Byte = 9
+	Lightred   Byte = 10
+	Darkgrey   Byte = 11
+	Grey       Byte = 12
+	Lightgreen Byte = 13
+	Lightblue  Byte = 14
+	Lightgrey  Byte = 15
+)
+
+var Colors [16]rgb = [16]rgb{
+	{r: 0, g: 0, b: 0},
+	{r: 255, g: 255, b: 255},
+	{r: 137, g: 78, b: 67},
+	{r: 170, g: 255, b: 238},
+	{r: 204, g: 68, b: 204},
+	{r: 0, g: 204, b: 85},
+	{r: 67, g: 60, b: 165},
+	{r: 238, g: 238, b: 119},
+	{r: 221, g: 136, b: 85},
+	{r: 102, g: 68, b: 0},
+	{r: 255, g: 119, b: 119},
+	{r: 51, g: 51, b: 51},
+	{r: 119, g: 119, b: 119},
+	{r: 170, g: 255, b: 102},
+	{r: 132, g: 126, b: 216},
+	{r: 187, g: 187, b: 187},
+}
+
 // CPU :
 type CPU struct {
 	PC Word
@@ -59,7 +103,7 @@ type CPU struct {
 // VIC :
 type VIC struct {
 	Buffer         [40]Word
-	BadLineCounter Word
+	BadLineCounter Byte
 	RowCounter     Byte
 }
 

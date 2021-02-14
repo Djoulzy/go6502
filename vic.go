@@ -1,13 +1,13 @@
 package main
 
 import (
-	"log"
-	"os"
+	"fmt"
+	"time"
 )
 
 const (
-	cpuClock        = 985248
-	cpuCycle        = 1 / float32(cpuClock)
+	cpuClock        = 985248                         // Mesure en Hz
+	cpuCycle        = (1 / float32(cpuClock)) * 1000 // 1 cycle en ms
 	screenWidthPAL  = 504
 	screenHeightPAL = 312
 	rasterWidthPAL  = 403
@@ -18,7 +18,8 @@ const (
 	rasterLine = rasterWidthPAL / 8 // Nb of cycle to draw a full line
 	fullRaster = rasterLine * rasterHeightPAL
 
-	screenRefresh = fullRaster * cpuCycle // Time for a full screen display in ms
+	lineRefresh   = cyclesPerLine * cpuCycle                   // Time for a line in ms
+	screenRefresh = screenHeightPAL * cyclesPerLine * cpuCycle // Time for a full screen display in ms
 	fps           = 1 / screenRefresh
 
 	winWidth      = screenWidthPAL
@@ -27,7 +28,7 @@ const (
 	visibleHeight = 200
 
 	visibleFirstLine = 55
-	visibleLastLine  = 255
+	visibleLastLine  = 254
 	visibleFirstCol  = 11
 	visibleLastCol   = 50
 )
@@ -36,7 +37,10 @@ func (V *VIC) readScreenData(mem *Memory) {
 	start := int(V.RowCounter) * 40
 	for i := 0; i < 40; i++ {
 		V.Buffer[i] = Word(mem.Color[start+i]) << 8
-		V.Buffer[i] &= Word(mem.Screen[start+i])
+		V.Buffer[i] |= Word(mem.Screen[start+i])
+		// log.Printf("Mem Color: %d, Value: %x", start+i, mem.Color[start+i])
+		// log.Printf("Mem Screen: %d, Value: %x", start+i, mem.Screen[start+i])
+		// log.Printf("Buffer: %d, Value: %x", i, V.Buffer[i])
 	}
 }
 
@@ -51,83 +55,81 @@ func (V *VIC) isVisibleArea(x, y int) bool {
 
 func (V *VIC) drawByte(mem *Memory, beamX, beamY int) {
 	if V.isVisibleArea(beamX, beamY) {
-		charRomAddr := V.Buffer[beamX-visibleFirstCol]<<3 + V.BadLineCounter
-		for i := 0; i < 8; i++ {
-			if mem.CharGen[charRomAddr]&(0x1<<i) > 0 {
-				setPixel(beamX*8+i, beamY, Black)
-			} else {
-				setPixel(beamX*8+i, beamY, Blue)
-			}
-		}
+		charColor := Byte(V.Buffer[beamX-visibleFirstCol] >> 8)
+		charAddr := Byte(V.Buffer[beamX-visibleFirstCol])
+		charRomAddr := mem.CharGen[charAddr<<3+V.BadLineCounter]
+		draw8pixels(beamX*8, beamY, charColor, Blue, charRomAddr)
 	} else {
-		for i := 0; i < 8; i++ {
-			setPixel(beamX*8+i, beamY, Lightblue)
-		}
+		draw8pixels(beamX*8, beamY, Lightblue, Lightblue, Byte(0xFF))
 	}
 }
 
-func (V *VIC) CheckForBadLines(y int) {
-
+func (V *VIC) CheckForBadLines(y int, mem *Memory) {
 	if (y >= visibleFirstLine) && (y <= visibleLastLine) {
-		log.Printf("Line : %d", V.BadLineCounter)
+		V.BadLineCounter++
+		if V.BadLineCounter == 0 {
+			V.readScreenData(mem)
+		}
+
 		if V.BadLineCounter == 8 {
 			V.BadLineCounter = 0
 			V.RowCounter++
 		}
-
-		if V.BadLineCounter == 0 {
-			log.Printf("Bad Line")
-		}
-
 	}
+	// log.Printf("Line : %d BadLineCounter %d RowCounter : %d", y, V.BadLineCounter, V.RowCounter)
 }
 
-func (V *VIC) run(mem *Memory) {
+func (V *VIC) run(mem *Memory, cpuCycle chan bool) {
 	win, rend, tex := initSDL()
 	defer closeAll(win, rend, tex)
 
-	var codeA Word
-	codeA = 0x0043
-	for i := 0; i < 40; i++ {
-		V.Buffer[i] = codeA
-	}
+	cpuTimer, _ := time.ParseDuration(fmt.Sprintf("%fms", lineRefresh))
+	// fmt.Printf("cpuTimer %v.\n", cpuTimer)
+	ticker := time.NewTicker(cpuTimer)
+	defer func() {
+		ticker.Stop()
+	}()
 
 	for {
 		HBlank := true
 		VBlank := true
-		V.BadLineCounter = 0
+		V.BadLineCounter = 0xFF
 		V.RowCounter = 0
-		for beamY := 0; beamY < screenHeightPAL; beamY++ {
-			// log.Printf("Line : %d", V.BadLineCounter)
-			if beamY > 15 && beamY < 300 {
-				VBlank = false
-				V.CheckForBadLines(beamY)
-			} else {
-				VBlank = true
-			}
 
-			for beamX := 0; beamX < cyclesPerLine; beamX++ {
-				if beamX > 5 && beamX < 57 {
-					HBlank = false
+		// t0 := time.Now()
+		for beamY := 0; beamY < screenHeightPAL; beamY++ {
+			select {
+			case <-ticker.C:
+				// log.Printf("Line : %d", V.BadLineCounter)
+				if beamY > 15 && beamY < 300 {
+					VBlank = false
+					V.CheckForBadLines(beamY, mem)
 				} else {
-					HBlank = true
+					VBlank = true
 				}
-				if VBlank || HBlank {
-					for i := 0; i < 8; i++ {
-						setPixel(beamX*8+i, beamY, Black)
+
+				for beamX := 0; beamX < cyclesPerLine; beamX++ {
+					if beamX > 5 && beamX < 57 {
+						HBlank = false
+					} else {
+						HBlank = true
 					}
-				} else {
-					V.drawByte(mem, beamX, beamY)
+
+					if VBlank || HBlank {
+						draw8pixels(beamX*8, beamY, Black, Red, Byte(0xFF))
+					} else {
+						V.drawByte(mem, beamX, beamY)
+					}
+					cpuCycle <- true
 				}
-			}
-			if VBlank == false {
-				V.BadLineCounter++
 			}
 		}
+		// t1 := time.Now()
+		// fmt.Printf("The call took %v to run.\n", t1.Sub(t0))
 		// setPixel(visibleFirstCol*8, visibleFirstLine, White)
 		// setPixel(visibleLastCol*8, visibleLastLine, White)
 		displayFrame(rend, tex)
-		os.Exit(1)
+		// os.Exit(1)
 	}
 
 }

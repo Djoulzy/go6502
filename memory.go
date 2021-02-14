@@ -8,13 +8,19 @@ func (m *Memory) Init() {
 	m.Screen = m.Data[screenStart : screenEnd+1]
 	m.Color = m.Data[colorStart : colorEnd+1]
 
-	m.Vic[0] = m.Data[0x0000 : 0x3FFF]
-	m.Vic[1] = m.Data[0x4000 : 0x7FFF]
-	m.Vic[2] = m.Data[0x8000 : 0xBFFF]
-	m.Vic[3] = m.Data[0xC000 : 0xFFFF]
+	m.Vic[0] = m.Data[0x0000:0x3FFF]
+	m.Vic[1] = m.Data[0x4000:0x7FFF]
+	m.Vic[2] = m.Data[0x8000:0xBFFF]
+	m.Vic[3] = m.Data[0xC000:0xFFFF]
 
 	for i := range m.Data {
 		m.Data[i] = NOP
+	}
+	for i := range m.Color {
+		m.Color[i] = 0x01
+	}
+	for i := range m.Screen {
+		m.Screen[i] = 0x12
 	}
 	m.loadCharGenRom("char.bin")
 }
@@ -32,7 +38,7 @@ func (m *Memory) loadCharGenRom(filename string) {
 	}
 }
 
-func (m *Memory) load() {
+func (m *Memory) load1() {
 	m.Data[0x0010] = 0x00
 	m.Data[0x0011] = 0xEE
 	m.Data[0x0012] = 0xFF
@@ -80,3 +86,21 @@ func (m *Memory) load() {
 	m.Data[0xFF24] = 0x1F
 	m.Data[0xFF25] = 0xFF
 }
+
+func (m *Memory) load0() {
+	m.Data[0xFF00] = LDX_IM
+	m.Data[0xFF00] = LDA_ABX
+	m.Data[0xFF00] = 0xFF
+	m.Data[0xFF00] = 0xFF
+}
+
+// init_text  ldx #$00         ; init X register with $00
+// loop_text  lda line1,x      ; read characters from line1 table of text...
+//            sta $0590,x      ; ...and store in screen ram near the center
+//            lda line2,x      ; read characters from line2 table of text...
+//            sta $05e0,x      ; ...and put 2 rows below line1
+
+//            inx 
+//            cpx #$28         ; finished when all 40 cols of a line are processed
+//            bne loop_text    ; loop if we are not done yet
+//            rts
