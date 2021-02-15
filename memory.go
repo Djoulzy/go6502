@@ -87,11 +87,23 @@ func (m *Memory) load1() {
 	m.Data[0xFF25] = 0xFF
 }
 
+func (m *Memory) string2screenCode(startMem Word, message string) {
+	runes := []rune(message)
+	var result []Byte
+	for i := 0; i < len(runes); i++ {
+		result = append(result, Byte(runes[i]))
+	}
+}
+
 func (m *Memory) load0() {
+
+
 	m.Data[0xFF00] = LDX_IM
+	m.Data[0xFF00] = 0x00
 	m.Data[0xFF00] = LDA_ABX
-	m.Data[0xFF00] = 0xFF
-	m.Data[0xFF00] = 0xFF
+	m.Data[0xFF00] = STA_ABX
+	m.Data[0xFF00] = 0x90
+	m.Data[0xFF00] = 0x05
 }
 
 // init_text  ldx #$00         ; init X register with $00
@@ -100,7 +112,6 @@ func (m *Memory) load0() {
 //            lda line2,x      ; read characters from line2 table of text...
 //            sta $05e0,x      ; ...and put 2 rows below line1
 
-//            inx 
+//            inx
 //            cpx #$28         ; finished when all 40 cols of a line are processed
 //            bne loop_text    ; loop if we are not done yet
-//            rts

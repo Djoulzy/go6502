@@ -4,6 +4,7 @@ package main
 
 import (
 	"runtime"
+	"time"
 )
 
 func init() {
@@ -25,9 +26,11 @@ func main() {
 
 	go cpu.run(&mem)
 
-	// for {
-	// 	cpu.cycle <- true
-	// 	time.Sleep(time.Second)
-	// }
+	if cpu.display {
+		for {
+			cpu.cycle <- true
+			time.Sleep(time.Second)
+		}
+	}
 	vic.run(&mem, cpu.cycle)
 }
