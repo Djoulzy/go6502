@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"time"
 )
 
@@ -27,17 +28,19 @@ const (
 	visibleWidth  = 320
 	visibleHeight = 200
 
-	visibleFirstLine = 55
-	visibleLastLine  = 254
+	visibleFirstLine = 56
+	visibleLastLine  = 255
 	visibleFirstCol  = 11
 	visibleLastCol   = 50
 )
 
 func (V *VIC) readScreenData(mem *Memory) {
-	start := int(V.RowCounter) * 40
+	start := Word(V.RowCounter) * 40
+	log.Printf("Y: %d", V.RowCounter)
 	for i := 0; i < 40; i++ {
-		V.Buffer[i] = Word(mem.Color[start+i]) << 8
-		V.Buffer[i] |= Word(mem.Screen[start+i])
+		// log.Printf("X: %d Y: %d", i, start)
+		V.Buffer[i] = Word(mem.Color[int(start)+i]) << 8
+		V.Buffer[i] |= Word(mem.Screen[int(start)+i])
 		// log.Printf("Mem Color: %d, Value: %x", start+i, mem.Color[start+i])
 		// log.Printf("Mem Screen: %d, Value: %x", start+i, mem.Screen[start+i])
 		// log.Printf("Buffer: %d, Value: %x", i, V.Buffer[i])
@@ -68,6 +71,7 @@ func (V *VIC) CheckForBadLines(y int, mem *Memory) {
 	if (y >= visibleFirstLine) && (y <= visibleLastLine) {
 		V.BadLineCounter++
 		if V.BadLineCounter == 0 {
+			log.Printf("Line : %d BadLineCounter %d RowCounter : %d", y, V.BadLineCounter, V.RowCounter)
 			V.readScreenData(mem)
 		}
 
@@ -76,12 +80,14 @@ func (V *VIC) CheckForBadLines(y int, mem *Memory) {
 			V.RowCounter++
 		}
 	}
-	// log.Printf("Line : %d BadLineCounter %d RowCounter : %d", y, V.BadLineCounter, V.RowCounter)
 }
 
 func (V *VIC) run(mem *Memory, cpuCycle chan bool) {
 	win, rend, tex := initSDL()
-	defer closeAll(win, rend, tex)
+	defer func() {
+		mem.dump(0x0590)
+		closeAll(win, rend, tex)
+	}()
 
 	cpuTimer, _ := time.ParseDuration(fmt.Sprintf("%fms", lineRefresh))
 	// fmt.Printf("cpuTimer %v.\n", cpuTimer)
@@ -93,7 +99,7 @@ func (V *VIC) run(mem *Memory, cpuCycle chan bool) {
 	for {
 		HBlank := true
 		VBlank := true
-		V.BadLineCounter = 0xFF
+		V.BadLineCounter = 0
 		V.RowCounter = 0
 
 		// t0 := time.Now()
@@ -103,7 +109,9 @@ func (V *VIC) run(mem *Memory, cpuCycle chan bool) {
 				// log.Printf("Line : %d", V.BadLineCounter)
 				if beamY > 15 && beamY < 300 {
 					VBlank = false
-					V.CheckForBadLines(beamY, mem)
+					if V.BadLineCounter == 0 {
+						V.readScreenData(mem)
+					}
 				} else {
 					VBlank = true
 				}
@@ -131,5 +139,4 @@ func (V *VIC) run(mem *Memory, cpuCycle chan bool) {
 		displayFrame(rend, tex)
 		// os.Exit(1)
 	}
-
 }

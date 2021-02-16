@@ -1,6 +1,9 @@
 package main
 
-import "io/ioutil"
+import (
+	"fmt"
+	"io/ioutil"
+)
 
 // Init :
 func (m *Memory) Init() {
@@ -19,9 +22,10 @@ func (m *Memory) Init() {
 	for i := range m.Color {
 		m.Color[i] = 0x01
 	}
-	for i := range m.Screen {
-		m.Screen[i] = 0x12
-	}
+	// for i := range m.Screen {
+	// 	m.Screen[i] = Byte(i)
+	// }
+	m.Data[0x0400] = 0x10
 	m.loadCharGenRom("char.bin")
 }
 
@@ -35,6 +39,18 @@ func (m *Memory) loadCharGenRom(filename string) {
 	}
 	for i := 0; i < 4096; i++ {
 		m.CharGen[i] = Byte(data[i])
+	}
+}
+
+func (m *Memory) dump(startAddr Word) {
+	cpt := startAddr
+	for j := 0; j < 10; j++ {
+		fmt.Printf("%04X : ", cpt)
+		for i := 0; i < 8; i++ {
+			fmt.Printf("%04X ", m.Data[cpt])
+			cpt++
+		}
+		fmt.Println()
 	}
 }
 
@@ -89,21 +105,58 @@ func (m *Memory) load1() {
 
 func (m *Memory) string2screenCode(startMem Word, message string) {
 	runes := []rune(message)
-	var result []Byte
 	for i := 0; i < len(runes); i++ {
-		result = append(result, Byte(runes[i]))
+		m.Data[startMem+Word(i)] = Byte(runes[i])
 	}
 }
 
 func (m *Memory) load0() {
+	line := Word(0xFF00)
 
+	m.string2screenCode(0xEE00, "12345")
 
-	m.Data[0xFF00] = LDX_IM
-	m.Data[0xFF00] = 0x00
-	m.Data[0xFF00] = LDA_ABX
-	m.Data[0xFF00] = STA_ABX
-	m.Data[0xFF00] = 0x90
-	m.Data[0xFF00] = 0x05
+	m.Data[line] = LDX_IM
+	line++
+	m.Data[line] = 0x00
+	line++
+	label := line
+	m.Data[line] = LDA_ABX
+	line++
+	m.Data[line] = 0x00
+	line++
+	m.Data[line] = 0xEE
+	line++
+	m.Data[line] = STA_ABX
+	line++
+	m.Data[line] = 0x90
+	line++
+	m.Data[line] = 0x05
+	line++
+	m.Data[line] = INX
+	line++
+	m.Data[line] = CPX_IM
+	line++
+	m.Data[line] = 0x05
+	line++
+	m.Data[line] = BNE
+	line++
+	m.Data[line] = Byte(label)
+	line++
+	m.Data[line] = Byte(label >> 8)
+
+	// line++
+	// m.Data[line] = DMP
+	// line++
+	// m.Data[line] = 0x90
+	// line++
+	// m.Data[line] = 0x05
+
+	line++
+	m.Data[line] = JMP_ABS // JMP $FF00
+	line++
+	m.Data[line] = 0x00
+	line++
+	m.Data[line] = 0xFF
 }
 
 // init_text  ldx #$00         ; init X register with $00

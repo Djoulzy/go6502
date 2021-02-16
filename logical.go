@@ -14,25 +14,25 @@ func (C *CPU) op_AND_ZP(mem *Memory) {
 }
 
 func (C *CPU) op_AND_ZPX(mem *Memory) {
-
+	C.opName = "ToDO"
 }
 
 func (C *CPU) op_AND_ABS(mem *Memory) {
-
+	C.opName = "ToDO"
 }
 
 func (C *CPU) op_AND_ABX(mem *Memory) {
-
+	C.opName = "ToDO"
 }
 
 func (C *CPU) op_AND_ABY(mem *Memory) {
-
+	C.opName = "ToDO"
 }
 
 func (C *CPU) op_AND_INX(mem *Memory) {
-
+	C.opName = "ToDO"
 }
 
 func (C *CPU) op_AND_INY(mem *Memory) {
-
+	C.opName = "ToDO"
 }

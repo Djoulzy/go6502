@@ -77,69 +77,128 @@ func (C *CPU) exec(mem *Memory) {
 		os.Exit(1)
 	}
 	opCode := C.fetchByte(mem)
-	Nemonic[opCode](mem)
+	Mnemonic[opCode](mem)
 }
 
 func (C *CPU) initLanguage() {
-	Nemonic = make(map[Byte]func(*Memory))
+	Mnemonic = make(map[Byte]func(*Memory))
 
-	Nemonic[NOP] = C.op_NOP
-	Nemonic[BRK] = C.op_BRK
+	Mnemonic[DMP] = C.op_DMP
 
-	Nemonic[LDA_IM] = C.op_LDA_IM
-	Nemonic[LDA_ZP] = C.op_LDA_ZP
-	Nemonic[LDA_ZPX] = C.op_LDA_ZPX
-	Nemonic[LDA_INX] = C.op_LDA_INX
-	Nemonic[LDA_INY] = C.op_LDA_INY
-	Nemonic[LDA_ABS] = C.op_LDA_ABS
-	Nemonic[LDA_ABX] = C.op_LDA_ABX
-	Nemonic[LDA_ABY] = C.op_LDA_ABY
+	Mnemonic[NOP] = C.op_NOP
+	Mnemonic[BRK] = C.op_BRK
 
-	Nemonic[LDX_IM] = C.op_LDX_IM
-	Nemonic[LDX_ZP] = C.op_LDX_ZP
-	Nemonic[LDX_ZPY] = C.op_LDX_ZPY
-	Nemonic[LDX_ABS] = C.op_LDX_ABS
-	Nemonic[LDX_ABY] = C.op_LDX_ABY
+	Mnemonic[INC_ZP] = C.op_INC_ZP
+	Mnemonic[INC_ZPX] = C.op_INC_ZPX
+	Mnemonic[INC_ABS] = C.op_INC_ABS
+	Mnemonic[INC_ABX] = C.op_INC_ABX
+	Mnemonic[INX] = C.op_INX
+	Mnemonic[INY] = C.op_INY
+	Mnemonic[DEC_ZP] = C.op_DEC_ZP
+	Mnemonic[DEC_ZPX] = C.op_DEC_ZPX
+	Mnemonic[DEC_ABS] = C.op_DEC_ABS
+	Mnemonic[DEC_ABX] = C.op_DEC_ABX
+	Mnemonic[DEX] = C.op_DEX
+	Mnemonic[DEY] = C.op_DEY
 
-	Nemonic[LDY_IM] = C.op_LDY_IM
-	Nemonic[LDY_ZP] = C.op_LDY_ZP
-	Nemonic[LDY_ZPX] = C.op_LDY_ZPX
-	Nemonic[LDY_ABS] = C.op_LDY_ABS
-	Nemonic[LDY_ABX] = C.op_LDY_ABX
+	Mnemonic[ADC_IM] = C.op_ADC_IM
+	Mnemonic[ADC_ZP] = C.op_ADC_ZP
+	Mnemonic[ADC_ZPX] = C.op_ADC_ZPX
+	Mnemonic[ADC_ABS] = C.op_ADC_ABS
+	Mnemonic[ADC_ABX] = C.op_ADC_ABX
+	Mnemonic[ADC_ABY] = C.op_ADC_ABY
+	Mnemonic[ADC_INX] = C.op_ADC_INX
+	Mnemonic[ADC_INY] = C.op_ADC_INY
 
-	Nemonic[STA_ZP] = C.op_STA_ZP
-	Nemonic[STA_ZPX] = C.op_STA_ZPX
-	Nemonic[STA_INX] = C.op_STA_INX
-	Nemonic[STA_INY] = C.op_STA_INY
-	Nemonic[STA_ABS] = C.op_STA_ABS
-	Nemonic[STA_ABX] = C.op_STA_ABX
-	Nemonic[STA_ABY] = C.op_STA_ABY
+	Mnemonic[SBC_IM] = C.op_SBC_IM
+	Mnemonic[SBC_ZP] = C.op_SBC_ZP
+	Mnemonic[SBC_ZPX] = C.op_SBC_ZPX
+	Mnemonic[SBC_ABS] = C.op_SBC_ABS
+	Mnemonic[SBC_ABX] = C.op_SBC_ABX
+	Mnemonic[SBC_ABY] = C.op_SBC_ABY
+	Mnemonic[SBC_INX] = C.op_SBC_INX
+	Mnemonic[SBC_INY] = C.op_SBC_INY
 
-	Nemonic[STX_ZP] = C.op_STX_ZP
-	Nemonic[STX_ZPY] = C.op_STX_ZPY
-	Nemonic[STX_ABS] = C.op_STX_ABS
+	Mnemonic[CMP_IM] = C.op_CMP_IM
+	Mnemonic[CMP_ZP] = C.op_CMP_ZP
+	Mnemonic[CMP_ZPX] = C.op_CMP_ZPX
+	Mnemonic[CMP_ABS] = C.op_CMP_ABS
+	Mnemonic[CMP_ABX] = C.op_CMP_ABX
+	Mnemonic[CMP_ABY] = C.op_CMP_ABY
+	Mnemonic[CMP_INX] = C.op_CMP_INX
+	Mnemonic[CMP_INY] = C.op_CMP_INY
 
-	Nemonic[STY_ZP] = C.op_STY_ZP
-	Nemonic[STY_ZPX] = C.op_STY_ZPX
-	Nemonic[STY_ABS] = C.op_STY_ABS
+	Mnemonic[CPX_IM] = C.op_CPX_IM
+	Mnemonic[CPX_ZP] = C.op_CPX_ZP
+	Mnemonic[CPX_ABS] = C.op_CPX_ABS
 
-	Nemonic[AND_IM] = C.op_AND_IM
-	Nemonic[AND_ZP] = C.op_AND_ZP
-	Nemonic[AND_ZPX] = C.op_AND_ZPX
-	Nemonic[AND_ABS] = C.op_AND_ABS
-	Nemonic[AND_ABX] = C.op_AND_ABX
-	Nemonic[AND_ABY] = C.op_AND_ABY
-	Nemonic[AND_INX] = C.op_AND_INX
-	Nemonic[AND_INY] = C.op_AND_INY
+	Mnemonic[CPY_IM] = C.op_CPY_IM
+	Mnemonic[CPY_ZP] = C.op_CPY_ZP
+	Mnemonic[CPY_ABS] = C.op_CPY_ABS
 
-	Nemonic[TXS] = C.op_TXS
-	Nemonic[PHA] = C.op_PHA
-	Nemonic[PLA] = C.op_PLA
+	Mnemonic[BCC] = C.op_BCC
+	Mnemonic[BCS] = C.op_BCS
+	Mnemonic[BEQ] = C.op_BEQ
+	Mnemonic[BMI] = C.op_BMI
+	Mnemonic[BNE] = C.op_BNE
+	Mnemonic[BPL] = C.op_BPL
+	Mnemonic[BVC] = C.op_BVC
+	Mnemonic[BVS] = C.op_BVS
 
-	Nemonic[JMP_ABS] = C.op_JMP_ABS
-	Nemonic[JMP_IND] = C.op_JMP_IND
-	Nemonic[JSR] = C.op_JSR
-	Nemonic[RTS] = C.op_RTS
+	Mnemonic[LDA_IM] = C.op_LDA_IM
+	Mnemonic[LDA_ZP] = C.op_LDA_ZP
+	Mnemonic[LDA_ZPX] = C.op_LDA_ZPX
+	Mnemonic[LDA_INX] = C.op_LDA_INX
+	Mnemonic[LDA_INY] = C.op_LDA_INY
+	Mnemonic[LDA_ABS] = C.op_LDA_ABS
+	Mnemonic[LDA_ABX] = C.op_LDA_ABX
+	Mnemonic[LDA_ABY] = C.op_LDA_ABY
+
+	Mnemonic[LDX_IM] = C.op_LDX_IM
+	Mnemonic[LDX_ZP] = C.op_LDX_ZP
+	Mnemonic[LDX_ZPY] = C.op_LDX_ZPY
+	Mnemonic[LDX_ABS] = C.op_LDX_ABS
+	Mnemonic[LDX_ABY] = C.op_LDX_ABY
+
+	Mnemonic[LDY_IM] = C.op_LDY_IM
+	Mnemonic[LDY_ZP] = C.op_LDY_ZP
+	Mnemonic[LDY_ZPX] = C.op_LDY_ZPX
+	Mnemonic[LDY_ABS] = C.op_LDY_ABS
+	Mnemonic[LDY_ABX] = C.op_LDY_ABX
+
+	Mnemonic[STA_ZP] = C.op_STA_ZP
+	Mnemonic[STA_ZPX] = C.op_STA_ZPX
+	Mnemonic[STA_INX] = C.op_STA_INX
+	Mnemonic[STA_INY] = C.op_STA_INY
+	Mnemonic[STA_ABS] = C.op_STA_ABS
+	Mnemonic[STA_ABX] = C.op_STA_ABX
+	Mnemonic[STA_ABY] = C.op_STA_ABY
+
+	Mnemonic[STX_ZP] = C.op_STX_ZP
+	Mnemonic[STX_ZPY] = C.op_STX_ZPY
+	Mnemonic[STX_ABS] = C.op_STX_ABS
+
+	Mnemonic[STY_ZP] = C.op_STY_ZP
+	Mnemonic[STY_ZPX] = C.op_STY_ZPX
+	Mnemonic[STY_ABS] = C.op_STY_ABS
+
+	Mnemonic[AND_IM] = C.op_AND_IM
+	Mnemonic[AND_ZP] = C.op_AND_ZP
+	Mnemonic[AND_ZPX] = C.op_AND_ZPX
+	Mnemonic[AND_ABS] = C.op_AND_ABS
+	Mnemonic[AND_ABX] = C.op_AND_ABX
+	Mnemonic[AND_ABY] = C.op_AND_ABY
+	Mnemonic[AND_INX] = C.op_AND_INX
+	Mnemonic[AND_INY] = C.op_AND_INY
+
+	Mnemonic[TXS] = C.op_TXS
+	Mnemonic[PHA] = C.op_PHA
+	Mnemonic[PLA] = C.op_PLA
+
+	Mnemonic[JMP_ABS] = C.op_JMP_ABS
+	Mnemonic[JMP_IND] = C.op_JMP_IND
+	Mnemonic[JSR] = C.op_JSR
+	Mnemonic[RTS] = C.op_RTS
 }
 
 func (C *CPU) run(mem *Memory) {
@@ -151,6 +210,9 @@ func (C *CPU) run(mem *Memory) {
 	C.reset(mem)
 	mem.load0()
 
+	// for i := range mem.Screen {
+	// 	mem.Screen[i] = 0x39
+	// }
 	for {
 		C.exec(mem)
 	}

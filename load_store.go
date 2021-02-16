@@ -92,13 +92,13 @@ func (C *CPU) op_LDX_ZPY(mem *Memory) {
 }
 
 func (C *CPU) op_LDX_ABS(mem *Memory) {
-	C.opName = "LDA Abs"
+	C.opName = "LDX Abs"
 
 	C.setNZStatus(C.A)
 }
 
 func (C *CPU) op_LDX_ABY(mem *Memory) {
-	C.opName = "LDA Abs,X"
+	C.opName = "LDX Abs,X"
 
 	C.setNZStatus(C.A)
 }
@@ -132,13 +132,13 @@ func (C *CPU) op_LDY_ZPX(mem *Memory) {
 }
 
 func (C *CPU) op_LDY_ABS(mem *Memory) {
-	C.opName = "LDA Abs"
+	C.opName = "LDY Abs"
 
 	C.setNZStatus(C.A)
 }
 
 func (C *CPU) op_LDY_ABX(mem *Memory) {
-	C.opName = "LDA Abs,X"
+	C.opName = "LDY Abs,X"
 
 	C.setNZStatus(C.A)
 }
@@ -165,10 +165,23 @@ func (C *CPU) op_STA_ABS(mem *Memory) {
 	mem.Data[absAddress] = C.A
 }
 
-func (C *CPU) op_STA_ABX(mem *Memory) {}
-func (C *CPU) op_STA_ABY(mem *Memory) {}
-func (C *CPU) op_STA_INX(mem *Memory) {}
-func (C *CPU) op_STA_INY(mem *Memory) {}
+func (C *CPU) op_STA_ABX(mem *Memory) {
+	C.opName = "STA Abs,X"
+	absAddress := C.fetchWord(mem) + Word(C.X)
+	mem.Data[absAddress] = C.A
+}
+
+func (C *CPU) op_STA_ABY(mem *Memory) {
+	C.opName = "ToDO"
+}
+
+func (C *CPU) op_STA_INX(mem *Memory) {
+	C.opName = "ToDO"
+}
+
+func (C *CPU) op_STA_INY(mem *Memory) {
+	C.opName = "ToDO"
+}
 
 //////////////////////////////////
 ///////////// STX ////////////////
@@ -186,12 +199,22 @@ func (C *CPU) op_STX_ZPY(mem *Memory) {
 	mem.Data[zpAddress] = C.X
 }
 
-func (C *CPU) op_STX_ABS(mem *Memory) {}
+func (C *CPU) op_STX_ABS(mem *Memory) {
+	C.opName = "ToDO"
+}
 
 //////////////////////////////////
 ///////////// STY ////////////////
 //////////////////////////////////
 
-func (C *CPU) op_STY_ZP(mem *Memory)  {}
-func (C *CPU) op_STY_ZPX(mem *Memory) {}
-func (C *CPU) op_STY_ABS(mem *Memory) {}
+func (C *CPU) op_STY_ZP(mem *Memory)  {
+	C.opName = "ToDO"
+}
+
+func (C *CPU) op_STY_ZPX(mem *Memory) {
+	C.opName = "ToDO"
+}
+
+func (C *CPU) op_STY_ABS(mem *Memory) {
+	C.opName = "ToDO"
+}
