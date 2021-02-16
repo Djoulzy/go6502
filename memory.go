@@ -20,12 +20,12 @@ func (m *Memory) Init() {
 		m.Data[i] = NOP
 	}
 	for i := range m.Color {
-		m.Color[i] = 0x01
+		m.Color[i] = 0x0A
 	}
-	// for i := range m.Screen {
-	// 	m.Screen[i] = Byte(i)
-	// }
-	m.Data[0x0400] = 0x10
+	for i := range m.Screen {
+		m.Screen[i] = Byte(i)
+	}
+	m.Data[0x0400] = 0x31
 	m.loadCharGenRom("char.bin")
 }
 
@@ -39,6 +39,17 @@ func (m *Memory) loadCharGenRom(filename string) {
 	}
 	for i := 0; i < 4096; i++ {
 		m.CharGen[i] = Byte(data[i])
+	}
+}
+
+func (m *Memory) dumpChar(screenCode Byte) {
+	cpt := Word(screenCode) << 3
+	for j := 0; j < 4; j++ {
+		for i := 0; i < 8; i++ {
+			fmt.Printf("%04X : %08b\n", cpt, m.CharGen[cpt])
+			cpt++
+		}
+		fmt.Println()
 	}
 }
 

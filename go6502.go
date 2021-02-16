@@ -17,6 +17,8 @@ func main() {
 	mem := Memory{}
 	mem.Init()
 
+	// mem.dumpChar(0x2F)
+	// os.Exit(1)
 	cpu := CPU{}
 
 	cpu.cycle = make(chan bool, 1)

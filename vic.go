@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"time"
 )
 
@@ -32,18 +31,21 @@ const (
 	visibleLastLine  = 255
 	visibleFirstCol  = 11
 	visibleLastCol   = 50
+	visibleFirstRow  = 7
 )
 
-func (V *VIC) readScreenData(mem *Memory) {
-	start := Word(V.RowCounter) * 40
-	log.Printf("Y: %d", V.RowCounter)
-	for i := 0; i < 40; i++ {
-		// log.Printf("X: %d Y: %d", i, start)
-		V.Buffer[i] = Word(mem.Color[int(start)+i]) << 8
-		V.Buffer[i] |= Word(mem.Screen[int(start)+i])
-		// log.Printf("Mem Color: %d, Value: %x", start+i, mem.Color[start+i])
-		// log.Printf("Mem Screen: %d, Value: %x", start+i, mem.Screen[start+i])
-		// log.Printf("Buffer: %d, Value: %x", i, V.Buffer[i])
+func (V *VIC) readScreenData(mem *Memory, y int) {
+	if (y >= visibleFirstLine) && (y <= visibleLastLine) {
+		start := Word(V.RowCounter-visibleFirstRow) * 40
+		// log.Printf("Y: %d", V.RowCounter-visibleFirstRow)
+		for i := 0; i < 40; i++ {
+			// log.Printf("X: %d Y: %d", i, start)
+			V.Buffer[i] = Word(mem.Color[int(start)+i]) << 8
+			V.Buffer[i] |= Word(mem.Screen[int(start)+i])
+			// log.Printf("Mem Color: %d, Value: %x", start+i, mem.Color[start+i])
+			// log.Printf("Mem Screen: %d, Value: %x", start+i, mem.Screen[start+i])
+			// log.Printf("Buffer: %d, Value: %x", i, V.Buffer[i])
+		}
 	}
 }
 
@@ -60,25 +62,10 @@ func (V *VIC) drawByte(mem *Memory, beamX, beamY int) {
 	if V.isVisibleArea(beamX, beamY) {
 		charColor := Byte(V.Buffer[beamX-visibleFirstCol] >> 8)
 		charAddr := Byte(V.Buffer[beamX-visibleFirstCol])
-		charRomAddr := mem.CharGen[charAddr<<3+V.BadLineCounter]
+		charRomAddr := mem.CharGen[Word(charAddr)<<3+Word(V.BadLineCounter)]
 		draw8pixels(beamX*8, beamY, charColor, Blue, charRomAddr)
 	} else {
 		draw8pixels(beamX*8, beamY, Lightblue, Lightblue, Byte(0xFF))
-	}
-}
-
-func (V *VIC) CheckForBadLines(y int, mem *Memory) {
-	if (y >= visibleFirstLine) && (y <= visibleLastLine) {
-		V.BadLineCounter++
-		if V.BadLineCounter == 0 {
-			log.Printf("Line : %d BadLineCounter %d RowCounter : %d", y, V.BadLineCounter, V.RowCounter)
-			V.readScreenData(mem)
-		}
-
-		if V.BadLineCounter == 8 {
-			V.BadLineCounter = 0
-			V.RowCounter++
-		}
 	}
 }
 
@@ -106,11 +93,10 @@ func (V *VIC) run(mem *Memory, cpuCycle chan bool) {
 		for beamY := 0; beamY < screenHeightPAL; beamY++ {
 			select {
 			case <-ticker.C:
-				// log.Printf("Line : %d", V.BadLineCounter)
 				if beamY > 15 && beamY < 300 {
 					VBlank = false
 					if V.BadLineCounter == 0 {
-						V.readScreenData(mem)
+						V.readScreenData(mem, beamY)
 					}
 				} else {
 					VBlank = true
@@ -129,6 +115,11 @@ func (V *VIC) run(mem *Memory, cpuCycle chan bool) {
 						V.drawByte(mem, beamX, beamY)
 					}
 					cpuCycle <- true
+				}
+				V.BadLineCounter++
+				if V.BadLineCounter == 8 {
+					V.BadLineCounter = 0
+					V.RowCounter++
 				}
 			}
 		}
