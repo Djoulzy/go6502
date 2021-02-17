@@ -27,8 +27,7 @@ func (C *CPU) op_LDA_ZP(mem *mem.Memory) {
 // op_LDA_ZPX : LDA Zero Page,X
 func (C *CPU) op_LDA_ZPX(mem *mem.Memory) {
 	C.opName = "LDA ZP,X"
-	zpAddress := C.fetchByte(mem)
-	zpAddress += C.X
+	zpAddress := C.fetchByte(mem) + C.X
 	C.A = mem.Data[zpAddress]
 	C.setNZStatus(C.A)
 }
@@ -90,8 +89,7 @@ func (C *CPU) op_LDX_ZP(mem *mem.Memory) {
 // op_LDX_ZPY : LDA Zero Page,Y
 func (C *CPU) op_LDX_ZPY(mem *mem.Memory) {
 	C.opName = "LDX ZP,Y"
-	zpAddress := C.fetchByte(mem)
-	zpAddress += C.Y
+	zpAddress := C.fetchByte(mem) + C.Y
 	C.X = mem.Data[zpAddress]
 	C.setNZStatus(C.X)
 }
@@ -130,8 +128,7 @@ func (C *CPU) op_LDY_ZP(mem *mem.Memory) {
 // op_LDY_ZPX : LDA Zero Page,X
 func (C *CPU) op_LDY_ZPX(mem *mem.Memory) {
 	C.opName = "LDY ZP,X"
-	zpAddress := C.fetchByte(mem)
-	zpAddress += C.X
+	zpAddress := C.fetchByte(mem) + C.X
 	C.Y = mem.Data[zpAddress]
 	C.setNZStatus(C.Y)
 }
