@@ -23,10 +23,9 @@ func (m *Memory) Init() {
 	// for i := range m.Color {
 	// 	m.Color[i] = Lightblue
 	// }
-	// for i := range m.Screen {
-	// 	m.Screen[i] = 0x60
-	// }
-
+	for i := range m.Screen {
+		m.Screen[i] = 0x60
+	}
 	m.loadCharGenRom("char.bin")
 }
 

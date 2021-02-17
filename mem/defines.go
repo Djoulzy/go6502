@@ -17,7 +17,7 @@ const (
 
 // Memory :
 type Memory struct {
-	Data    []globals.Byte
+	Data    [memorySize]globals.Byte
 	CharGen [4096]globals.Byte
 	Stack   []globals.Byte
 	Screen  []globals.Byte

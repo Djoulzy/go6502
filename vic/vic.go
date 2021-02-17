@@ -66,9 +66,9 @@ func (V *VIC) drawgByte(beamX, beamY int) {
 		charColor := globals.Byte(V.Buffer[beamX-visibleFirstCol] >> 8)
 		charAddr := globals.Byte(V.Buffer[beamX-visibleFirstCol])
 		charRomAddr := V.ram.CharGen[globals.Word(charAddr)<<3+globals.Word(V.BadLineCounter)]
-		V.graph.Draw8pixels(beamX*8, beamY, charColor, Blue, charRomAddr)
+		V.graph.Draw8pixels(beamX*8, beamY, Colors[charColor], Colors[Blue], charRomAddr)
 	} else {
-		V.graph.Draw8pixels(beamX*8, beamY, Lightblue, Lightblue, globals.Byte(0xFF))
+		V.graph.Draw8pixels(beamX*8, beamY, Colors[Lightblue], Colors[Lightblue], globals.Byte(0xFF))
 	}
 }
 
@@ -78,7 +78,7 @@ func (V *VIC) Init(mem *mem.Memory, cpuCycle chan bool) {
 }
 
 func (V *VIC) Run() {
-	V.graph = graphic.SDLDriver{}
+	V.graph = &graphic.SDLDriver{}
 
 	V.graph.Init(winWidth, winHeight)
 	defer func() {
@@ -120,7 +120,7 @@ func (V *VIC) Run() {
 					}
 
 					if VBlank || HBlank {
-						V.graph.Draw8pixels(beamX*8, beamY, Black, Red, globals.Byte(0xFF))
+						V.graph.Draw8pixels(beamX*8, beamY, Colors[Black], Colors[Black], globals.Byte(0xFF))
 					} else {
 						V.drawgByte(beamX, beamY)
 					}

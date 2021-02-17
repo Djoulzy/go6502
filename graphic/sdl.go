@@ -2,19 +2,18 @@ package graphic
 
 import (
 	"go6502/globals"
-	"go6502/vic"
 	"os"
 
 	"github.com/veandco/go-sdl2/sdl"
 )
 
-func (S *SDLDriver) SetPixel(index int, c globals.Byte) {
-	S.screen[index] = vic.Colors[c].r
-	S.screen[index+1] = vic.Colors[c].g
-	S.screen[index+2] = vic.Colors[c].b
+func (S *SDLDriver) SetPixel(index int, c globals.RGB) {
+	S.screen[index] = byte(c.R)
+	S.screen[index+1] = byte(c.G)
+	S.screen[index+2] = byte(c.B)
 }
 
-func (S *SDLDriver) Draw8pixels(x, y int, fg_color, bg_color, value globals.Byte) {
+func (S *SDLDriver) Draw8pixels(x, y int, fg_color, bg_color globals.RGB, value globals.Byte) {
 	// t0 := time.Now()
 	index := (y*S.winWidth + x) * 3
 	for i := 0; i < 8; i++ {

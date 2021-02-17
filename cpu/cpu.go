@@ -64,10 +64,10 @@ func (C *CPU) fetchWord(mem *mem.Memory) globals.Word {
 }
 
 func (C *CPU) fetchByte(mem *mem.Memory) globals.Byte {
-	if C.display {
+	if C.Display {
 		C.refreshScreen(mem)
 	}
-	<-C.cycle
+	<-C.Cycle
 	value := mem.Data[C.PC]
 	C.PC++
 	return value
