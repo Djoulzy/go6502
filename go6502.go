@@ -3,6 +3,9 @@
 package main
 
 import (
+	"go6502/cpu"
+	"go6502/mem"
+	"go6502/vic"
 	"runtime"
 	"time"
 )
@@ -14,25 +17,24 @@ func init() {
 }
 
 func main() {
-	mem := Memory{}
+	mem := mem.Memory{}
 	mem.Init()
 
 	// mem.dumpChar(0x2F)
 	// os.Exit(1)
-	cpu := CPU{}
+	cpu := cpu.CPU{}
+	cpu.Init(&mem)
 
-	cpu.cycle = make(chan bool, 1)
-	cpu.display = false
+	vic := vic.VIC{}
+	vic.Init(&mem, cpu.Cycle)
 
-	vic := VIC{}
+	go cpu.Run()
 
-	go cpu.run(&mem)
-
-	if cpu.display {
+	if cpu.Display {
 		for {
-			cpu.cycle <- true
+			cpu.Cycle <- true
 			time.Sleep(time.Second)
 		}
 	}
-	vic.run(&mem, cpu.cycle)
+	vic.Run()
 }

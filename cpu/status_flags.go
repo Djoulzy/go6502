@@ -1,6 +1,8 @@
-package main
+package cpu
 
-func (C *CPU) setN(register Byte) {
+import "go6502/globals"
+
+func (C *CPU) setN(register globals.Byte) {
 	if register&0b10000000 > 0 {
 		C.S |= ^N_mask
 	} else {
@@ -8,7 +10,7 @@ func (C *CPU) setN(register Byte) {
 	}
 }
 
-func (C *CPU) setZ(register Byte) {
+func (C *CPU) setZ(register globals.Byte) {
 	if register == 0 {
 		C.S |= ^Z_mask
 	} else {
@@ -16,7 +18,7 @@ func (C *CPU) setZ(register Byte) {
 	}
 }
 
-func (C *CPU) setC(register Byte, value Byte) {
+func (C *CPU) setC(register globals.Byte, value globals.Byte) {
 	if register >= value {
 		C.S |= ^C_mask
 	} else {
@@ -24,7 +26,7 @@ func (C *CPU) setC(register Byte, value Byte) {
 	}
 }
 
-func (C *CPU) setNZStatus(register Byte) {
+func (C *CPU) setNZStatus(register globals.Byte) {
 	C.setN(register)
 	C.setZ(register)
 }

@@ -1,11 +1,13 @@
-package main
+package cpu
 
 import (
+	"go6502/globals"
+	"go6502/mem"
 	"os"
 	"time"
 )
 
-func (C *CPU) reset(mem *Memory) {
+func (C *CPU) reset(mem *mem.Memory) {
 	C.A = 0
 	C.X = 0
 	C.Y = 0
@@ -21,20 +23,20 @@ func (C *CPU) reset(mem *Memory) {
 //////// Stack Operations ////////
 //////////////////////////////////
 
-func (C *CPU) pushWordStack(mem *Memory, val Word) {
-	low := Byte(val)
-	hi := Byte(val >> 8)
+func (C *CPU) pushWordStack(mem *mem.Memory, val globals.Word) {
+	low := globals.Byte(val)
+	hi := globals.Byte(val >> 8)
 	C.pushByteStack(mem, hi)
 	C.pushByteStack(mem, low)
 }
 
-func (C *CPU) fetchWordStack(mem *Memory) Word {
+func (C *CPU) fetchWordStack(mem *mem.Memory) globals.Word {
 	low := C.pullByteStack(mem)
-	hi := Word(C.pullByteStack(mem)) << 8
-	return hi + Word(low)
+	hi := globals.Word(C.pullByteStack(mem)) << 8
+	return hi + globals.Word(low)
 }
 
-func (C *CPU) pushByteStack(mem *Memory, val Byte) {
+func (C *CPU) pushByteStack(mem *mem.Memory, val globals.Byte) {
 	mem.Stack[C.SP] = val
 	C.SP--
 	if C.SP < 0 {
@@ -42,7 +44,7 @@ func (C *CPU) pushByteStack(mem *Memory, val Byte) {
 	}
 }
 
-func (C *CPU) pullByteStack(mem *Memory) Byte {
+func (C *CPU) pullByteStack(mem *mem.Memory) globals.Byte {
 	C.SP++
 	if C.SP > 0xFF {
 		panic("Stack overflow")
@@ -51,17 +53,17 @@ func (C *CPU) pullByteStack(mem *Memory) Byte {
 }
 
 //////////////////////////////////
-/////// Memory Operations ////////
+/////// mem.Memory Operations ////////
 //////////////////////////////////
 
-func (C *CPU) fetchWord(mem *Memory) Word {
+func (C *CPU) fetchWord(mem *mem.Memory) globals.Word {
 	low := C.fetchByte(mem)
-	value := Word(C.fetchByte(mem)) << 8
-	value += Word(low)
+	value := globals.Word(C.fetchByte(mem)) << 8
+	value += globals.Word(low)
 	return value
 }
 
-func (C *CPU) fetchByte(mem *Memory) Byte {
+func (C *CPU) fetchByte(mem *mem.Memory) globals.Byte {
 	if C.display {
 		C.refreshScreen(mem)
 	}
@@ -71,7 +73,7 @@ func (C *CPU) fetchByte(mem *Memory) Byte {
 	return value
 }
 
-func (C *CPU) exec(mem *Memory) {
+func (C *CPU) exec(mem *mem.Memory) {
 	if C.exit {
 		time.Sleep(time.Second)
 		os.Exit(1)
@@ -81,7 +83,7 @@ func (C *CPU) exec(mem *Memory) {
 }
 
 func (C *CPU) initLanguage() {
-	Mnemonic = make(map[Byte]func(*Memory))
+	Mnemonic = make(map[globals.Byte]func(*mem.Memory))
 
 	Mnemonic[DMP] = C.op_DMP
 
@@ -201,19 +203,25 @@ func (C *CPU) initLanguage() {
 	Mnemonic[RTS] = C.op_RTS
 }
 
-func (C *CPU) run(mem *Memory) {
+func (C *CPU) Init(mem *mem.Memory) {
+	C.Cycle = make(chan bool, 1)
+	C.Display = false
+	C.ram = mem
+}
+
+func (C *CPU) Run() {
 	C.initLanguage()
-	if C.display {
-		C.initOutput(mem)
+	if C.Display {
+		C.initOutput(C.ram)
 	}
 
-	C.reset(mem)
-	mem.load0()
+	C.reset(C.ram)
+	C.load0(C.ram)
 
 	// for i := range mem.Screen {
 	// 	mem.Screen[i] = 0x39
 	// }
 	for {
-		C.exec(mem)
+		C.exec(C.ram)
 	}
 }

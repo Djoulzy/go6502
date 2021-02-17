@@ -1,7 +1,9 @@
-package main
+package cpu
 
 import (
 	"fmt"
+	"go6502/globals"
+	"go6502/mem"
 	"os"
 	"time"
 
@@ -9,7 +11,7 @@ import (
 	"github.com/nsf/termbox-go"
 )
 
-func (C *CPU) initOutput(mem *Memory) {
+func (C *CPU) initOutput(mem *mem.Memory) {
 	err := termbox.Init()
 	termbox.HideCursor()
 
@@ -37,7 +39,7 @@ func (C *CPU) initOutput(mem *Memory) {
 }
 
 // DisplayHub : Affiche l'etat du Hub
-func (C *CPU) refreshScreen(mem *Memory) {
+func (C *CPU) refreshScreen(mem *mem.Memory) {
 	t := time.Now()
 	status := fmt.Sprintf("%s", t.Format("15:04:05"))
 	tbprintf(1, 0, termbox.ColorDefault, termbox.ColorDefault, "%s", status)
@@ -46,7 +48,7 @@ func (C *CPU) refreshScreen(mem *Memory) {
 	cpt := 255
 	for y := 0; y < 16; y++ {
 		for x := 0; x < 16; x++ {
-			if Byte(cpt) == C.SP {
+			if globals.Byte(cpt) == C.SP {
 				tbprintf(50+x*3, y, termbox.ColorBlack, termbox.ColorWhite, "%02X", mem.Stack[cpt])
 			} else {
 				tbprintf(50+x*3, y, termbox.ColorDefault, termbox.ColorDefault, "%02X", mem.Stack[cpt])
