@@ -5,6 +5,9 @@ import (
 	"go6502/mem"
 )
 
+// https://stackoverflow.com/questions/46262435/indirect-y-indexed-addressing-mode-in-mos-6502
+// http://www.emulator101.com/6502-addressing-modes.html
+
 func (C *CPU) Indirect_index(mem *mem.Memory, y globals.Byte) globals.Word {
 	wordZP := C.fetchWord(mem) + globals.Word(y)
 	return wordZP
