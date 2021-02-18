@@ -36,6 +36,7 @@ func (m *Memory) Init() {
 	m.Data[0x25] = 0x20
 
 	m.Data[0x0310] = 0xEE
+	m.Data[0x2074] = 0xFF
 	m.loadCharGenRom("char.bin")
 }
 

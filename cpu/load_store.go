@@ -5,20 +5,6 @@ import (
 	"go6502/mem"
 )
 
-// https://stackoverflow.com/questions/46262435/indirect-y-indexed-addressing-mode-in-mos-6502
-// http://www.emulator101.com/6502-addressing-modes.html
-
-func (C *CPU) Indirect_index(mem *mem.Memory, y globals.Byte) globals.Word {
-	wordZP := C.fetchWord(mem) + globals.Word(y)
-	return wordZP
-}
-
-func (C *CPU) Indexed_indirect(mem *mem.Memory, x globals.Byte) globals.Word {
-	C.PC += globals.Word(x)
-	wordZP := C.fetchWord(mem)
-	return wordZP
-}
-
 //////////////////////////////////
 ///////////// LDA ////////////////
 //////////////////////////////////
@@ -69,16 +55,16 @@ func (C *CPU) op_LDA_ABY(mem *mem.Memory) {
 
 func (C *CPU) op_LDA_INX(mem *mem.Memory) {
 	C.opName = "LDA (ZP,X)"
-	// zpContent := mem.Data[C.fetchByte(mem) + C.X]
-	// finalAddr :=
-	// C.A = mem.Data[zpAddress]
-	// C.setNZStatus(C.A)
+	zpAddr := C.fetchByte(mem)
+	wordZP := C.Indexed_indirect_X(zpAddr, C.X)
+	C.A = mem.Data[wordZP]
+	C.setNZStatus(C.A)
 }
 
 func (C *CPU) op_LDA_INY(mem *mem.Memory) {
 	C.opName = "LDA (ZP),Y"
-	zpAddr := globals.Word(C.fetchByte(mem))
-	wordZP := C.readWord(zpAddr) + globals.Word(C.Y)
+	zpAddr := C.fetchByte(mem)
+	wordZP := C.Indirect_index_Y(zpAddr, C.Y)
 	C.A = mem.Data[wordZP]
 	C.setNZStatus(C.A)
 }
@@ -194,12 +180,16 @@ func (C *CPU) op_STA_ABY(mem *mem.Memory) {
 }
 
 func (C *CPU) op_STA_INX(mem *mem.Memory) {
-	C.opName = "ToDO"
+	C.opName = "STA (ZP,X)"
+	zpAddr := C.fetchByte(mem)
+	wordZP := C.Indexed_indirect_X(zpAddr, C.X)
+	mem.Data[wordZP] = C.A
 }
 
 func (C *CPU) op_STA_INY(mem *mem.Memory) {
 	C.opName = "STA (ZP),Y"
-	wordZP := C.fetchWord(mem) + globals.Word(C.Y)
+	zpAddr := C.fetchByte(mem)
+	wordZP := C.Indirect_index_Y(zpAddr, C.Y)
 	mem.Data[wordZP] = C.A
 }
 

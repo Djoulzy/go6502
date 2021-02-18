@@ -53,6 +53,25 @@ func (C *CPU) pullByteStack(mem *mem.Memory) globals.Byte {
 }
 
 //////////////////////////////////
+////// Addressage Indirect ///////
+//////////////////////////////////
+
+// https://stackoverflow.com/questions/46262435/indirect-y-indexed-addressing-mode-in-mos-6502
+// http://www.emulator101.com/6502-addressing-modes.html
+
+func (C *CPU) Indirect_index_Y(addr globals.Byte, y globals.Byte) globals.Word {
+	zpAddr := globals.Word(addr)
+	wordZP := C.readWord(zpAddr) + globals.Word(y)
+	return wordZP
+}
+
+func (C *CPU) Indexed_indirect_X(addr globals.Byte, x globals.Byte) globals.Word {
+	zpAddr := globals.Word(addr + x)
+	wordZP := C.readWord(zpAddr)
+	return wordZP
+}
+
+//////////////////////////////////
 /////// Memory Operations ////////
 //////////////////////////////////
 

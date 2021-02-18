@@ -84,8 +84,9 @@ func (C *CPU) op_CMP_ABY(mem *mem.Memory) {
 
 func (C *CPU) op_CMP_INX(mem *mem.Memory) {
 	C.opName = "CMP (ZP,X)"
-	zpAddress := C.fetchByte(mem) + C.X
-	value := mem.Data[zpAddress]
+	zpAddr := C.fetchByte(mem)
+	wordZP := C.Indexed_indirect_X(zpAddr, C.X)
+	value := mem.Data[wordZP]
 	C.setC(C.A, value)
 	res := C.A - value
 	C.setZ(res)
@@ -94,8 +95,9 @@ func (C *CPU) op_CMP_INX(mem *mem.Memory) {
 
 func (C *CPU) op_CMP_INY(mem *mem.Memory) {
 	C.opName = "CMP (ZP),Y"
-	zpAddress := C.fetchByte(mem)
-	value := mem.Data[zpAddress] + C.Y
+	zpAddr := C.fetchByte(mem)
+	wordZP := C.Indirect_index_Y(zpAddr, C.Y)
+	value := mem.Data[wordZP]
 	C.setC(C.A, value)
 	res := C.A - value
 	C.setZ(res)

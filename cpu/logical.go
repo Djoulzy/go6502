@@ -48,14 +48,16 @@ func (C *CPU) op_AND_ABY(mem *mem.Memory) {
 
 func (C *CPU) op_AND_INX(mem *mem.Memory) {
 	C.opName = "AND (ZP,X)"
-	zpAddress := C.fetchByte(mem) + C.X
-	C.A &= mem.Data[zpAddress]
+	zpAddr := C.fetchByte(mem)
+	wordZP := C.Indexed_indirect_X(zpAddr, C.X)
+	C.A &= mem.Data[wordZP]
 	C.setNZStatus(C.A)
 }
 
 func (C *CPU) op_AND_INY(mem *mem.Memory) {
 	C.opName = "AND (ZP),Y"
-	zpAddress := C.fetchByte(mem)
-	C.A &= mem.Data[zpAddress] + C.Y
+	zpAddr := C.fetchByte(mem)
+	wordZP := C.Indirect_index_Y(zpAddr, C.Y)
+	C.A &= mem.Data[wordZP]
 	C.setNZStatus(C.A)
 }

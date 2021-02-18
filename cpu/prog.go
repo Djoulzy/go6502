@@ -1,7 +1,6 @@
 package cpu
 
 import (
-	"go6502/globals"
 	"go6502/mem"
 )
 
@@ -55,45 +54,44 @@ func (C *CPU) load1(m *mem.Memory) {
 }
 
 func (C *CPU) load0(m *mem.Memory) {
-	line := globals.Word(0xFF00)
+	// line := globals.Word(0xFF00)
 
 	m.Data[0xFF00] = LDY_IM
 	m.Data[0xFF01] = 0x90
-	m.Data[0xFF02] = LDA_IM
+	m.Data[0xFF02] = LDA_INY
 	m.Data[0xFF03] = 0x00
 	m.Data[0xFF04] = BRK
-	m.Data[0xFF05] = BRK
 
-	m.String2screenCode(0xEE00, "12345")
+	// m.String2screenCode(0xEE00, "12345")
 
-	m.Data[line] = LDX_IM
-	line++
-	m.Data[line] = 0x00
-	line++
-	label := line
-	m.Data[line] = LDA_ABX
-	line++
-	m.Data[line] = 0x00
-	line++
-	m.Data[line] = 0xEE
-	line++
-	m.Data[line] = STA_ABX
-	line++
-	m.Data[line] = 0x90
-	line++
-	m.Data[line] = 0x05
-	line++
-	m.Data[line] = INX
-	line++
-	m.Data[line] = CPX_IM
-	line++
-	m.Data[line] = 0x05
-	line++
-	m.Data[line] = BNE
-	line++
-	m.Data[line] = globals.Byte(label)
-	line++
-	m.Data[line] = globals.Byte(label >> 8)
+	// m.Data[line] = LDX_IM
+	// line++
+	// m.Data[line] = 0x00
+	// line++
+	// label := line
+	// m.Data[line] = LDA_ABX
+	// line++
+	// m.Data[line] = 0x00
+	// line++
+	// m.Data[line] = 0xEE
+	// line++
+	// m.Data[line] = STA_ABX
+	// line++
+	// m.Data[line] = 0x90
+	// line++
+	// m.Data[line] = 0x05
+	// line++
+	// m.Data[line] = INX
+	// line++
+	// m.Data[line] = CPX_IM
+	// line++
+	// m.Data[line] = 0x05
+	// line++
+	// m.Data[line] = BNE
+	// line++
+	// m.Data[line] = globals.Byte(label)
+	// line++
+	// m.Data[line] = globals.Byte(label >> 8)
 
 	// line++
 	// m.Data[line] = DMP
@@ -102,10 +100,10 @@ func (C *CPU) load0(m *mem.Memory) {
 	// line++
 	// m.Data[line] = 0x05
 
-	line++
-	m.Data[line] = JMP_ABS // JMP $FF00
-	line++
-	m.Data[line] = 0x00
-	line++
-	m.Data[line] = 0xFF
+	// line++
+	// m.Data[line] = JMP_ABS // JMP $FF00
+	// line++
+	// m.Data[line] = 0x00
+	// line++
+	// m.Data[line] = 0xFF
 }
