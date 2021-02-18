@@ -53,8 +53,15 @@ func (C *CPU) pullByteStack(mem *mem.Memory) globals.Byte {
 }
 
 //////////////////////////////////
-/////// mem.Memory Operations ////////
+/////// Memory Operations ////////
 //////////////////////////////////
+
+func (C *CPU) readWord(addr globals.Word) globals.Word {
+	low := C.ram.Data[addr]
+	value := globals.Word(C.ram.Data[addr+1]) << 8
+	value += globals.Word(low)
+	return value
+}
 
 func (C *CPU) fetchWord(mem *mem.Memory) globals.Word {
 	low := C.fetchByte(mem)
@@ -203,9 +210,9 @@ func (C *CPU) initLanguage() {
 	Mnemonic[RTS] = C.op_RTS
 }
 
-func (C *CPU) Init(mem *mem.Memory) {
+func (C *CPU) Init(mem *mem.Memory, disp bool) {
 	C.Cycle = make(chan bool, 1)
-	C.Display = false
+	C.Display = disp
 	C.ram = mem
 }
 
@@ -218,9 +225,6 @@ func (C *CPU) Run() {
 	C.reset(C.ram)
 	C.load0(C.ram)
 
-	// for i := range mem.Screen {
-	// 	mem.Screen[i] = 0x39
-	// }
 	for {
 		C.exec(C.ram)
 	}

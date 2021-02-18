@@ -23,7 +23,7 @@ func main() {
 	// mem.dumpChar(0x2F)
 	// os.Exit(1)
 	cpu := cpu.CPU{}
-	cpu.Init(&mem)
+	cpu.Init(&mem, true)
 
 	vic := vic.VIC{}
 	vic.Init(&mem, cpu.Cycle)
@@ -33,7 +33,7 @@ func main() {
 	if cpu.Display {
 		for {
 			cpu.Cycle <- true
-			time.Sleep(time.Second)
+			time.Sleep(time.Second * 3)
 		}
 	}
 	vic.Run()

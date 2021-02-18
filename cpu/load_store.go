@@ -5,6 +5,17 @@ import (
 	"go6502/mem"
 )
 
+func (C *CPU) Indirect_index(mem *mem.Memory, y globals.Byte) globals.Word {
+	wordZP := C.fetchWord(mem) + globals.Word(y)
+	return wordZP
+}
+
+func (C *CPU) Indexed_indirect(mem *mem.Memory, x globals.Byte) globals.Word {
+	C.PC += globals.Word(x)
+	wordZP := C.fetchWord(mem)
+	return wordZP
+}
+
 //////////////////////////////////
 ///////////// LDA ////////////////
 //////////////////////////////////
@@ -55,15 +66,17 @@ func (C *CPU) op_LDA_ABY(mem *mem.Memory) {
 
 func (C *CPU) op_LDA_INX(mem *mem.Memory) {
 	C.opName = "LDA (ZP,X)"
-	zpAddress := C.fetchByte(mem) + C.X
-	C.A = mem.Data[zpAddress]
-	C.setNZStatus(C.A)
+	// zpContent := mem.Data[C.fetchByte(mem) + C.X]
+	// finalAddr :=
+	// C.A = mem.Data[zpAddress]
+	// C.setNZStatus(C.A)
 }
 
 func (C *CPU) op_LDA_INY(mem *mem.Memory) {
 	C.opName = "LDA (ZP),Y"
-	zpAddress := C.fetchByte(mem)
-	C.A = mem.Data[zpAddress] + C.Y
+	zpAddr := globals.Word(C.fetchByte(mem))
+	wordZP := C.readWord(zpAddr) + globals.Word(C.Y)
+	C.A = mem.Data[wordZP]
 	C.setNZStatus(C.A)
 }
 
@@ -182,7 +195,9 @@ func (C *CPU) op_STA_INX(mem *mem.Memory) {
 }
 
 func (C *CPU) op_STA_INY(mem *mem.Memory) {
-	C.opName = "ToDO"
+	C.opName = "STA (ZP),Y"
+	wordZP := C.fetchWord(mem) + globals.Word(C.Y)
+	mem.Data[wordZP] = C.A
 }
 
 //////////////////////////////////
