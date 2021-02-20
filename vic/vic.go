@@ -79,6 +79,7 @@ func (V *VIC) Init(mem *mem.Memory, cpuCycle chan bool) {
 
 func (V *VIC) Run() {
 	V.graph = &graphic.SDLDriver{}
+	// V.graph = &graphic.SDL2Driver{}
 
 	V.graph.Init(winWidth, winHeight)
 	defer func() {

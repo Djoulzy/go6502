@@ -23,7 +23,7 @@ func main() {
 	// mem.dumpChar(0x2F)
 	// os.Exit(1)
 	cpu := cpu.CPU{}
-	cpu.Init(&mem, true)
+	cpu.Init(&mem, false)
 
 	vic := vic.VIC{}
 	vic.Init(&mem, cpu.Cycle)

@@ -7,7 +7,7 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
-type SDLDriver struct {
+type SDL2Driver struct {
 	winHeight int
 	winWidth  int
 	window    *sdl.Window
@@ -16,32 +16,28 @@ type SDLDriver struct {
 	screen    []byte
 }
 
-func (S *SDLDriver) SetPixel(index int, c globals.RGB) {
-	S.screen[index] = byte(c.R)
-	S.screen[index+1] = byte(c.G)
-	S.screen[index+2] = byte(c.B)
+func (S *SDL2Driver) SetPixel(index int, c globals.RGB) {
 }
 
-func (S *SDLDriver) Draw8pixels(x, y int, fg_color, bg_color globals.RGB, value globals.Byte) {
-	index := (y*S.winWidth + x) * 3
+func (S *SDL2Driver) Draw8pixels(x, y int, fg_color, bg_color globals.RGB, value globals.Byte) {
 	for i := 0; i < 8; i++ {
-		base := index + (i * 3)
 		if value&(0x1<<(7-i)) > 0 {
-			S.SetPixel(base, fg_color)
+			S.renderer.SetDrawColor(uint8(fg_color.R), uint8(fg_color.G), uint8(fg_color.B), 255)
 		} else {
-			S.SetPixel(base, bg_color)
+			S.renderer.SetDrawColor(uint8(bg_color.R), uint8(bg_color.G), uint8(bg_color.B), 255)
 		}
+		S.renderer.DrawPoint(int32(x+i), int32(y))
 	}
 }
 
-func (S *SDLDriver) CloseAll() {
+func (S *SDL2Driver) CloseAll() {
 	S.window.Destroy()
 	S.renderer.Destroy()
 	S.texture.Destroy()
 	sdl.Quit()
 }
 
-func (S *SDLDriver) Init(winWidth, winHeight int) {
+func (S *SDL2Driver) Init(winWidth, winHeight int) {
 	S.winHeight = winHeight
 	S.winWidth = winWidth
 
@@ -64,18 +60,15 @@ func (S *SDLDriver) Init(winWidth, winHeight int) {
 		panic(err)
 	}
 
-	S.texture, err = S.renderer.CreateTexture(sdl.PIXELFORMAT_RGB24, sdl.TEXTUREACCESS_STATIC, int32(S.winWidth), int32(S.winHeight))
-	if err != nil {
-		panic(err)
-	}
+	// S.texture, err = S.renderer.CreateTexture(sdl.PIXELFORMAT_RGB24, sdl.TEXTUREACCESS_STATIC, int32(S.winWidth), int32(S.winHeight))
+	// if err != nil {
+	// 	panic(err)
+	// }
 
 	S.screen = make([]byte, S.winWidth*S.winHeight*3)
 }
 
-func (S *SDLDriver) DisplayFrame() {
-
-	S.texture.Update(nil, S.screen, S.winWidth*3)
-	S.renderer.Copy(S.texture, nil, nil)
+func (S *SDL2Driver) DisplayFrame() {
 	S.renderer.Present()
 
 	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
@@ -84,5 +77,4 @@ func (S *SDLDriver) DisplayFrame() {
 			os.Exit(1)
 		}
 	}
-
 }
