@@ -227,6 +227,14 @@ func (C *CPU) initLanguage() {
 	Mnemonic[JMP_IND] = C.op_JMP_IND
 	Mnemonic[JSR] = C.op_JSR
 	Mnemonic[RTS] = C.op_RTS
+
+	Mnemonic[CLC] = C.op_CLC
+	Mnemonic[CLD] = C.op_CLD
+	Mnemonic[CLI] = C.op_CLI
+	Mnemonic[CLV] = C.op_CLV
+	Mnemonic[SEC] = C.op_SEC
+	Mnemonic[SED] = C.op_SED
+	Mnemonic[SEI] = C.op_SEI
 }
 
 func (C *CPU) Init(mem *mem.Memory, disp bool) {

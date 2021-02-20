@@ -60,14 +60,15 @@ func (C *CPU) load0(m *mem.Memory) {
 	// m.Data[0xFF01] = 0x90
 	// m.Data[0xFF02] = LDA_INY
 	// m.Data[0xFF03] = 0x00
-	m.Data[0xFF00] = LDA_IM
-	m.Data[0xFF01] = 0xd0
-	m.Data[0xFF02] = ADC_IM
-	m.Data[0xFF03] = 0xd0
-	m.Data[0xFF04] = BRK
-	// m.Data[0xFF04] = JMP_ABS // JMP $FF00
-	// m.Data[0xFF05] = 0x00
-	// m.Data[0xFF06] = 0xFF
+	// m.Data[0xFF02] = SEC
+	m.Data[0xFF03] = LDA_IM
+	m.Data[0xFF04] = 0x50
+	m.Data[0xFF05] = SBC_IM
+	m.Data[0xFF06] = 0xF0
+	m.Data[0xFF07] = BRK
+	m.Data[0xFF08] = JMP_ABS // JMP $FF00
+	m.Data[0xFF09] = 0x00
+	m.Data[0xFF10] = 0xFF
 
 	// m.String2screenCode(0xEE00, "12345")
 

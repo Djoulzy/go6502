@@ -6,14 +6,12 @@ import (
 )
 
 func (C *CPU) op_ADC_IM(mem *mem.Memory) {
-	C.opName = "ToDO"
+	C.opName = "ADC Im"
 	value := C.fetchByte(mem)
-	C.setV(C.A, value)
-	if C.testC() {
-		C.A += 1
-	}
-	C.setC(globals.Word(C.A)+globals.Word(value) > 255)
-	C.A += value
+	result := globals.Word(C.A) + globals.Word(value) + globals.Word(C.testC())
+	C.setC(result > 0x0FF)
+	C.setV(C.A, value, globals.Byte(result))
+	C.A = globals.Byte(result)
 	C.setNZStatus(C.A)
 }
 
@@ -31,7 +29,16 @@ func (C *CPU) op_ADC_INY(mem *mem.Memory) {
 	C.opName = "ToDO"
 }
 
-func (C *CPU) op_SBC_IM(mem *mem.Memory)  { C.opName = "ToDO" }
+func (C *CPU) op_SBC_IM(mem *mem.Memory) {
+	C.opName = "SBC Im"
+	value := C.fetchByte(mem)
+	result := globals.Word(C.A) - globals.Word(value) - globals.Word(C.testC())
+	C.setC(result > 0x0FF)
+	C.setV(C.A, value, globals.Byte(result))
+	C.A = globals.Byte(result)
+	C.setNZStatus(C.A)
+}
+
 func (C *CPU) op_SBC_ZP(mem *mem.Memory)  { C.opName = "ToDO" }
 func (C *CPU) op_SBC_ZPX(mem *mem.Memory) { C.opName = "ToDO" }
 func (C *CPU) op_SBC_ABS(mem *mem.Memory) { C.opName = "ToDO" }

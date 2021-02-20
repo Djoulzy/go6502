@@ -1,6 +1,9 @@
 package cpu
 
-import "go6502/globals"
+import (
+	"go6502/globals"
+	"go6502/mem"
+)
 
 func (C *CPU) setN(register globals.Byte) {
 	if register&0b10000000 > 0 {
@@ -26,8 +29,11 @@ func (C *CPU) setC(on bool) {
 	}
 }
 
-func (C *CPU) testC() bool {
-	return C.S & ^C_mask > 0
+func (C *CPU) testC() globals.Byte {
+	if C.S & ^C_mask > 0 {
+		return 0x01
+	}
+	return 0x00
 }
 
 func (C *CPU) setNZStatus(register globals.Byte) {
@@ -39,19 +45,27 @@ func (C *CPU) testZ() bool {
 	return C.S & ^Z_mask > 0
 }
 
-func (C *CPU) setV(m, n globals.Byte) {
-	// c6 := (m & 0b01000000) & (n & 0b01000000)
-	// m7 := m & 0b10000000
-	// n7 := n & 0b10000000
-	// if ((^m7 & ^n7 & c6) | (m7 & n7 & ^c6)) == 0 {
-	// 	C.S &= V_mask
-	// } else {
-	// 	C.S |= ^V_mask
-	// }
-	result := m + n
+func (C *CPU) setV(m, n, result globals.Byte) {
 	if (m^result)&(n^result)&0x80 != 0 {
 		C.S |= ^V_mask
 	} else {
 		C.S &= V_mask
 	}
 }
+
+func (C *CPU) op_CLC(mem *mem.Memory) {
+	C.opName = "CLC"
+	C.setC(false)
+}
+
+func (C *CPU) op_CLD(mem *mem.Memory) { C.opName = "ToDO" }
+func (C *CPU) op_CLI(mem *mem.Memory) { C.opName = "ToDO" }
+func (C *CPU) op_CLV(mem *mem.Memory) { C.opName = "ToDO" }
+
+func (C *CPU) op_SEC(mem *mem.Memory) {
+	C.opName = "SEC"
+	C.setC(true)
+}
+
+func (C *CPU) op_SED(mem *mem.Memory) { C.opName = "ToDO" }
+func (C *CPU) op_SEI(mem *mem.Memory) { C.opName = "ToDO" }

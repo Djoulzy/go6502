@@ -17,9 +17,9 @@ func (m *Memory) Init() {
 	m.Vic[2] = m.Data[0x8000:0xBFFF]
 	m.Vic[3] = m.Data[0xC000:0xFFFF]
 
-	// for i := range m.Data {
-	// 	m.Data[i] =
-	// }
+	for i := range m.Data {
+		m.Data[i] = 0xEA
+	}
 	// for i := range m.Color {
 	// 	m.Color[i] = Lightblue
 	// }
