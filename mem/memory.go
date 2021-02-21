@@ -20,23 +20,18 @@ func (m *Memory) Init() {
 	for i := range m.Data {
 		m.Data[i] = 0xEA
 	}
-	// for i := range m.Color {
-	// 	m.Color[i] = Lightblue
-	// }
+	cpt := 0
+	for i := range m.Color {
+		m.Color[i] = globals.Byte(cpt)
+		cpt++
+		if cpt > 15 {
+			cpt = 0
+		}
+	}
 	for i := range m.Screen {
-		m.Screen[i] = 0x60
+		m.Screen[i] = globals.Byte(i)
 	}
 
-	m.Data[0x00] = 0x80
-	m.Data[0x01] = 0x02
-	m.Data[0x02] = 0xF3
-	m.Data[0x03] = 0x00
-	m.Data[0x04] = 0x03
-	m.Data[0x24] = 0x74
-	m.Data[0x25] = 0x20
-
-	m.Data[0x0310] = 0xEE
-	m.Data[0x2074] = 0xFF
 	m.loadCharGenRom("char.bin")
 }
 

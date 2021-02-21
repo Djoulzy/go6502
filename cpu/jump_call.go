@@ -1,6 +1,8 @@
 package cpu
 
-import "go6502/mem"
+import (
+	"go6502/mem"
+)
 
 func (C *CPU) op_JMP_ABS(mem *mem.Memory) {
 	C.opName = "JMP Abs"
@@ -9,7 +11,9 @@ func (C *CPU) op_JMP_ABS(mem *mem.Memory) {
 }
 
 func (C *CPU) op_JMP_IND(mem *mem.Memory) {
-
+	C.opName = "JMP Ind"
+	address := C.fetchWord(mem)
+	C.PC = C.readWord(address)
 }
 
 func (C *CPU) op_JSR(mem *mem.Memory) {

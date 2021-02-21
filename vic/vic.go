@@ -61,7 +61,7 @@ func (V *VIC) isVisibleArea(x, y int) bool {
 	return false
 }
 
-func (V *VIC) drawgByte(beamX, beamY int) {
+func (V *VIC) drawByte(beamX, beamY int) {
 	if V.isVisibleArea(beamX, beamY) {
 		charColor := globals.Byte(V.Buffer[beamX-visibleFirstCol] >> 8)
 		charAddr := globals.Byte(V.Buffer[beamX-visibleFirstCol])
@@ -83,7 +83,6 @@ func (V *VIC) Run() {
 
 	V.graph.Init(winWidth, winHeight)
 	defer func() {
-		V.ram.Dump(0x0590)
 		V.graph.CloseAll()
 	}()
 
@@ -123,7 +122,7 @@ func (V *VIC) Run() {
 					if VBlank || HBlank {
 						V.graph.Draw8pixels(beamX*8, beamY, Colors[Black], Colors[Black], globals.Byte(0xFF))
 					} else {
-						V.drawgByte(beamX, beamY)
+						V.drawByte(beamX, beamY)
 					}
 					V.cpuCycle <- true
 				}

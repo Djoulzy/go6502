@@ -33,7 +33,7 @@ func main() {
 	if cpu.Display {
 		for {
 			cpu.Cycle <- true
-			time.Sleep(time.Second * 3)
+			time.Sleep(time.Second)
 		}
 	}
 	vic.Run()

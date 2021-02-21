@@ -31,8 +31,8 @@ func (C *CPU) op_ADC_INY(mem *mem.Memory) {
 
 func (C *CPU) op_SBC_IM(mem *mem.Memory) {
 	C.opName = "SBC Im"
-	value := C.fetchByte(mem)
-	result := globals.Word(C.A) - globals.Word(value) - globals.Word(C.testC())
+	value := ^C.fetchByte(mem)
+	result := globals.Word(C.A) + globals.Word(value) + globals.Word(C.testC())
 	C.setC(result > 0x0FF)
 	C.setV(C.A, value, globals.Byte(result))
 	C.A = globals.Byte(result)
