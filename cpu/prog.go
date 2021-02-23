@@ -61,14 +61,142 @@ func (C *CPU) load0(m *mem.Memory) {
 	// m.Data[0xFF02] = LDA_INY
 	// m.Data[0xFF03] = 0x00
 	// m.Data[0xFF02] = SEC
-	m.Data[0xFF03] = LDA_IM
-	m.Data[0xFF04] = 0x50
-	m.Data[0xFF05] = SBC_IM
-	m.Data[0xFF06] = 0xf0
+
+	// ADC Test
+	// m.Data[line] = LDA_IM
+	// line++
+	// m.Data[line] = 0x50
+	// line++
+	// m.Data[line] = ADC_IM
+	// line++
+	// m.Data[line] = 0x10
+	// line++
+	// m.Data[line] = SHW
+	// line++
+	// m.Data[line] = LDA_IM
+	// line++
+	// m.Data[line] = 0x50
+	// line++
+	// m.Data[line] = ADC_IM
+	// line++
+	// m.Data[line] = 0x50
+	// line++
+	// m.Data[line] = SHW
+	// line++
+	// m.Data[line] = LDA_IM
+	// line++
+	// m.Data[line] = 0x50
+	// line++
+	// m.Data[line] = ADC_IM
+	// line++
+	// m.Data[line] = 0x90
+	// line++
+	// m.Data[line] = SHW
+	// line++
+	// m.Data[line] = LDA_IM
+	// line++
+	// m.Data[line] = 0x50
+	// line++
+	// m.Data[line] = ADC_IM
+	// line++
+	// m.Data[line] = 0xd0
+	// line++
+	// m.Data[line] = SHW
+	// line++
+	// // m.Data[0xFF07] = BRK
+	// m.Data[line] = LDA_IM
+	// line++
+	// m.Data[line] = 0xd0
+	// line++
+	// m.Data[line] = ADC_IM
+	// line++
+	// m.Data[line] = 0x10
+	// line++
+	// m.Data[line] = SHW
+	// line++
+	// m.Data[line] = LDA_IM
+	// line++
+	// m.Data[line] = 0xd0
+	// line++
+	// m.Data[line] = ADC_IM
+	// line++
+	// m.Data[line] = 0x50
+	// line++
+	// m.Data[line] = SHW
+	// line++
+	// m.Data[line] = LDA_IM
+	// line++
+	// m.Data[line] = 0xd0
+	// line++
+	// m.Data[line] = ADC_IM
+	// line++
+	// m.Data[line] = 0x90
+	// line++
+	// m.Data[line] = SHW
+	// line++
+	// m.Data[line] = LDA_IM
+	// line++
+	// m.Data[line] = 0xd0
+	// line++
+	// m.Data[line] = ADC_IM
+	// line++
+	// m.Data[line] = 0xd0
+	// line++
+	// m.Data[line] = SHW
+	// line++
+
+	// // SBC Test
+	// m.Data[line] = CLC
+	// line++
+	// m.Data[line] = LDA_IM
+	// line++
+	// m.Data[line] = 0x50
+	// line++
+	// m.Data[line] = SBC_IM
+	// line++
+	// m.Data[line] = 0xf0
+	// line++
+	// m.Data[line] = SHW
+	// line++
+	// m.Data[line] = LDA_IM
+	// line++
+	// m.Data[line] = 0x50
+	// line++
+	// m.Data[line] = SBC_IM
+	// line++
+	// m.Data[line] = 0xb0
+	// line++
+	// m.Data[line] = SHW
+	// line++
+	// m.Data[line] = LDA_IM
+	// line++
+	// m.Data[line] = 0x50
+	// line++
+	// m.Data[line] = SBC_IM
+	// line++
+	// m.Data[line] = 0x70
+	// line++
+	// m.Data[line] = SHW
+	// line++
+	// m.Data[line] = LDA_IM
+	// line++
+	// m.Data[line] = 0x50
+	// line++
+	// m.Data[line] = SBC_IM
+	// line++
+	// m.Data[line] = 0x30
+	// line++
+	// m.Data[line] = SHW
+	// line++
 	// m.Data[0xFF07] = BRK
-	m.Data[0xFF08] = JMP_ABS // JMP $FF00
-	m.Data[0xFF09] = 0x00
-	m.Data[0xFF0A] = 0xFF
+
+	// label := line
+	// m.Data[line] = JMP_ABS // JMP $FF00
+	// line++
+	// m.Data[line] = globals.Byte(label)
+	// line++
+	// m.Data[line] = globals.Byte(label >> 8)
+	// line++
 
 	// m.String2screenCode(0xEE00, "12345")
 

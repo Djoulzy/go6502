@@ -3,9 +3,11 @@
 package main
 
 import (
+	"go6502/assembler"
 	"go6502/cpu"
 	"go6502/mem"
 	"go6502/vic"
+	"os"
 	"runtime"
 	"time"
 )
@@ -17,6 +19,8 @@ func init() {
 }
 
 func main() {
+	args := os.Args
+
 	mem := mem.Memory{}
 	mem.Init()
 
@@ -24,6 +28,12 @@ func main() {
 	// os.Exit(1)
 	cpu := cpu.CPU{}
 	cpu.Init(&mem, false)
+
+	if len(args) > 1 {
+		ass := assembler.Assembler{}
+		ass.Init(&mem)
+		cpu.PC, _ = ass.ReadCode(args[1])
+	}
 
 	vic := vic.VIC{}
 	vic.Init(&mem, cpu.Cycle)

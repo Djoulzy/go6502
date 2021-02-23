@@ -108,150 +108,163 @@ func (C *CPU) exec(mem *mem.Memory) {
 	Mnemonic[opCode](mem)
 }
 
+//////////////////////////////////
+//////////// Language ////////////
+//////////////////////////////////
+
+// func (C *CPU) CheckMnemonic(code string) {
+// 	test := Mnemonic[code]
+// }
+
 func (C *CPU) initLanguage() {
 	Mnemonic = make(map[globals.Byte]func(*mem.Memory))
 
-	Mnemonic[DMP] = C.op_DMP
+	Mnemonic[CodeAddr["SHW"]] = C.op_SHW
+	Mnemonic[CodeAddr["DMP"]] = C.op_DMP
 
-	Mnemonic[NOP] = C.op_NOP
-	Mnemonic[BRK] = C.op_BRK
+	Mnemonic[CodeAddr["NOP"]] = C.op_NOP
+	Mnemonic[CodeAddr["BRK"]] = C.op_BRK
 
-	Mnemonic[INC_ZP] = C.op_INC_ZP
-	Mnemonic[INC_ZPX] = C.op_INC_ZPX
-	Mnemonic[INC_ABS] = C.op_INC_ABS
-	Mnemonic[INC_ABX] = C.op_INC_ABX
-	Mnemonic[INX] = C.op_INX
-	Mnemonic[INY] = C.op_INY
-	Mnemonic[DEC_ZP] = C.op_DEC_ZP
-	Mnemonic[DEC_ZPX] = C.op_DEC_ZPX
-	Mnemonic[DEC_ABS] = C.op_DEC_ABS
-	Mnemonic[DEC_ABX] = C.op_DEC_ABX
-	Mnemonic[DEX] = C.op_DEX
-	Mnemonic[DEY] = C.op_DEY
+	Mnemonic[CodeAddr["INC_ZP"]] = C.op_INC_ZP
+	Mnemonic[CodeAddr["INC_ZPX"]] = C.op_INC_ZPX
+	Mnemonic[CodeAddr["INC_ABS"]] = C.op_INC_ABS
+	Mnemonic[CodeAddr["INC_ABX"]] = C.op_INC_ABX
+	Mnemonic[CodeAddr["INX"]] = C.op_INX
+	Mnemonic[CodeAddr["INY"]] = C.op_INY
+	Mnemonic[CodeAddr["DEC_ZP"]] = C.op_DEC_ZP
+	Mnemonic[CodeAddr["DEC_ZPX"]] = C.op_DEC_ZPX
+	Mnemonic[CodeAddr["DEC_ABS"]] = C.op_DEC_ABS
+	Mnemonic[CodeAddr["DEC_ABX"]] = C.op_DEC_ABX
+	Mnemonic[CodeAddr["DEX"]] = C.op_DEX
+	Mnemonic[CodeAddr["DEY"]] = C.op_DEY
 
-	Mnemonic[ADC_IM] = C.op_ADC_IM
-	Mnemonic[ADC_ZP] = C.op_ADC_ZP
-	Mnemonic[ADC_ZPX] = C.op_ADC_ZPX
-	Mnemonic[ADC_ABS] = C.op_ADC_ABS
-	Mnemonic[ADC_ABX] = C.op_ADC_ABX
-	Mnemonic[ADC_ABY] = C.op_ADC_ABY
-	Mnemonic[ADC_INX] = C.op_ADC_INX
-	Mnemonic[ADC_INY] = C.op_ADC_INY
+	Mnemonic[CodeAddr["ADC_IM"]] = C.op_ADC_IM
+	Mnemonic[CodeAddr["ADC_ZP"]] = C.op_ADC_ZP
+	Mnemonic[CodeAddr["ADC_ZPX"]] = C.op_ADC_ZPX
+	Mnemonic[CodeAddr["ADC_ABS"]] = C.op_ADC_ABS
+	Mnemonic[CodeAddr["ADC_ABX"]] = C.op_ADC_ABX
+	Mnemonic[CodeAddr["ADC_ABY"]] = C.op_ADC_ABY
+	Mnemonic[CodeAddr["ADC_INX"]] = C.op_ADC_INX
+	Mnemonic[CodeAddr["ADC_INY"]] = C.op_ADC_INY
 
-	Mnemonic[SBC_IM] = C.op_SBC_IM
-	Mnemonic[SBC_ZP] = C.op_SBC_ZP
-	Mnemonic[SBC_ZPX] = C.op_SBC_ZPX
-	Mnemonic[SBC_ABS] = C.op_SBC_ABS
-	Mnemonic[SBC_ABX] = C.op_SBC_ABX
-	Mnemonic[SBC_ABY] = C.op_SBC_ABY
-	Mnemonic[SBC_INX] = C.op_SBC_INX
-	Mnemonic[SBC_INY] = C.op_SBC_INY
+	Mnemonic[CodeAddr["SBC_IM"]] = C.op_SBC_IM
+	Mnemonic[CodeAddr["SBC_ZP"]] = C.op_SBC_ZP
+	Mnemonic[CodeAddr["SBC_ZPX"]] = C.op_SBC_ZPX
+	Mnemonic[CodeAddr["SBC_ABS"]] = C.op_SBC_ABS
+	Mnemonic[CodeAddr["SBC_ABX"]] = C.op_SBC_ABX
+	Mnemonic[CodeAddr["SBC_ABY"]] = C.op_SBC_ABY
+	Mnemonic[CodeAddr["SBC_INX"]] = C.op_SBC_INX
+	Mnemonic[CodeAddr["SBC_INY"]] = C.op_SBC_INY
 
-	Mnemonic[CMP_IM] = C.op_CMP_IM
-	Mnemonic[CMP_ZP] = C.op_CMP_ZP
-	Mnemonic[CMP_ZPX] = C.op_CMP_ZPX
-	Mnemonic[CMP_ABS] = C.op_CMP_ABS
-	Mnemonic[CMP_ABX] = C.op_CMP_ABX
-	Mnemonic[CMP_ABY] = C.op_CMP_ABY
-	Mnemonic[CMP_INX] = C.op_CMP_INX
-	Mnemonic[CMP_INY] = C.op_CMP_INY
+	Mnemonic[CodeAddr["CMP_IM"]] = C.op_CMP_IM
+	Mnemonic[CodeAddr["CMP_ZP"]] = C.op_CMP_ZP
+	Mnemonic[CodeAddr["CMP_ZPX"]] = C.op_CMP_ZPX
+	Mnemonic[CodeAddr["CMP_ABS"]] = C.op_CMP_ABS
+	Mnemonic[CodeAddr["CMP_ABX"]] = C.op_CMP_ABX
+	Mnemonic[CodeAddr["CMP_ABY"]] = C.op_CMP_ABY
+	Mnemonic[CodeAddr["CMP_INX"]] = C.op_CMP_INX
+	Mnemonic[CodeAddr["CMP_INY"]] = C.op_CMP_INY
 
-	Mnemonic[CPX_IM] = C.op_CPX_IM
-	Mnemonic[CPX_ZP] = C.op_CPX_ZP
-	Mnemonic[CPX_ABS] = C.op_CPX_ABS
+	Mnemonic[CodeAddr["CPX_IM"]] = C.op_CPX_IM
+	Mnemonic[CodeAddr["CPX_ZP"]] = C.op_CPX_ZP
+	Mnemonic[CodeAddr["CPX_ABS"]] = C.op_CPX_ABS
 
-	Mnemonic[CPY_IM] = C.op_CPY_IM
-	Mnemonic[CPY_ZP] = C.op_CPY_ZP
-	Mnemonic[CPY_ABS] = C.op_CPY_ABS
+	Mnemonic[CodeAddr["CPY_IM"]] = C.op_CPY_IM
+	Mnemonic[CodeAddr["CPY_ZP"]] = C.op_CPY_ZP
+	Mnemonic[CodeAddr["CPY_ABS"]] = C.op_CPY_ABS
 
-	Mnemonic[BCC] = C.op_BCC
-	Mnemonic[BCS] = C.op_BCS
-	Mnemonic[BEQ] = C.op_BEQ
-	Mnemonic[BMI] = C.op_BMI
-	Mnemonic[BNE] = C.op_BNE
-	Mnemonic[BPL] = C.op_BPL
-	Mnemonic[BVC] = C.op_BVC
-	Mnemonic[BVS] = C.op_BVS
+	Mnemonic[CodeAddr["BCC"]] = C.op_BCC
+	Mnemonic[CodeAddr["BCS"]] = C.op_BCS
+	Mnemonic[CodeAddr["BEQ"]] = C.op_BEQ
+	Mnemonic[CodeAddr["BMI"]] = C.op_BMI
+	Mnemonic[CodeAddr["BNE"]] = C.op_BNE
+	Mnemonic[CodeAddr["BPL"]] = C.op_BPL
+	Mnemonic[CodeAddr["BVC"]] = C.op_BVC
+	Mnemonic[CodeAddr["BVS"]] = C.op_BVS
 
-	Mnemonic[LDA_IM] = C.op_LDA_IM
-	Mnemonic[LDA_ZP] = C.op_LDA_ZP
-	Mnemonic[LDA_ZPX] = C.op_LDA_ZPX
-	Mnemonic[LDA_INX] = C.op_LDA_INX
-	Mnemonic[LDA_INY] = C.op_LDA_INY
-	Mnemonic[LDA_ABS] = C.op_LDA_ABS
-	Mnemonic[LDA_ABX] = C.op_LDA_ABX
-	Mnemonic[LDA_ABY] = C.op_LDA_ABY
+	Mnemonic[CodeAddr["LDA_IM"]] = C.op_LDA_IM
+	Mnemonic[CodeAddr["LDA_ZP"]] = C.op_LDA_ZP
+	Mnemonic[CodeAddr["LDA_ZPX"]] = C.op_LDA_ZPX
+	Mnemonic[CodeAddr["LDA_INX"]] = C.op_LDA_INX
+	Mnemonic[CodeAddr["LDA_INY"]] = C.op_LDA_INY
+	Mnemonic[CodeAddr["LDA_ABS"]] = C.op_LDA_ABS
+	Mnemonic[CodeAddr["LDA_ABX"]] = C.op_LDA_ABX
+	Mnemonic[CodeAddr["LDA_ABY"]] = C.op_LDA_ABY
 
-	Mnemonic[LDX_IM] = C.op_LDX_IM
-	Mnemonic[LDX_ZP] = C.op_LDX_ZP
-	Mnemonic[LDX_ZPY] = C.op_LDX_ZPY
-	Mnemonic[LDX_ABS] = C.op_LDX_ABS
-	Mnemonic[LDX_ABY] = C.op_LDX_ABY
+	Mnemonic[CodeAddr["LDX_IM"]] = C.op_LDX_IM
+	Mnemonic[CodeAddr["LDX_ZP"]] = C.op_LDX_ZP
+	Mnemonic[CodeAddr["LDX_ZPY"]] = C.op_LDX_ZPY
+	Mnemonic[CodeAddr["LDX_ABS"]] = C.op_LDX_ABS
+	Mnemonic[CodeAddr["LDX_ABY"]] = C.op_LDX_ABY
 
-	Mnemonic[LDY_IM] = C.op_LDY_IM
-	Mnemonic[LDY_ZP] = C.op_LDY_ZP
-	Mnemonic[LDY_ZPX] = C.op_LDY_ZPX
-	Mnemonic[LDY_ABS] = C.op_LDY_ABS
-	Mnemonic[LDY_ABX] = C.op_LDY_ABX
+	Mnemonic[CodeAddr["LDY_IM"]] = C.op_LDY_IM
+	Mnemonic[CodeAddr["LDY_ZP"]] = C.op_LDY_ZP
+	Mnemonic[CodeAddr["LDY_ZPX"]] = C.op_LDY_ZPX
+	Mnemonic[CodeAddr["LDY_ABS"]] = C.op_LDY_ABS
+	Mnemonic[CodeAddr["LDY_ABX"]] = C.op_LDY_ABX
 
-	Mnemonic[STA_ZP] = C.op_STA_ZP
-	Mnemonic[STA_ZPX] = C.op_STA_ZPX
-	Mnemonic[STA_INX] = C.op_STA_INX
-	Mnemonic[STA_INY] = C.op_STA_INY
-	Mnemonic[STA_ABS] = C.op_STA_ABS
-	Mnemonic[STA_ABX] = C.op_STA_ABX
-	Mnemonic[STA_ABY] = C.op_STA_ABY
+	Mnemonic[CodeAddr["STA_ZP"]] = C.op_STA_ZP
+	Mnemonic[CodeAddr["STA_ZPX"]] = C.op_STA_ZPX
+	Mnemonic[CodeAddr["STA_INX"]] = C.op_STA_INX
+	Mnemonic[CodeAddr["STA_INY"]] = C.op_STA_INY
+	Mnemonic[CodeAddr["STA_ABS"]] = C.op_STA_ABS
+	Mnemonic[CodeAddr["STA_ABX"]] = C.op_STA_ABX
+	Mnemonic[CodeAddr["STA_ABY"]] = C.op_STA_ABY
 
-	Mnemonic[STX_ZP] = C.op_STX_ZP
-	Mnemonic[STX_ZPY] = C.op_STX_ZPY
-	Mnemonic[STX_ABS] = C.op_STX_ABS
+	Mnemonic[CodeAddr["STX_ZP"]] = C.op_STX_ZP
+	Mnemonic[CodeAddr["STX_ZPY"]] = C.op_STX_ZPY
+	Mnemonic[CodeAddr["STX_ABS"]] = C.op_STX_ABS
 
-	Mnemonic[STY_ZP] = C.op_STY_ZP
-	Mnemonic[STY_ZPX] = C.op_STY_ZPX
-	Mnemonic[STY_ABS] = C.op_STY_ABS
+	Mnemonic[CodeAddr["STY_ZP"]] = C.op_STY_ZP
+	Mnemonic[CodeAddr["STY_ZPX"]] = C.op_STY_ZPX
+	Mnemonic[CodeAddr["STY_ABS"]] = C.op_STY_ABS
 
-	Mnemonic[AND_IM] = C.op_AND_IM
-	Mnemonic[AND_ZP] = C.op_AND_ZP
-	Mnemonic[AND_ZPX] = C.op_AND_ZPX
-	Mnemonic[AND_ABS] = C.op_AND_ABS
-	Mnemonic[AND_ABX] = C.op_AND_ABX
-	Mnemonic[AND_ABY] = C.op_AND_ABY
-	Mnemonic[AND_INX] = C.op_AND_INX
-	Mnemonic[AND_INY] = C.op_AND_INY
+	Mnemonic[CodeAddr["AND_IM"]] = C.op_AND_IM
+	Mnemonic[CodeAddr["AND_ZP"]] = C.op_AND_ZP
+	Mnemonic[CodeAddr["AND_ZPX"]] = C.op_AND_ZPX
+	Mnemonic[CodeAddr["AND_ABS"]] = C.op_AND_ABS
+	Mnemonic[CodeAddr["AND_ABX"]] = C.op_AND_ABX
+	Mnemonic[CodeAddr["AND_ABY"]] = C.op_AND_ABY
+	Mnemonic[CodeAddr["AND_INX"]] = C.op_AND_INX
+	Mnemonic[CodeAddr["AND_INY"]] = C.op_AND_INY
 
-	Mnemonic[TXS] = C.op_TXS
-	Mnemonic[PHA] = C.op_PHA
-	Mnemonic[PLA] = C.op_PLA
+	Mnemonic[CodeAddr["TXS"]] = C.op_TXS
+	Mnemonic[CodeAddr["PHA"]] = C.op_PHA
+	Mnemonic[CodeAddr["PLA"]] = C.op_PLA
 
-	Mnemonic[JMP_ABS] = C.op_JMP_ABS
-	Mnemonic[JMP_IND] = C.op_JMP_IND
-	Mnemonic[JSR] = C.op_JSR
-	Mnemonic[RTS] = C.op_RTS
+	Mnemonic[CodeAddr["TAX"]] = C.op_TAX
+	Mnemonic[CodeAddr["TAY"]] = C.op_TAY
+	Mnemonic[CodeAddr["TXA"]] = C.op_TXA
+	Mnemonic[CodeAddr["TYA"]] = C.op_TYA
 
-	Mnemonic[CLC] = C.op_CLC
-	Mnemonic[CLD] = C.op_CLD
-	Mnemonic[CLI] = C.op_CLI
-	Mnemonic[CLV] = C.op_CLV
-	Mnemonic[SEC] = C.op_SEC
-	Mnemonic[SED] = C.op_SED
-	Mnemonic[SEI] = C.op_SEI
+	Mnemonic[CodeAddr["JMP_ABS"]] = C.op_JMP_ABS
+	Mnemonic[CodeAddr["JMP_IND"]] = C.op_JMP_IND
+	Mnemonic[CodeAddr["JSR"]] = C.op_JSR
+	Mnemonic[CodeAddr["RTS"]] = C.op_RTS
+
+	Mnemonic[CodeAddr["CLC"]] = C.op_CLC
+	Mnemonic[CodeAddr["CLD"]] = C.op_CLD
+	Mnemonic[CodeAddr["CLI"]] = C.op_CLI
+	Mnemonic[CodeAddr["CLV"]] = C.op_CLV
+	Mnemonic[CodeAddr["SEC"]] = C.op_SEC
+	Mnemonic[CodeAddr["SED"]] = C.op_SED
+	Mnemonic[CodeAddr["SEI"]] = C.op_SEI
 }
 
 func (C *CPU) Init(mem *mem.Memory, disp bool) {
 	C.Cycle = make(chan bool, 1)
 	C.Display = disp
 	C.ram = mem
-}
 
-func (C *CPU) Run() {
 	C.initLanguage()
 	if C.Display {
 		C.initOutput(C.ram)
 	}
 
 	C.reset(C.ram)
-	C.load0(C.ram)
+}
 
+func (C *CPU) Run() {
 	for {
 		C.exec(C.ram)
 	}
