@@ -15,7 +15,7 @@ import (
 const (
 	startMem = `\s*\*\s*=\s*#?\$(\w{4})`
 	cmdLine  = `^(?:([a-zA-Z]\w+:)\s*)?(?:(?:(\w+)\s*)?([^\s;]*)?\s*(?:;.*)?)?$`
-	addrMode = `^(\(?)(?:(#?\$?[0-9a-fA-F]{2}|#?\$?[0-9a-fA-F]{4})|([a-zA-Z]\w+))(,[XYxy]|,[Xx]\)|\),[Yy]|\))?$`
+	addrMode = `^(\(?)(?:#?\$?([0-9a-fA-F]{2}|[0-9a-fA-F]{4})|([a-zA-Z]\w+))(,[XYxy]|,[Xx]\)|\),[Yy]|\))?$`
 )
 
 type Assembler struct {
@@ -25,8 +25,7 @@ type Assembler struct {
 	labels   map[string]globals.Word
 }
 
-func (A *Assembler) Init(mem *mem.Memory) {
-	A.mem = mem
+func (A *Assembler) Init() {
 	A.labels = make(map[string]globals.Word)
 }
 
@@ -35,19 +34,20 @@ func (A *Assembler) setLabel(lab string) {
 	A.labels[lab] = A.prgCount
 }
 
-func (A *Assembler) getLabel(lab string) {
-	A.mem.Data[int(A.prgCount)] = globals.Byte(A.labels[lab])
-	A.prgCount++
-	A.mem.Data[int(A.prgCount)] = globals.Byte(A.labels[lab] >> 8)
-	A.prgCount++
+func (A *Assembler) getLabel(lab string) string {
+	// A.mem.Data[int(A.prgCount)] = globals.Byte(A.labels[lab])
+	// A.prgCount++
+	// A.mem.Data[int(A.prgCount)] = globals.Byte(A.labels[lab] >> 8)
+	// A.prgCount++
+	addr := fmt.Sprintf("%X %X", globals.Byte(A.labels[lab]), globals.Byte(A.labels[lab] >> 8)
 }
 
 func (A *Assembler) addOpCode(opCode string) {
 	fmt.Printf("OpCode: %s\n", opCode)
 }
 
-func (A *Assembler) addAddr(val string) {
-	var addrSuffix string
+func (A *Assembler) addAddr(val string) (string, string) {
+	var suffix, addr string
 
 	addrRe := regexp.MustCompile(addrMode)
 	style := addrRe.FindStringSubmatch(val)
@@ -57,27 +57,51 @@ func (A *Assembler) addAddr(val string) {
 		// Indirect
 		switch style[4] {
 		case ",X)":
-			addrSuffix = "_INX"
+			suffix = "_INX"
 		case "),Y":
-			addrSuffix = "_INY"
+			suffix = "_INY"
 		case ")":
-			addrSuffix = "_IND"
+			suffix = "_IND"
 		default:
-			addrSuffix = ""
+			suffix = ""
 			panic("Parsing error")
 		}
 	} else {
 		// Direct
 		switch style[4] {
 		case ",X":
-			addrSuffix = "_ABX"
+			suffix = "_ABX"
 		case ",Y":
-			addrSuffix = "_ABY"
+			suffix = "_ABY"
 		default:
-			addrSuffix = "_ABS"
+			suffix = "_ABS"
 		}
 	}
-	fmt.Printf("Prefix: %s\n", addrSuffix)
+	if len(style[3]) > 0 && len(style[2]) == 0 {
+		addr = A.labels[style[3]]
+	} else {
+		addr = style[2]
+	}
+	// if _, ok := A.labels[val]; ok {
+	// 	A.getLabel(val)
+	// 	return
+	// }
+	// if len(val) == 2 {
+	// 	addr, _ := strconv.ParseUint(val, 16, 8)
+	// 	A.mem.Data[int(A.prgCount)] = globals.Byte(addr)
+	// 	A.prgCount++
+	// } else if len(val) == 4 {
+	// 	addr, _ := strconv.ParseUint(val, 16, 16)
+	// 	A.mem.Data[int(A.prgCount)] = globals.Byte(addr)
+	// 	A.prgCount++
+	// 	A.mem.Data[int(A.prgCount)] = globals.Byte(addr >> 8)
+	// 	A.prgCount++
+	// } else {
+	// 	panic("Parsing error")
+	// }
+
+	fmt.Printf("Addr: %s - Prefix: %s\n", addr, suffix)
+	return suffix, addr
 }
 
 func (A *Assembler) addInstr(hexa globals.Byte, addr string) {
