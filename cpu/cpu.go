@@ -173,14 +173,14 @@ func (C *CPU) initLanguage() {
 	Mnemonic[CodeAddr["CPY_ZP"]] = C.op_CPY_ZP
 	Mnemonic[CodeAddr["CPY_ABS"]] = C.op_CPY_ABS
 
-	Mnemonic[CodeAddr["BCC"]] = C.op_BCC
-	Mnemonic[CodeAddr["BCS"]] = C.op_BCS
-	Mnemonic[CodeAddr["BEQ"]] = C.op_BEQ
-	Mnemonic[CodeAddr["BMI"]] = C.op_BMI
-	Mnemonic[CodeAddr["BNE"]] = C.op_BNE
-	Mnemonic[CodeAddr["BPL"]] = C.op_BPL
-	Mnemonic[CodeAddr["BVC"]] = C.op_BVC
-	Mnemonic[CodeAddr["BVS"]] = C.op_BVS
+	Mnemonic[CodeAddr["BCC_REL"]] = C.op_BCC_REL
+	Mnemonic[CodeAddr["BCS_REL"]] = C.op_BCS_REL
+	Mnemonic[CodeAddr["BEQ_REL"]] = C.op_BEQ_REL
+	Mnemonic[CodeAddr["BMI_REL"]] = C.op_BMI_REL
+	Mnemonic[CodeAddr["BNE_REL"]] = C.op_BNE_REL
+	Mnemonic[CodeAddr["BPL_REL"]] = C.op_BPL_REL
+	Mnemonic[CodeAddr["BVC_REL"]] = C.op_BVC_REL
+	Mnemonic[CodeAddr["BVS_REL"]] = C.op_BVS_REL
 
 	Mnemonic[CodeAddr["LDA_IM"]] = C.op_LDA_IM
 	Mnemonic[CodeAddr["LDA_ZP"]] = C.op_LDA_ZP

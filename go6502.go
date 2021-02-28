@@ -31,7 +31,7 @@ func main() {
 
 	if len(args) > 1 {
 		ass := assembler.Assembler{}
-		ass.Init(&mem)
+		ass.Init()
 		cpu.PC, _ = ass.ReadCode(args[1])
 	}
 
