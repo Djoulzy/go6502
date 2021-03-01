@@ -1,8 +1,13 @@
-*=$c000
+*=$0600
 
-  LDA #$01
+zp =    $22
+val1 =  $01
+
+  LDA #val1
   CMP #$02
   BNE notequal
-  STA $22
+  STA zp
 notequal:
   BRK
+
+; 0600: a9 01 c9 02 d0 02 85 22 00 

@@ -14,45 +14,27 @@ import (
 )
 
 const (
-	startMem = `\s*\*\s*=\s*#?\$(\w{4})`
-	cmdLine  = `^(?:([a-zA-Z]\w+:)\s*)?(?:(?:(\w+)\s*)?([^\s;]*)?\s*(?:;.*)?)?$`
-	addrMode = `^\*([\+\-]\d+)|(\(?)(?:(#?)\$?([0-9a-fA-F]{2}|[0-9a-fA-F]{4})|([a-zA-Z]\w+))(,[XYxy]|,[Xx]\)|\),[Yy]|\))?$`
+	macroDef = `^([a-zA-Z]\w+|\*)\s*([=:])(?:\s*\$([0-9a-fA-F]{2}|[0-9a-fA-F]{4})$|$)`
+	cmdLine  = `^(?:([a-zA-Z]\w+):\s*)?(?:(?:(\w+)\s*)?([^\s;]*)?\s*(?:;.*)?)?$`
+	addrMode = `^\*([\+\-]\d+)|(\(?)(#?)(?:\$([0-9a-fA-F]{2}|[0-9a-fA-F]{4})|([a-zA-Z]\w+))(,[XYxy]|,[Xx]\)|\),[Yy]|\))?$`
 )
 
 type Assembler struct {
 	mem      *mem.Memory
 	prgStart globals.Word
 	prgCount globals.Word
-	labels   map[string]globals.Word
+	labels   map[string]*Labels
 	result   []string
 }
 
 func (A *Assembler) Init() {
-	A.labels = make(map[string]globals.Word)
+	A.labels = make(map[string]*Labels)
 }
 
-func (A *Assembler) setLabel(lab string) {
-	fmt.Printf("SetLabel: %s\n", lab)
-	A.labels[lab] = A.prgCount
-}
-
-func (A *Assembler) getLabel(lab string, relative bool) []string {
-	var addr []string
-	labelAddr := A.labels[lab]
-	if relative {
-		labelAddr = globals.Word((int(A.prgCount) - int(labelAddr)) * -1)
-		addr = append(addr, fmt.Sprintf("%X", globals.Byte(labelAddr)))
-		return addr
-	}
-
-	addr = append(addr, fmt.Sprintf("%X", globals.Byte(labelAddr)))
-	addr = append(addr, fmt.Sprintf("%X", globals.Byte(labelAddr>>8)))
-	return addr
-}
-
-func (A *Assembler) checkAddr(opCode, val string) (string, []string) {
+func (A *Assembler) checkAddr(opCode, val string) (string, string) {
+	var err error
 	var suffix string
-	var addr []string
+	var addr string
 	var isRelatif bool = false
 
 	var relatives = map[string]bool{
@@ -69,10 +51,10 @@ func (A *Assembler) checkAddr(opCode, val string) (string, []string) {
 	addrRe := regexp.MustCompile(addrMode)
 	style := addrRe.FindStringSubmatch(val)
 	if len(style) == 0 {
-		return "", nil
+		return "", ""
 	}
 	if len(style[1]) > 0 {
-		// Relatif
+		// Relatif (sans label)
 		if _, ok := relatives[opCode]; ok {
 			suffix = "_REL"
 			isRelatif = true
@@ -100,6 +82,7 @@ func (A *Assembler) checkAddr(opCode, val string) (string, []string) {
 		case ",Y":
 			suffix = "_ABY"
 		default:
+			// Relatif (avec label)
 			if _, ok := relatives[opCode]; ok {
 				suffix = "_REL"
 				isRelatif = true
@@ -111,12 +94,18 @@ func (A *Assembler) checkAddr(opCode, val string) (string, []string) {
 		}
 	}
 	if len(style[5]) > 0 && len(style[4]) == 0 {
-		addr = A.getLabel(style[5], isRelatif)
+		if isRelatif {
+			if addr, err = A.labels[style[5]].getRelative(A.prgCount); err != nil {
+				panic("Bad label")
+			}
+		} else {
+			addr = A.labels[style[5]].getString()
+		}
 	} else {
 		if isRelatif {
-			addr = append(addr, fmt.Sprintf("%02X", style[1]))
+			addr = fmt.Sprintf("%02X", style[1])
 		} else {
-			addr = append(addr, fmt.Sprintf("%02X", style[4]))
+			addr = style[4]
 		}
 	}
 	// if _, ok := A.labels[val]; ok {
@@ -140,14 +129,6 @@ func (A *Assembler) checkAddr(opCode, val string) (string, []string) {
 	return suffix, addr
 }
 
-// func (A *Assembler) addInstr(hexa globals.Byte, addr string) {
-// 	A.mem.Data[int(A.prgCount)] = hexa
-// 	A.prgCount++
-// 	if len(addr) > 0 {
-// 		A.addAddr(addr)
-// 	}
-// }
-
 func (A *Assembler) addOpCode(opCode string, addrFormat string) string {
 	var codeLine string
 
@@ -161,23 +142,35 @@ func (A *Assembler) addOpCode(opCode string, addrFormat string) string {
 		panic("Syntax Error")
 	}
 
-	codeLine = fmt.Sprintf("%s %s", codeLine, strings.Join(addr[:], " "))
+	codeLine = fmt.Sprintf("%s %s", codeLine, addr)
 	A.prgCount++
 	return codeLine
 }
 
 func (A *Assembler) computeMacro(cmd []string) {
-	tmp, _ := strconv.ParseUint(cmd[1], 16, 16)
-	A.prgStart = globals.Word(tmp)
-	A.prgCount = globals.Word(tmp)
+	var tmp uint64
+	var err error
+
+	if cmd[1] == "*" {
+		if tmp, err = strconv.ParseUint(cmd[2], 16, 16); err != nil {
+			panic("Parse error")
+		}
+		A.prgStart = globals.Word(tmp)
+		A.prgCount = globals.Word(tmp)
+		fmt.Printf("Start Code at $%04X\n", A.prgStart)
+	} else {
+		if cmd[2] == "=" {
+			newLab := Labels{name: cmd[1]}
+			newLab.setValueString(cmd[3])
+			A.labels[cmd[1]] = &newLab
+			fmt.Printf("New Label: %s (%s)\n", A.labels[cmd[1]].name, A.labels[cmd[1]].export)
+		}
+	}
 }
 
 func (A *Assembler) computeOpCode(cmd []string) {
 	var res string
 	fmt.Printf("---------------------\nLine: [%s]\n", cmd[0])
-	if len(cmd[1]) > 0 {
-		A.setLabel(cmd[1])
-	}
 	if len(cmd[2]) > 0 {
 		res = A.addOpCode(cmd[2], cmd[3])
 		A.result = append(A.result, res)
@@ -185,17 +178,17 @@ func (A *Assembler) computeOpCode(cmd []string) {
 	fmt.Printf("Hexa: [%s]\n", res)
 }
 
-func (A *Assembler) ReadCode(file string) (globals.Word, error) {
+func (A *Assembler) secondPass(file string) error {
 	f, err := os.Open(file)
 	if err != nil {
-		return 0, err
+		return err
 	}
 	defer f.Close()
 
 	scanner := bufio.NewScanner(f)
-	startRe := regexp.MustCompile(startMem)
 	cmdRe := regexp.MustCompile(cmdLine)
 
+	fmt.Println("==== Second Pass ====")
 	for scanner.Scan() {
 		txt := strings.TrimSpace(scanner.Text())
 		if len(txt) == 0 {
@@ -204,16 +197,10 @@ func (A *Assembler) ReadCode(file string) (globals.Word, error) {
 		if txt == ".END" {
 			break
 		}
-		cmd := startRe.FindStringSubmatch(txt)
+
+		cmd := cmdRe.FindStringSubmatch(txt)
 		if len(cmd) > 0 {
-			A.computeMacro(cmd)
-		} else {
-			cmd = cmdRe.FindStringSubmatch(txt)
-			if len(cmd) > 0 {
-				A.computeOpCode(cmd)
-			} else {
-				panic("Parsing error")
-			}
+			A.computeOpCode(cmd)
 		}
 	}
 	// A.mem.Dump(A.prgStart)
@@ -221,5 +208,56 @@ func (A *Assembler) ReadCode(file string) (globals.Word, error) {
 	log.Println("Assembling complete without error")
 	fmt.Println()
 	fmt.Printf("%s", A.result)
-	return A.prgStart, nil
+	return nil
+}
+
+func (A *Assembler) firstPass(file string) error {
+	f, err := os.Open(file)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+	macroRe := regexp.MustCompile(macroDef)
+	cmdRe := regexp.MustCompile(cmdLine)
+
+	fmt.Println("==== First Pass ====")
+	for scanner.Scan() {
+		txt := strings.TrimSpace(scanner.Text())
+		if len(txt) == 0 {
+			continue
+		}
+		if txt == ".END" {
+			break
+		}
+		cmd := macroRe.FindStringSubmatch(txt)
+		if len(cmd) > 0 {
+			A.computeMacro(cmd)
+		} else {
+			cmd = cmdRe.FindStringSubmatch(txt)
+			if len(cmd[1]) > 0 {
+				newLab := Labels{name: cmd[1]}
+				newLab.setValueWord(A.prgCount)
+				A.labels[cmd[1]] = &newLab
+			}
+			if len(cmd[2]) > 0 {
+				A.prgCount++
+			}
+			if len(cmd[3]) > 0 {
+				A.prgCount++
+			}
+		}
+	}
+	fmt.Printf("Program Count: %04X\n", A.prgCount)
+	A.prgCount = A.prgStart
+	return nil
+}
+
+func (A *Assembler) Assemble(file string) error {
+	A.firstPass(file)
+	fmt.Printf("%v\n", A.labels)
+	A.secondPass(file)
+
+	return nil
 }

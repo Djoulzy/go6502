@@ -32,7 +32,7 @@ func main() {
 	if len(args) > 1 {
 		ass := assembler.Assembler{}
 		ass.Init()
-		cpu.PC, _ = ass.ReadCode(args[1])
+		ass.Assemble(args[1])
 	}
 
 	vic := vic.VIC{}
