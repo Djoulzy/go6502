@@ -32,7 +32,9 @@ func main() {
 	if len(args) > 1 {
 		ass := assembler.Assembler{}
 		ass.Init()
-		ass.Assemble(args[1])
+		code := ass.Assemble(args[1])
+		cpu.PC, _ = assembler.LoadHex(&mem, code)
+		mem.Dump(cpu.PC)
 	}
 
 	vic := vic.VIC{}

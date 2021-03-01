@@ -64,7 +64,9 @@ func (m *Memory) Dump(startAddr globals.Word) {
 	for j := 0; j < 10; j++ {
 		fmt.Printf("%04X : ", cpt)
 		for i := 0; i < 8; i++ {
-			fmt.Printf("%04X ", m.Data[cpt])
+			fmt.Printf("%02X", m.Data[cpt])
+			cpt++
+			fmt.Printf("%02X ", m.Data[cpt])
 			cpt++
 		}
 		fmt.Println()
