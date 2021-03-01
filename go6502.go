@@ -8,6 +8,7 @@ import (
 	"go6502/mem"
 	"go6502/vic"
 	"os"
+	"path/filepath"
 	"runtime"
 	"time"
 )
@@ -21,20 +22,27 @@ func init() {
 func main() {
 	args := os.Args
 
+	// test := 0xF4
+	// fmt.Printf("%d\n", int8(test))
+	// os.Exit(1)
+
 	mem := mem.Memory{}
 	mem.Init()
 
-	// mem.dumpChar(0x2F)
-	// os.Exit(1)
 	cpu := cpu.CPU{}
 	cpu.Init(&mem, false)
 
 	if len(args) > 1 {
 		ass := assembler.Assembler{}
 		ass.Init()
-		code := ass.Assemble(args[1])
-		cpu.PC, _ = assembler.LoadHex(&mem, code)
-		mem.Dump(cpu.PC)
+
+		switch filepath.Ext(args[1]) {
+		case ".asm":
+			code := ass.Assemble(args[1])
+			cpu.PC, _ = assembler.LoadHex(&mem, code)
+		case ".hex":
+			cpu.PC, _ = assembler.LoadFile(&mem, args[1])
+		}
 	}
 
 	vic := vic.VIC{}

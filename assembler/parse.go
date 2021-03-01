@@ -61,7 +61,12 @@ func (A *Assembler) checkAddr(opCode, val string) (string, string) {
 	addrRe := regexp.MustCompile(addrMode)
 	style := addrRe.FindStringSubmatch(val)
 
+	if style == nil {
+		return "", ""
+	}
+
 	if len(style[5]) > 0 && len(style[4]) == 0 {
+		// Gestion des labels
 		if isRelatif {
 			var label *Labels
 			var ok bool
@@ -75,11 +80,17 @@ func (A *Assembler) checkAddr(opCode, val string) (string, string) {
 			addr = A.labels[style[5]].getString()
 		}
 	} else {
+		// Addresses Directes
 		if isRelatif {
 			val, _ := strconv.ParseInt(style[1], 10, 8)
 			addr = fmt.Sprintf("%02X", globals.Byte(val))
 		} else {
-			addr = style[4]
+			style[4] = strings.ToUpper(style[4])
+			if len(style[4]) == 2 {
+				addr = style[4]
+			} else if len(style[4]) == 4 {
+				addr = fmt.Sprintf("%s %s", style[4][2:4], style[4][0:2])
+			}
 		}
 	}
 
@@ -138,20 +149,19 @@ func (A *Assembler) checkAddr(opCode, val string) (string, string) {
 	return suffix, addr
 }
 
-func (A *Assembler) addOpCode(opCode string, addrFormat string) string {
-	var codeLine string
+func (A *Assembler) addOpCode(opCode []string) string {
+	var codeLine, suffix, addr string
 
-	suffix, addr := A.checkAddr(opCode, addrFormat)
-	// fmt.Printf("OpCode: %s%s - Addr: %s\n", opCode, suffix, addr)
-
-	if val, ok := cpu.CodeAddr[opCode+suffix]; ok {
+	suffix, addr = A.checkAddr(opCode[1], opCode[2])
+	if val, ok := cpu.CodeAddr[opCode[1]+suffix]; ok {
 		codeLine = fmt.Sprintf("%02X", val)
 		A.prgCount++
 	} else {
 		panic("Syntax Error")
 	}
-
-	codeLine = fmt.Sprintf("%s %s", codeLine, addr)
+	if addr != "" {
+		codeLine = fmt.Sprintf("%s %s", codeLine, addr)
+	}
 	A.prgCount++
 	return codeLine
 }
@@ -189,7 +199,7 @@ func (A *Assembler) computeOpCode(cmd []string) {
 	var res string
 	if len(cmd[1]) > 0 {
 		fmt.Printf("Line %d: [%s] - ", A.line, cmd[0])
-		res = A.addOpCode(cmd[1], cmd[2])
+		res = A.addOpCode(cmd)
 		A.result = append(A.result, res)
 		fmt.Printf("Hexa: [%s]\n", res)
 	}
@@ -255,11 +265,6 @@ func (A *Assembler) firstPass(file string) error {
 			if len(cmd) == 0 {
 				continue
 			}
-			// if len(cmd[1]) > 0 {
-			// 	newLab := Labels{name: cmd[1]}
-			// 	newLab.setValueWord(A.prgCount)
-			// 	A.labels[cmd[1]] = &newLab
-			// }
 			if len(cmd[1]) > 0 {
 				A.prgCount++
 			}
