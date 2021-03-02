@@ -30,7 +30,7 @@ func main() {
 	mem.Init()
 
 	cpu := cpu.CPU{}
-	cpu.Init(&mem, false)
+	cpu.Init(&mem, true)
 
 	if len(args) > 1 {
 		ass := assembler.Assembler{}
@@ -44,6 +44,7 @@ func main() {
 			cpu.PC, _ = assembler.LoadFile(&mem, args[1])
 		}
 	}
+	//mem.Dump(cpu.PC)
 
 	vic := vic.VIC{}
 	vic.Init(&mem, cpu.Cycle)
