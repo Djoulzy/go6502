@@ -38,32 +38,9 @@ func (A *Assembler) parseError(format string, vars ...interface{}) {
 	os.Exit(1)
 }
 
-func (A *Assembler) checkAddr(opCode, val string) (string, string) {
+func (A *Assembler) transfromAddr(style []string, isRelatif bool) string {
 	var err error
-	var suffix string
 	var addr string
-	var isRelatif bool = false
-
-	var relatives = map[string]bool{
-		"BCC": true,
-		"BCS": true,
-		"BEQ": true,
-		"BMI": true,
-		"BNE": true,
-		"BPL": true,
-		"BVC": true,
-		"BVS": true,
-	}
-	if _, ok := relatives[opCode]; ok {
-		isRelatif = true
-	}
-
-	addrRe := regexp.MustCompile(addrMode)
-	style := addrRe.FindStringSubmatch(val)
-
-	if style == nil {
-		return "", ""
-	}
 
 	if len(style[5]) > 0 && len(style[4]) == 0 {
 		// Gestion des labels
@@ -93,6 +70,36 @@ func (A *Assembler) checkAddr(opCode, val string) (string, string) {
 			}
 		}
 	}
+
+	return addr
+}
+
+func (A *Assembler) checkAddr(opCode, val string) (string, string) {
+	var suffix string
+	var isRelatif bool = false
+
+	var relatives = map[string]bool{
+		"BCC": true,
+		"BCS": true,
+		"BEQ": true,
+		"BMI": true,
+		"BNE": true,
+		"BPL": true,
+		"BVC": true,
+		"BVS": true,
+	}
+	if _, ok := relatives[opCode]; ok {
+		isRelatif = true
+	}
+
+	addrRe := regexp.MustCompile(addrMode)
+	style := addrRe.FindStringSubmatch(val)
+
+	if style == nil {
+		return "", ""
+	}
+
+	addr := A.transfromAddr(style, isRelatif)
 
 	if len(style) == 0 {
 		return "", ""
@@ -269,7 +276,14 @@ func (A *Assembler) firstPass(file string) error {
 				A.prgCount++
 			}
 			if len(cmd[2]) > 0 {
-				A.prgCount++
+				addrRe := regexp.MustCompile(addrMode)
+				style := addrRe.FindStringSubmatch(cmd[2])
+				addr := A.transfromAddr(style, false)
+				if len(addr) > 3 {
+					A.prgCount += 2
+				} else if len(addr) > 1 {
+					A.prgCount++
+				}
 			}
 		}
 	}

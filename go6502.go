@@ -30,7 +30,7 @@ func main() {
 	mem.Init()
 
 	cpu := cpu.CPU{}
-	cpu.Init(&mem, true)
+	cpu.Init(&mem, false)
 
 	if len(args) > 1 {
 		ass := assembler.Assembler{}
