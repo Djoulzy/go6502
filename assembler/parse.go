@@ -20,6 +20,17 @@ const (
 	addrMode = `^\*([\+\-]\d+)|(\(?)(#?)(?:\$([0-9a-fA-F]{2}|[0-9a-fA-F]{4})|([a-zA-Z]\w+))(,[XYxy]|,[Xx]\)|\),[Yy]|\))?$`
 )
 
+var relatives = map[string]bool{
+	"BCC": true,
+	"BCS": true,
+	"BEQ": true,
+	"BMI": true,
+	"BNE": true,
+	"BPL": true,
+	"BVC": true,
+	"BVS": true,
+}
+
 type Assembler struct {
 	mem      *mem.Memory
 	line     int
@@ -38,6 +49,30 @@ func (A *Assembler) parseError(format string, vars ...interface{}) {
 	os.Exit(1)
 }
 
+func (A *Assembler) firstPassAddrAnalyze(style []string, isRelatif bool) {
+	if len(style[5]) > 0 && len(style[4]) == 0 {
+		// Gestion des labels
+		if isRelatif {
+			A.prgCount++
+		} else {
+			A.prgCount += globals.Word(A.labels[style[5]].size)
+		}
+	} else {
+		// Addresses Directes
+		if isRelatif {
+			A.prgCount++
+		} else {
+			style[4] = strings.ToUpper(style[4])
+			// fmt.Printf("Long addres: %s\n", style[4])
+			if len(style[4]) == 2 {
+				A.prgCount++
+			} else if len(style[4]) >= 4 {
+				A.prgCount += 2
+			}
+		}
+	}
+}
+
 func (A *Assembler) transfromAddr(style []string, isRelatif bool) string {
 	var err error
 	var addr string
@@ -50,22 +85,27 @@ func (A *Assembler) transfromAddr(style []string, isRelatif bool) string {
 			if label, ok = A.labels[style[5]]; !ok {
 				A.parseError("Bad label -> %s", style[5])
 			}
+			A.prgCount++
 			if addr, err = label.getRelative(A.prgCount); err != nil {
 				A.parseError("%s", err)
 			}
 		} else {
 			addr = A.labels[style[5]].getString()
+			A.prgCount += globals.Word(A.labels[style[5]].size)
 		}
 	} else {
 		// Addresses Directes
 		if isRelatif {
+			A.prgCount++
 			val, _ := strconv.ParseInt(style[1], 10, 8)
 			addr = fmt.Sprintf("%02X", globals.Byte(val))
 		} else {
 			style[4] = strings.ToUpper(style[4])
 			if len(style[4]) == 2 {
+				A.prgCount++
 				addr = style[4]
 			} else if len(style[4]) == 4 {
+				A.prgCount += 2
 				addr = fmt.Sprintf("%s %s", style[4][2:4], style[4][0:2])
 			}
 		}
@@ -78,16 +118,6 @@ func (A *Assembler) checkAddr(opCode, val string) (string, string) {
 	var suffix string
 	var isRelatif bool = false
 
-	var relatives = map[string]bool{
-		"BCC": true,
-		"BCS": true,
-		"BEQ": true,
-		"BMI": true,
-		"BNE": true,
-		"BPL": true,
-		"BVC": true,
-		"BVS": true,
-	}
 	if _, ok := relatives[opCode]; ok {
 		isRelatif = true
 	}
@@ -159,17 +189,16 @@ func (A *Assembler) checkAddr(opCode, val string) (string, string) {
 func (A *Assembler) addOpCode(opCode []string) string {
 	var codeLine, suffix, addr string
 
+	A.prgCount++
 	suffix, addr = A.checkAddr(opCode[1], opCode[2])
 	if val, ok := cpu.CodeAddr[opCode[1]+suffix]; ok {
 		codeLine = fmt.Sprintf("%02X", val)
-		A.prgCount++
 	} else {
 		panic("Syntax Error")
 	}
 	if addr != "" {
 		codeLine = fmt.Sprintf("%s %s", codeLine, addr)
 	}
-	A.prgCount++
 	return codeLine
 }
 
@@ -208,7 +237,7 @@ func (A *Assembler) computeOpCode(cmd []string) {
 		fmt.Printf("Line %d: [%s] - ", A.line, cmd[0])
 		res = A.addOpCode(cmd)
 		A.result = append(A.result, res)
-		fmt.Printf("Hexa: [%s]\n", res)
+		fmt.Printf("Hexa: [%s] - PC: %04X\n", res, A.prgCount)
 	}
 }
 
@@ -243,6 +272,8 @@ func (A *Assembler) secondPass(file string) error {
 }
 
 func (A *Assembler) firstPass(file string) error {
+	var isRelatif bool = false
+
 	f, err := os.Open(file)
 	if err != nil {
 		return err
@@ -256,6 +287,7 @@ func (A *Assembler) firstPass(file string) error {
 	fmt.Println("==== First Pass ====")
 	A.line = 0
 	for scanner.Scan() {
+		isRelatif = false
 		A.line++
 		txt := strings.TrimSpace(scanner.Text())
 		if len(txt) == 0 {
@@ -264,26 +296,25 @@ func (A *Assembler) firstPass(file string) error {
 		if txt == ".END" {
 			break
 		}
-		cmd := macroRe.FindStringSubmatch(txt)
-		if len(cmd) > 0 {
-			A.computeMacro(cmd)
+		// fmt.Printf("Analyse: (PC: %04X) %s\n", A.prgCount, txt)
+		macro := macroRe.FindStringSubmatch(txt)
+		if len(macro) > 0 {
+			A.computeMacro(macro)
 		} else {
-			cmd = cmdRe.FindStringSubmatch(txt)
+			cmd := cmdRe.FindStringSubmatch(txt)
 			if len(cmd) == 0 {
 				continue
 			}
 			if len(cmd[1]) > 0 {
+				if _, ok := relatives[cmd[1]]; ok {
+					isRelatif = true
+				}
 				A.prgCount++
 			}
 			if len(cmd[2]) > 0 {
 				addrRe := regexp.MustCompile(addrMode)
 				style := addrRe.FindStringSubmatch(cmd[2])
-				addr := A.transfromAddr(style, false)
-				if len(addr) > 3 {
-					A.prgCount += 2
-				} else if len(addr) > 1 {
-					A.prgCount++
-				}
+				A.firstPassAddrAnalyze(style, isRelatif)
 			}
 		}
 	}

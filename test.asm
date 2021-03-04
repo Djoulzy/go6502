@@ -1,7 +1,8 @@
-*=$0C00
-
+*=$0600
+  
   LDX #$00
   LDY #$00
+  BNE secondloop
 firstloop:
   TXA
   STA $0200,Y

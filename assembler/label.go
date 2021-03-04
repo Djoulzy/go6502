@@ -51,7 +51,7 @@ func (L *Labels) getRelative(pc globals.Word) (string, error) {
 		return "", errors.New(fmt.Sprintf("Bad value size : %s", L.export))
 	}
 	dist := ((int(pc) - int(L.value16)) * -1)
-	// fmt.Printf("Calc : %04X - %04X * -1 = %d\n", pc, L.value16, dist)
+	fmt.Printf("Calc : %d(%04X) - %d(%04X) * -1 = %d(%02X)\n", int(pc), pc, int(L.value16), L.value16, dist, globals.Byte(dist))
 	if dist > 0x00FF {
 		return "", errors.New(fmt.Sprintf("Branch out of bound : %04X / %d", dist, int(dist)))
 	}
