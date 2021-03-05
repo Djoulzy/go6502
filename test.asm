@@ -6,4 +6,4 @@ loop:
 STX $d020
 DEX
 BNE loop
-jmp loop
+jmp start
