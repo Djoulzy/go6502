@@ -53,3 +53,7 @@ type VIC struct {
 	cpuCycle       chan bool
 	ram            *mem.Memory
 }
+
+const (
+	REG_EC = globals.Word(0xD020) // Border Color
+)

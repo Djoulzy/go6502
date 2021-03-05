@@ -210,7 +210,9 @@ func (C *CPU) op_STX_ZPY(mem *mem.Memory) {
 }
 
 func (C *CPU) op_STX_ABS(mem *mem.Memory) {
-	C.opName = "ToDO"
+	C.opName = "STX Abs"
+	absAddress := C.fetchWord(mem)
+	mem.Data[absAddress] = C.X
 }
 
 //////////////////////////////////

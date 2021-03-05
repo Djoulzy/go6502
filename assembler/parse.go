@@ -194,7 +194,8 @@ func (A *Assembler) addOpCode(opCode []string) string {
 	if val, ok := cpu.CodeAddr[opCode[1]+suffix]; ok {
 		codeLine = fmt.Sprintf("%02X", val)
 	} else {
-		panic("Syntax Error")
+		fmt.Printf("Syntax Error: %s", opCode[1]+suffix)
+		os.Exit(1)
 	}
 	if addr != "" {
 		codeLine = fmt.Sprintf("%s %s", codeLine, addr)
@@ -234,10 +235,11 @@ func (A *Assembler) computeMacro(cmd []string) {
 func (A *Assembler) computeOpCode(cmd []string) {
 	var res string
 	if len(cmd[1]) > 0 {
-		fmt.Printf("Line %d: [%s] - ", A.line, cmd[0])
+		// fmt.Printf("Line %d: [%s] - ", A.line, cmd[0])
+		fmt.Printf("$%04X:\t%03s %4s\t", A.prgCount, cmd[1], cmd[2])
 		res = A.addOpCode(cmd)
 		A.result = append(A.result, res)
-		fmt.Printf("Hexa: [%s] - PC: %04X\n", res, A.prgCount)
+		fmt.Printf("%s\n", res)
 	}
 }
 
@@ -255,7 +257,7 @@ func (A *Assembler) secondPass(file string) error {
 	A.line = 0
 	for scanner.Scan() {
 		A.line++
-		txt := strings.TrimSpace(scanner.Text())
+		txt := strings.ToUpper(strings.TrimSpace(scanner.Text()))
 		if len(txt) == 0 {
 			continue
 		}
@@ -289,7 +291,7 @@ func (A *Assembler) firstPass(file string) error {
 	for scanner.Scan() {
 		isRelatif = false
 		A.line++
-		txt := strings.TrimSpace(scanner.Text())
+		txt := strings.ToUpper(strings.TrimSpace(scanner.Text()))
 		if len(txt) == 0 {
 			continue
 		}
@@ -314,7 +316,9 @@ func (A *Assembler) firstPass(file string) error {
 			if len(cmd[2]) > 0 {
 				addrRe := regexp.MustCompile(addrMode)
 				style := addrRe.FindStringSubmatch(cmd[2])
-				A.firstPassAddrAnalyze(style, isRelatif)
+				if style != nil {
+					A.firstPassAddrAnalyze(style, isRelatif)
+				}
 			}
 		}
 	}

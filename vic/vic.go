@@ -68,7 +68,8 @@ func (V *VIC) drawByte(beamX, beamY int) {
 		charRomAddr := V.ram.CharGen[globals.Word(charAddr)<<3+globals.Word(V.BadLineCounter)]
 		V.graph.Draw8pixels(beamX*8, beamY, Colors[charColor], Colors[Blue], charRomAddr)
 	} else {
-		V.graph.Draw8pixels(beamX*8, beamY, Colors[Lightblue], Colors[Lightblue], globals.Byte(0xFF))
+		color := V.ram.Data[REG_EC]
+		V.graph.Draw8pixels(beamX*8, beamY, Colors[color], Colors[color], globals.Byte(0xFF))
 	}
 }
 
