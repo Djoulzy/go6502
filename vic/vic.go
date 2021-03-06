@@ -30,17 +30,22 @@ const (
 	visibleWidth  = 320
 	visibleHeight = 200
 
-	visibleFirstLine = 56
-	visibleLastLine  = 255
-	visibleFirstCol  = 11
-	visibleLastCol   = 50
-	visibleFirstRow  = 7
+	firstVBlankLine  = 300
+	lastVBlankLine   = 15
+	visibleFirstLine = 51  // 56
+	visibleLastLine  = 251 // 255
+	// visibleFirstCol  = 11
+	// visibleLastCol   = 50
+	firstXcoord = 24
+	lastXcoord  = 344
+
+	visibleFirstCol = firstXcoord / 8
+	visibleLastCol  = lastXcoord / 8
 )
 
 func (V *VIC) readScreenData(mem *mem.Memory, y int) {
-	if (y >= visibleFirstLine) && (y <= visibleLastLine) {
-		start := globals.Word(V.RowCounter-visibleFirstRow) * 40
-		// log.Printf("Y: %d", V.RowCounter-visibleFirstRow)
+	if (y >= visibleFirstLine) && (y < visibleLastLine) {
+		start := globals.Word(V.RowCounter) * 40
 		for i := 0; i < 40; i++ {
 			// log.Printf("X: %d Y: %d", i, start)
 			V.Buffer[i] = globals.Word(mem.Color[int(start)+i]) << 8
@@ -53,7 +58,7 @@ func (V *VIC) readScreenData(mem *mem.Memory, y int) {
 }
 
 func (V *VIC) isVisibleArea(x, y int) bool {
-	if (y >= visibleFirstLine) && (y <= visibleLastLine) {
+	if (y >= visibleFirstLine) && (y < visibleLastLine) {
 		if (x >= visibleFirstCol) && (x <= visibleLastCol) {
 			return true
 		}
@@ -76,6 +81,16 @@ func (V *VIC) drawByte(beamX, beamY int) {
 func (V *VIC) Init(mem *mem.Memory, cpuCycle chan bool) {
 	V.cpuCycle = cpuCycle
 	V.ram = mem
+}
+
+func (V *VIC) saveRasterPos(val int) {
+	V.ram.Data[REG_RASTER] = globals.Byte(val)
+	if (globals.Byte(globals.Word(val) >> 8)) == 0x1 {
+		V.ram.Data[REG_RST8] |= 0b10000000
+	} else {
+		V.ram.Data[REG_RST8] &= 0b01111111
+	}
+	// fmt.Printf("val: %d - RST8: %08b - RASTER: %08b\n", val, V.ram.Data[REG_RST8], V.ram.Data[REG_RASTER])
 }
 
 func (V *VIC) Run() {
@@ -102,19 +117,23 @@ func (V *VIC) Run() {
 
 		// t0 := time.Now()
 		for beamY := 0; beamY < screenHeightPAL; beamY++ {
+			V.saveRasterPos(beamY)
+			// fmt.Printf("raster: %d - BadLineCounter: %d - RowCounter: %d\n", beamY, V.BadLineCounter, V.RowCounter)
 			select {
 			case <-ticker.C:
-				if beamY > 15 && beamY < 300 {
+				if beamY > lastVBlankLine && beamY < firstVBlankLine {
 					VBlank = false
-					if V.BadLineCounter == 0 {
-						V.readScreenData(V.ram, beamY)
+					if beamY >= visibleFirstLine && beamY < visibleLastLine {
+						if V.BadLineCounter == 0 {
+							V.readScreenData(V.ram, beamY)
+						}
 					}
 				} else {
 					VBlank = true
 				}
 
 				for beamX := 0; beamX < cyclesPerLine; beamX++ {
-					if beamX > 5 && beamX < 57 {
+					if beamX >= visibleFirstCol && beamX < visibleLastCol {
 						HBlank = false
 					} else {
 						HBlank = true
@@ -127,10 +146,12 @@ func (V *VIC) Run() {
 					}
 					V.cpuCycle <- true
 				}
-				V.BadLineCounter++
-				if V.BadLineCounter == 8 {
-					V.BadLineCounter = 0
-					V.RowCounter++
+				if beamY >= visibleFirstLine && beamY < visibleLastLine {
+					V.BadLineCounter++
+					if V.BadLineCounter == 8 {
+						V.BadLineCounter = 0
+						V.RowCounter++
+					}
 				}
 			}
 		}
