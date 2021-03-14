@@ -7,6 +7,7 @@ import (
 type Driver interface {
 	Init(int, int)
 	SetPixel(int, globals.RGB)
+	DrawPixel(int, int, globals.RGB)
 	Draw8pixels(int, int, globals.RGB, globals.RGB, globals.Byte)
 	DisplayFrame()
 	CloseAll()

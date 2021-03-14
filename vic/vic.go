@@ -32,55 +32,44 @@ const (
 
 	firstVBlankLine  = 300
 	lastVBlankLine   = 15
-	visibleFirstLine = 51  // 56
-	visibleLastLine  = 251 // 255
-	// visibleFirstCol  = 11
-	// visibleLastCol   = 50
-	firstXcoord = 24
-	lastXcoord  = 344
+	visibleFirstLine = 51
+	visibleLastLine  = visibleFirstLine + visibleHeight
 
-	visibleFirstCol = firstXcoord / 8
-	visibleLastCol  = lastXcoord / 8
+	firstHBlankCol  = 453
+	lastHBlankCol   = 50
+	visibleFirstCol = 92
+	visibleLastCol  = 412
 )
+
+func (V *VIC) Init(mem *mem.Memory, cpuCycle chan bool) {
+	V.cpuCycle = cpuCycle
+	V.ram = mem
+	V.ram.Data[REG_EC] = Lightblue
+	V.ram.Data[REG_B0C] = Blue
+}
 
 func (V *VIC) readScreenData(mem *mem.Memory, y int) {
 	if (y >= visibleFirstLine) && (y < visibleLastLine) {
 		start := globals.Word(V.RowCounter) * 40
 		for i := 0; i < 40; i++ {
-			// log.Printf("X: %d Y: %d", i, start)
 			V.Buffer[i] = globals.Word(mem.Color[int(start)+i]) << 8
 			V.Buffer[i] |= globals.Word(mem.Screen[int(start)+i])
-			// log.Printf("Mem Color: %d, Value: %x", start+i, mem.Color[start+i])
-			// log.Printf("Mem Screen: %d, Value: %x", start+i, mem.Screen[start+i])
-			// log.Printf("Buffer: %d, Value: %x", i, V.Buffer[i])
 		}
 	}
 }
 
-func (V *VIC) isVisibleArea(x, y int) bool {
-	if (y >= visibleFirstLine) && (y < visibleLastLine) {
-		if (x >= visibleFirstCol) && (x <= visibleLastCol) {
-			return true
-		}
-	}
-	return false
-}
+func (V *VIC) getPixelColor(beamX int) globals.Byte {
+	origin := beamX - visibleFirstCol
+	col := origin >> 3
+	bufferValue := V.Buffer[col]
 
-func (V *VIC) drawByte(beamX, beamY int) {
-	if V.isVisibleArea(beamX, beamY) {
-		charColor := globals.Byte(V.Buffer[beamX-visibleFirstCol] >> 8)
-		charAddr := globals.Byte(V.Buffer[beamX-visibleFirstCol])
-		charRomAddr := V.ram.CharGen[globals.Word(charAddr)<<3+globals.Word(V.BadLineCounter)]
-		V.graph.Draw8pixels(beamX*8, beamY, Colors[charColor], Colors[Blue], charRomAddr)
-	} else {
-		color := V.ram.Data[REG_EC]
-		V.graph.Draw8pixels(beamX*8, beamY, Colors[color], Colors[color], globals.Byte(0xFF))
+	bit := globals.Byte(0b10000000 >> (origin % 8))
+	charAddr := globals.Byte(bufferValue)
+	charRomAddr := V.ram.CharGen[globals.Word(charAddr)<<3+globals.Word(V.BadLineCounter)]
+	if charRomAddr&bit > 0 {
+		return globals.Byte(bufferValue >> 8)
 	}
-}
-
-func (V *VIC) Init(mem *mem.Memory, cpuCycle chan bool) {
-	V.cpuCycle = cpuCycle
-	V.ram = mem
+	return V.ram.Data[REG_B0C] & 0b00001111
 }
 
 func (V *VIC) saveRasterPos(val int) {
@@ -94,6 +83,9 @@ func (V *VIC) saveRasterPos(val int) {
 }
 
 func (V *VIC) Run() {
+	var VBlank, HBlank, VisibleArea bool
+	var pixelColor globals.RGB
+
 	V.graph = &graphic.SDLDriver{}
 	// V.graph = &graphic.SDL2Driver{}
 
@@ -110,8 +102,9 @@ func (V *VIC) Run() {
 	}()
 
 	for {
-		HBlank := true
-		VBlank := true
+		HBlank = true
+		VBlank = true
+		VisibleArea = false
 		V.BadLineCounter = 0
 		V.RowCounter = 0
 
@@ -124,25 +117,36 @@ func (V *VIC) Run() {
 				if beamY > lastVBlankLine && beamY < firstVBlankLine {
 					VBlank = false
 					if beamY >= visibleFirstLine && beamY < visibleLastLine {
+						VisibleArea = true
 						if V.BadLineCounter == 0 {
 							V.readScreenData(V.ram, beamY)
 						}
+					} else {
+						VisibleArea = false
 					}
 				} else {
 					VBlank = true
 				}
 
-				for beamX := 0; beamX < cyclesPerLine; beamX++ {
-					if beamX >= visibleFirstCol && beamX < visibleLastCol {
+				beamX := 0
+				for cycle := 0; cycle < cyclesPerLine; cycle++ {
+					if beamX >= lastHBlankCol && beamX < firstHBlankCol {
 						HBlank = false
 					} else {
 						HBlank = true
 					}
-
-					if VBlank || HBlank {
-						V.graph.Draw8pixels(beamX*8, beamY, Colors[Black], Colors[Black], globals.Byte(0xFF))
-					} else {
-						V.drawByte(beamX, beamY)
+					for column := 0; column < 8; column++ {
+						if VBlank || HBlank {
+							pixelColor = Colors[Black]
+						} else {
+							if beamX >= visibleFirstCol && beamX < visibleLastCol && VisibleArea {
+								pixelColor = Colors[V.getPixelColor(beamX)]
+							} else {
+								pixelColor = Colors[V.ram.Data[REG_EC]]
+							}
+						}
+						V.graph.DrawPixel(beamX, beamY, pixelColor)
+						beamX++
 					}
 					V.cpuCycle <- true
 				}

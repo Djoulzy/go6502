@@ -42,9 +42,11 @@ func main() {
 			cpu.PC, _ = assembler.LoadHex(&mem, code)
 		case ".hex":
 			cpu.PC, _ = assembler.LoadFile(&mem, args[1])
+		case ".prg":
+			cpu.PC, _ = assembler.LoadPRG(&mem, args[1])
 		}
 	}
-	//mem.Dump(cpu.PC)
+	mem.Dump(cpu.PC)
 
 	vic := vic.VIC{}
 	vic.Init(&mem, cpu.Cycle)

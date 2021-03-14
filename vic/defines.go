@@ -55,7 +55,8 @@ type VIC struct {
 }
 
 const (
-	REG_EC     = globals.Word(0xD020) // Border Color
-	REG_RASTER = globals.Word(0xD012) // Raster 8 first bits
 	REG_RST8   = globals.Word(0xD011) // Raster 9eme bit
+	REG_RASTER = globals.Word(0xD012) // Raster 8 first bits
+	REG_EC     = globals.Word(0xD020) // Border Color
+	REG_B0C    = globals.Word(0xD021) // Background color 0
 )
