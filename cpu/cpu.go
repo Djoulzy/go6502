@@ -93,7 +93,9 @@ func (C *CPU) fetchByte(mem *mem.Memory) globals.Byte {
 	if C.Display {
 		C.refreshScreen(mem)
 	}
-	<-C.Cycle
+	// <-C.Cycle
+	mem.Acces.Lock()
+	mem.Acces.Unlock()
 	value := mem.Data[C.PC]
 	C.PC++
 	return value
