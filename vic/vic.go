@@ -1,9 +1,11 @@
 package vic
 
 import (
+	"fmt"
 	"go6502/globals"
 	"go6502/graphic"
 	"go6502/mem"
+	"time"
 )
 
 const (
@@ -44,7 +46,6 @@ func (V *VIC) Init(mem *mem.Memory, cpuCycle chan bool) {
 	V.ram = mem
 	V.ram.Data[REG_EC] = Lightblue
 	V.ram.Data[REG_B0C] = Blue
-	V.ram.Acces.Lock()
 }
 
 func (V *VIC) readScreenData(mem *mem.Memory, y int) {
@@ -66,7 +67,7 @@ func (V *VIC) getPixelColor(beamX int) globals.Byte {
 	charAddr := globals.Byte(bufferValue)
 	charRomAddr := V.ram.CharGen[globals.Word(charAddr)<<3+globals.Word(V.BadLineCounter)]
 	if charRomAddr&bit > 0 {
-		return globals.Byte(bufferValue >> 8)
+		return globals.Byte(bufferValue>>8) & 0b00001111
 	}
 	return V.ram.Data[REG_B0C] & 0b00001111
 }
@@ -94,11 +95,13 @@ func (V *VIC) Run() {
 	}()
 
 	// cpuTimer, _ := time.ParseDuration(fmt.Sprintf("%fms", lineRefresh))
-	// // fmt.Printf("cpuTimer %v.\n", cpuTimer)
-	// ticker := time.NewTicker(cpuTimer)
-	// defer func() {
-	// 	ticker.Stop()
-	// }()
+	cpuTimer, _ := time.ParseDuration(fmt.Sprintf("%fms", 0.05))
+
+	// fmt.Printf("cpuTimer %v.\n", cpuTimer)
+	ticker := time.NewTicker(cpuTimer)
+	defer func() {
+		ticker.Stop()
+	}()
 
 	for {
 		HBlank = true
@@ -107,13 +110,13 @@ func (V *VIC) Run() {
 		V.BadLineCounter = 0
 		V.RowCounter = 0
 
-		// t0 := time.Now()
+		t0 := time.Now()
 		for beamY := 0; beamY < screenHeightPAL; beamY++ {
 
 			V.saveRasterPos(beamY)
 			// // fmt.Printf("raster: %d - BadLineCounter: %d - RowCounter: %d\n", beamY, V.BadLineCounter, V.RowCounter)
-			// select {
-			// case <-ticker.C:
+			select {
+			case <-ticker.C:
 			if beamY > lastVBlankLine && beamY < firstVBlankLine {
 				VBlank = false
 				if beamY >= visibleFirstLine && beamY < visibleLastLine {
@@ -130,8 +133,6 @@ func (V *VIC) Run() {
 
 			beamX := 0
 			for cycle := 0; cycle < cyclesPerLine; cycle++ {
-				V.ram.Acces.Unlock()
-				V.ram.Acces.Lock()
 				if beamX >= lastHBlankCol && beamX < firstHBlankCol {
 					HBlank = false
 				} else {
@@ -144,14 +145,14 @@ func (V *VIC) Run() {
 						if beamX >= visibleFirstCol && beamX < visibleLastCol && VisibleArea {
 							pixelColor = Colors[V.getPixelColor(beamX)]
 						} else {
-							pixelColor = Colors[V.ram.Data[REG_EC]]
+							pixelColor = Colors[V.ram.Data[REG_EC]&0b00001111]
 						}
 					}
 					V.graph.DrawPixel(beamX, beamY, pixelColor)
 					beamX++
 				}
-
 				// V.cpuCycle <- true
+				V.ram.WaitFor(false)
 			}
 			if beamY >= visibleFirstLine && beamY < visibleLastLine {
 				V.BadLineCounter++
@@ -161,13 +162,13 @@ func (V *VIC) Run() {
 				}
 			}
 
-			// }
+			}
 		}
 		// setPixel(visibleFirstCol*8, visibleFirstLine, White)
 		// setPixel(visibleLastCol*8, visibleLastLine, White)
 		V.graph.DisplayFrame()
 		// os.Exit(1)
-		// t1 := time.Now()
-		// fmt.Printf("The call took %v to run.\n", t1.Sub(t0))
+		t1 := time.Now()
+		fmt.Printf("The call took %v to run.\n", t1.Sub(t0))
 	}
 }

@@ -1,6 +1,8 @@
 package cpu
 
-import "go6502/mem"
+import (
+	"go6502/mem"
+)
 
 //////////////////////////////////
 ///////////// INC ////////////////
@@ -8,7 +10,14 @@ import "go6502/mem"
 
 func (C *CPU) op_INC_ZP(mem *mem.Memory)  {}
 func (C *CPU) op_INC_ZPX(mem *mem.Memory) {}
-func (C *CPU) op_INC_ABS(mem *mem.Memory) {}
+
+func (C *CPU) op_INC_ABS(mem *mem.Memory) {
+	C.opName = "INC Abs"
+	address := C.fetchWord(mem)
+	mem.Data[address] += 1
+	C.setNZStatus(mem.Data[address])
+}
+
 func (C *CPU) op_INC_ABX(mem *mem.Memory) {}
 
 //////////////////////////////////
@@ -37,10 +46,10 @@ func (C *CPU) op_DEC_ZPX(mem *mem.Memory) {}
 func (C *CPU) op_DEC_ABS(mem *mem.Memory) {}
 func (C *CPU) op_DEC_ABX(mem *mem.Memory) {}
 
-func (C *CPU) op_DEX(mem *mem.Memory)     {
+func (C *CPU) op_DEX(mem *mem.Memory) {
 	C.opName = "DEX"
 	C.X -= 1
 	C.setNZStatus(C.X)
 }
 
-func (C *CPU) op_DEY(mem *mem.Memory)     {}
+func (C *CPU) op_DEY(mem *mem.Memory) {}

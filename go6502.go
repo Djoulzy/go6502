@@ -46,7 +46,7 @@ func main() {
 			cpu.PC, _ = assembler.LoadPRG(&mem, args[1])
 		}
 	}
-	mem.Dump(cpu.PC)
+	// mem.Dump(cpu.PC)
 
 	vic := vic.VIC{}
 	vic.Init(&mem, cpu.Cycle)
@@ -55,7 +55,6 @@ func main() {
 
 	if cpu.Display {
 		for {
-			cpu.Cycle <- true
 			time.Sleep(time.Second)
 		}
 	}

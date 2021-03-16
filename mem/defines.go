@@ -26,5 +26,6 @@ type Memory struct {
 	Screen  []globals.Byte
 	Color   []globals.Byte
 	Vic     [4][]globals.Byte
-	Acces   sync.Mutex
+	Access  bool
+	mu      sync.RWMutex
 }

@@ -33,6 +33,7 @@ func (m *Memory) Init() {
 	}
 
 	m.loadCharGenRom("char.bin")
+	m.Access = false
 }
 
 func (m *Memory) loadCharGenRom(filename string) {
@@ -78,4 +79,12 @@ func (m *Memory) String2screenCode(startMem globals.Word, message string) {
 	for i := 0; i < len(runes); i++ {
 		m.Data[startMem+globals.Word(i)] = globals.Byte(runes[i])
 	}
+}
+
+func (m *Memory) WaitFor(val bool) {
+	m.mu.Lock()
+	// m.Access = !val
+	m.mu.Unlock()
+	// for m.Access != val {
+	// }
 }
