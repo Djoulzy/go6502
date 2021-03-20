@@ -81,10 +81,10 @@ func (m *Memory) String2screenCode(startMem globals.Word, message string) {
 	}
 }
 
-func (m *Memory) WaitFor(val bool) {
-	m.mu.Lock()
-	// m.Access = !val
-	m.mu.Unlock()
-	// for m.Access != val {
-	// }
-}
+// func (m *Memory) WaitFor(val bool) {
+// 	m.mu.Lock()
+// 	// m.Access = !val
+// 	m.mu.Unlock()
+// 	// for m.Access != val {
+// 	// }
+// }

@@ -46,12 +46,23 @@ var Colors [16]globals.RGB = [16]globals.RGB{
 
 // VIC :
 type VIC struct {
-	Buffer         [40]globals.Word
-	BadLineCounter globals.Byte
-	RowCounter     globals.Byte
-	graph          graphic.Driver
-	cpuCycle       chan bool
-	ram            *mem.Memory
+	VML    [40]globals.Word // Video Matrix Line
+	VMLI   globals.Byte     // Video Matrix Line Indexer
+	VC     globals.Word     // Vide Counter
+	VCBASE globals.Word     // Video Counter Base
+	RC     globals.Byte     // Row counter
+	BA     bool             // High: normal / Low: BadLine
+
+	visibleArea bool
+	displayArea bool
+	drawArea    bool
+
+	ColorBuffer [40]globals.Byte
+	CharBuffer  [40]globals.Byte
+
+	graph    graphic.Driver
+	cpuCycle chan bool
+	ram      *mem.Memory
 }
 
 const (

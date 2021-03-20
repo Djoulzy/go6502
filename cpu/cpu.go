@@ -108,7 +108,7 @@ func (C *CPU) fetchByte(mem *mem.Memory) globals.Byte {
 	// <-C.Cycle
 	value := mem.Data[C.PC]
 	C.PC++
-	mem.WaitFor(true)
+	// mem.WaitFor(true)
 	return value
 }
 

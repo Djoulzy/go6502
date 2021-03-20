@@ -24,7 +24,9 @@ func (S *SDLDriver) SetPixel(index int, c globals.RGB) {
 
 func (S *SDLDriver) DrawPixel(x, y int, color globals.RGB) {
 	index := (y*S.winWidth + x) * 3
-	S.SetPixel(index, color)
+	S.screen[index] = byte(color.R)
+	S.screen[index+1] = byte(color.G)
+	S.screen[index+2] = byte(color.B)
 }
 
 func (S *SDLDriver) Draw8pixels(x, y int, fg_color, bg_color globals.RGB, value globals.Byte) {
