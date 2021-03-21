@@ -2,6 +2,7 @@ package vic
 
 import (
 	"fmt"
+	"go6502/databus"
 	"go6502/globals"
 	"go6502/graphic"
 	"go6502/mem"
@@ -41,15 +42,18 @@ const (
 	visibleLastCol  = 412
 )
 
-func (V *VIC) Init(mem *mem.Memory, cpuCycle chan bool) {
+func (V *VIC) Init(dbus *databus.Databus, mem *mem.Memory, cpuCycle chan bool) {
 	V.graph = &graphic.SDLDriver{}
 	V.graph.Init(winWidth, winHeight)
 
 	V.cpuCycle = cpuCycle
 	V.ram = mem
+	V.dbus = dbus
 	V.ram.Data[REG_EC] = Lightblue
 	V.ram.Data[REG_B0C] = Blue
 	V.BA = true
+
+	V.dbus.GetAccess()
 }
 
 // func (V *VIC) readScreenData(mem *mem.Memory, y int) {
@@ -97,6 +101,8 @@ func (V *VIC) readVideoMatrix() {
 	if !V.BA {
 		V.ColorBuffer[V.VMLI] = V.ram.Color[V.VC]
 		V.CharBuffer[V.VMLI] = V.ram.Screen[V.VC]
+	} else {
+		V.cpuCycle <- true
 	}
 }
 
@@ -154,21 +160,34 @@ func (V *VIC) Run() {
 				// }
 				switch cycle {
 				case 1:
+					V.cpuCycle <- true
 				case 2:
+					V.cpuCycle <- true
 				case 3:
+					V.cpuCycle <- true
 				case 4:
+					V.cpuCycle <- true
 				case 5:
+					V.cpuCycle <- true
 				case 6:
+					V.cpuCycle <- true
 				case 7:
+					V.cpuCycle <- true
 				case 8:
+					V.cpuCycle <- true
 				case 9:
+					V.cpuCycle <- true
 				case 10:
+					V.cpuCycle <- true
 				case 11: // Debut de la zone visible
 					V.drawChar(beamX, beamY)
+					V.cpuCycle <- true
 				case 12:
 					V.drawChar(beamX, beamY)
+					V.cpuCycle <- true
 				case 13:
 					V.drawChar(beamX, beamY)
+					V.cpuCycle <- true
 				case 14:
 					V.VC = V.VCBASE
 					V.VMLI = 0
@@ -176,6 +195,7 @@ func (V *VIC) Run() {
 						V.RC = 0
 					}
 					V.drawChar(beamX, beamY)
+					V.cpuCycle <- true
 				case 15: // Debut de la lecture de la memoire video en mode BadLine
 					V.drawChar(beamX, beamY)
 					V.readVideoMatrix()
@@ -298,11 +318,13 @@ func (V *VIC) Run() {
 					V.readVideoMatrix()
 				case 55: // Fin de la zone de display
 					V.drawChar(beamX, beamY)
-
+					V.cpuCycle <- true
 				case 56: // Debut de la zone visible
 					V.drawChar(beamX, beamY)
+					V.cpuCycle <- true
 				case 57:
 					V.drawChar(beamX, beamY)
+					V.cpuCycle <- true
 				case 58:
 					if V.RC == 7 {
 						V.VCBASE = V.VC
@@ -311,25 +333,31 @@ func (V *VIC) Run() {
 						V.RC++
 					}
 					V.drawChar(beamX, beamY)
+					V.cpuCycle <- true
 				case 59:
 					V.drawChar(beamX, beamY)
+					V.cpuCycle <- true
 				case 60:
+					V.cpuCycle <- true
 				case 61:
+					V.cpuCycle <- true
 				case 62:
+					V.cpuCycle <- true
 				case 63:
+					V.cpuCycle <- true
 				}
 				beamX += 8
 			}
 		}
 		beamY++
-		// if beamY == firstDisplayLine+9 {
-		// 	os.Exit(1)
-		// }
 		if beamY >= screenHeightPAL {
 			beamY = 0
 			V.VCBASE = 0
 			V.graph.DisplayFrame()
 		}
+		// if beamY == firstDisplayLine+9 {
+		// os.Exit(1)
+		// }
 	}
 }
 

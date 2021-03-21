@@ -16,6 +16,9 @@ func (C *CPU) op_INC_ABS(mem *mem.Memory) {
 	address := C.fetchWord(mem)
 	mem.Data[address] += 1
 	C.setNZStatus(mem.Data[address])
+	<-C.Cycle
+	<-C.Cycle
+	<-C.Cycle
 }
 
 func (C *CPU) op_INC_ABX(mem *mem.Memory) {}

@@ -1,6 +1,7 @@
 package vic
 
 import (
+	"go6502/databus"
 	"go6502/globals"
 	"go6502/graphic"
 	"go6502/mem"
@@ -26,22 +27,22 @@ var (
 )
 
 var Colors [16]globals.RGB = [16]globals.RGB{
-	{R: 0, G: 0, B: 0},
-	{R: 255, G: 255, B: 255},
-	{R: 137, G: 78, B: 67},
-	{R: 170, G: 255, B: 238},
-	{R: 204, G: 68, B: 204},
-	{R: 0, G: 204, B: 85},
-	{R: 67, G: 60, B: 165},
-	{R: 238, G: 238, B: 119},
-	{R: 221, G: 136, B: 85},
-	{R: 102, G: 68, B: 0},
-	{R: 255, G: 119, B: 119},
-	{R: 51, G: 51, B: 51},
-	{R: 119, G: 119, B: 119},
-	{R: 170, G: 255, B: 102},
-	{R: 132, G: 126, B: 216},
-	{R: 187, G: 187, B: 187},
+	{R: 0, G: 0, B: 0},       // Black
+	{R: 255, G: 255, B: 255}, // White
+	{R: 137, G: 78, B: 67},   // Red
+	{R: 146, G: 195, B: 203}, // Cyan
+	{R: 138, G: 87, B: 176},  // Violet
+	{R: 128, G: 174, B: 89},  // Green
+	{R: 68, G: 63, B: 164},   // Blue
+	{R: 215, G: 221, B: 137}, // Yellow
+	{R: 146, G: 106, B: 56},  // Orange
+	{R: 100, G: 82, B: 23},   // Brown
+	{R: 184, G: 132, B: 122}, // Lightred
+	{R: 96, G: 96, B: 96},    // Darkgrey
+	{R: 138, G: 138, B: 138}, // Grey
+	{R: 191, G: 233, B: 155}, // Lightgreen
+	{R: 131, G: 125, B: 216}, // Lightblue
+	{R: 179, G: 179, B: 179}, // Lightgrey
 }
 
 // VIC :
@@ -63,6 +64,7 @@ type VIC struct {
 	graph    graphic.Driver
 	cpuCycle chan bool
 	ram      *mem.Memory
+	dbus     *databus.Databus
 }
 
 const (

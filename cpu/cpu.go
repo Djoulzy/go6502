@@ -1,6 +1,8 @@
 package cpu
 
 import (
+	"fmt"
+	"go6502/databus"
 	"go6502/globals"
 	"go6502/mem"
 	"os"
@@ -105,10 +107,10 @@ func (C *CPU) fetchByte(mem *mem.Memory) globals.Byte {
 	if C.Display {
 		C.refreshScreen(mem)
 	}
-	// <-C.Cycle
 	value := mem.Data[C.PC]
 	C.PC++
-	// mem.WaitFor(true)
+	<-C.Cycle
+	fmt.Printf("CPU\n")
 	return value
 }
 
@@ -264,10 +266,11 @@ func (C *CPU) initLanguage() {
 	Mnemonic[CodeAddr["SEI"]] = C.op_SEI
 }
 
-func (C *CPU) Init(mem *mem.Memory, disp bool) {
+func (C *CPU) Init(dbus *databus.Databus, mem *mem.Memory, disp bool) {
 	C.Cycle = make(chan bool, 1)
 	C.Display = disp
 	C.ram = mem
+	C.dbus = dbus
 
 	C.initLanguage()
 	if C.Display {

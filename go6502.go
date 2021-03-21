@@ -5,6 +5,7 @@ package main
 import (
 	"go6502/assembler"
 	"go6502/cpu"
+	"go6502/databus"
 	"go6502/mem"
 	"go6502/vic"
 	"os"
@@ -26,11 +27,13 @@ func main() {
 	// fmt.Printf("%d\n", int8(test))
 	// os.Exit(1)
 
+	dbus := databus.Databus{}
+
 	mem := mem.Memory{}
 	mem.Init()
 
 	cpu := cpu.CPU{}
-	cpu.Init(&mem, false)
+	cpu.Init(&dbus, &mem, false)
 
 	if len(args) > 1 {
 		ass := assembler.Assembler{}
@@ -49,7 +52,7 @@ func main() {
 	// mem.Dump(cpu.PC)
 
 	vic := vic.VIC{}
-	vic.Init(&mem, cpu.Cycle)
+	vic.Init(&dbus, &mem, cpu.Cycle)
 
 	go cpu.Run()
 

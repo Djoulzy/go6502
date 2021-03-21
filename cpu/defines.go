@@ -1,6 +1,7 @@
 package cpu
 
 import (
+	"go6502/databus"
 	"go6502/globals"
 	"go6502/mem"
 )
@@ -31,6 +32,7 @@ type CPU struct {
 	Cycle   chan bool
 	Display bool
 	ram     *mem.Memory
+	dbus    *databus.Databus
 }
 
 // Mnemonic :

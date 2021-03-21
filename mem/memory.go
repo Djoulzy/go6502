@@ -80,11 +80,3 @@ func (m *Memory) String2screenCode(startMem globals.Word, message string) {
 		m.Data[startMem+globals.Word(i)] = globals.Byte(runes[i])
 	}
 }
-
-// func (m *Memory) WaitFor(val bool) {
-// 	m.mu.Lock()
-// 	// m.Access = !val
-// 	m.mu.Unlock()
-// 	// for m.Access != val {
-// 	// }
-// }
