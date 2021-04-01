@@ -29,7 +29,6 @@ type CPU struct {
 
 	opName  string
 	exit    bool
-	Cycle   chan bool
 	Display bool
 	ram     *mem.Memory
 	dbus    *databus.Databus

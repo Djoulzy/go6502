@@ -61,10 +61,9 @@ type VIC struct {
 	ColorBuffer [40]globals.Byte
 	CharBuffer  [40]globals.Byte
 
-	graph    graphic.Driver
-	cpuCycle chan bool
-	ram      *mem.Memory
-	dbus     *databus.Databus
+	graph     graphic.Driver
+	ram       *mem.Memory
+	dbus      *databus.Databus
 }
 
 const (

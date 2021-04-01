@@ -12,28 +12,16 @@ type SDL2Driver struct {
 	winWidth  int
 	window    *sdl.Window
 	renderer  *sdl.Renderer
-	texture   *sdl.Texture
-	screen    []byte
 }
 
-func (S *SDL2Driver) SetPixel(index int, c globals.RGB) {
-}
-
-func (S *SDL2Driver) Draw8pixels(x, y int, fg_color, bg_color globals.RGB, value globals.Byte) {
-	for i := 0; i < 8; i++ {
-		if value&(0x1<<(7-i)) > 0 {
-			S.renderer.SetDrawColor(uint8(fg_color.R), uint8(fg_color.G), uint8(fg_color.B), 255)
-		} else {
-			S.renderer.SetDrawColor(uint8(bg_color.R), uint8(bg_color.G), uint8(bg_color.B), 255)
-		}
-		S.renderer.DrawPoint(int32(x+i), int32(y))
-	}
+func (S *SDL2Driver) DrawPixel(x, y int, color globals.RGB) {
+	S.renderer.SetDrawColor(byte(color.R), byte(color.R), byte(color.R), 255)
+	S.renderer.DrawPoint(int32(x), int32(y))
 }
 
 func (S *SDL2Driver) CloseAll() {
 	S.window.Destroy()
 	S.renderer.Destroy()
-	S.texture.Destroy()
 	sdl.Quit()
 }
 
@@ -52,20 +40,11 @@ func (S *SDL2Driver) Init(winWidth, winHeight int) {
 	if err != nil {
 		panic(err)
 	}
-	S.window.SetResizable(true)
-	S.window.SetSize(int32(S.winWidth*2), int32(S.winHeight*2))
 
 	S.renderer, err = sdl.CreateRenderer(S.window, -1, sdl.RENDERER_ACCELERATED)
 	if err != nil {
 		panic(err)
 	}
-
-	// S.texture, err = S.renderer.CreateTexture(sdl.PIXELFORMAT_RGB24, sdl.TEXTUREACCESS_STATIC, int32(S.winWidth), int32(S.winHeight))
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	S.screen = make([]byte, S.winWidth*S.winHeight*3)
 }
 
 func (S *SDL2Driver) DisplayFrame() {
@@ -77,4 +56,5 @@ func (S *SDL2Driver) DisplayFrame() {
 			os.Exit(1)
 		}
 	}
+
 }

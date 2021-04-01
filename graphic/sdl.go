@@ -16,29 +16,11 @@ type SDLDriver struct {
 	screen    []byte
 }
 
-func (S *SDLDriver) SetPixel(index int, c globals.RGB) {
-	S.screen[index] = byte(c.R)
-	S.screen[index+1] = byte(c.G)
-	S.screen[index+2] = byte(c.B)
-}
-
 func (S *SDLDriver) DrawPixel(x, y int, color globals.RGB) {
 	index := (y*S.winWidth + x) * 3
 	S.screen[index] = byte(color.R)
 	S.screen[index+1] = byte(color.G)
 	S.screen[index+2] = byte(color.B)
-}
-
-func (S *SDLDriver) Draw8pixels(x, y int, fg_color, bg_color globals.RGB, value globals.Byte) {
-	index := (y*S.winWidth + x) * 3
-	for i := 0; i < 8; i++ {
-		base := index + (i * 3)
-		if value&(0x1<<(7-i)) > 0 {
-			S.SetPixel(base, fg_color)
-		} else {
-			S.SetPixel(base, bg_color)
-		}
-	}
 }
 
 func (S *SDLDriver) CloseAll() {

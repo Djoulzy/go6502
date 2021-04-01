@@ -11,7 +11,6 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"time"
 )
 
 func init() {
@@ -28,6 +27,7 @@ func main() {
 	// os.Exit(1)
 
 	dbus := databus.Databus{}
+	dbus.Init()
 
 	mem := mem.Memory{}
 	mem.Init()
@@ -52,14 +52,8 @@ func main() {
 	// mem.Dump(cpu.PC)
 
 	vic := vic.VIC{}
-	vic.Init(&dbus, &mem, cpu.Cycle)
+	vic.Init(&dbus, &mem)
 
 	go cpu.Run()
-
-	if cpu.Display {
-		for {
-			time.Sleep(time.Second)
-		}
-	}
 	vic.Run()
 }

@@ -1,0 +1,57 @@
+
+; ******** Source: /Users/jules/go/src/go6502/asm/main.asm
+
+; ******** Source: basic-boot.asm
+     1                          ; A BASIC booter, encodes `10 SYS <address>`.
+     2                          ; Macrofied from http://www.pouet.net/topic.php?which=6541
+     3                          
+
+; ******** Source: constants.asm
+     1                          
+     2                          ;; Start of BASIC program
+     3                          basic = $0801
+     4                          
+     5                          ;; Background color
+     6                          bgcol = $d021
+     7                          
+     8                          ;; Border color
+
+; ******** Source: basic-boot.asm
+     5                          
+     6                          !macro start_at .address {
+     7                            * = basic
+     8                            !byte $0c,$08,$00,$00,$9e
+     9                            !if .address >= 10000 { !byte 48 + ((.address / 10000) % 10) }
+    10                            !if .address >=  1000 { !byte 48 + ((.address /  1000) % 10) }
+    11                            !if .address >=   100 { !byte 48 + ((.address /   100) % 10) }
+    12                            !if .address >=    10 { !byte 48 + ((.address /    10) % 10) }
+    13                            !byte $30 + (.address % 10), $00, $00, $00
+    14                            * = .address
+    15                          }
+    16                          
+    17                          ; A cooler example is to write
+    18                          ;
+    19                          ;   10 SYS <address>: REM <backspaces>Your comment
+    20                          ;
+    21                          ; When the user types LIST, he will just see
+    22                          ;
+    23                          ;   10 Your comment
+    24                          ;
+    25                          ; but still be able to run it.
+
+; ******** Source: /Users/jules/go/src/go6502/asm/main.asm
+     2                          
+     3  0801 0c0800009e323037...+start_at $0816
+     4                          
+     5  0816 ee20d0             inc $D020
+     6  0819 4c1608             jmp $0816
+     7                          
+     8                          ; jmp start
+     9                          
+    10                          ; start:
+    11                          ; LDX #$0F
+    12                          ; loop:
+    13                          ; STX $d020
+    14                          ; STX $D021
+    15                          ; DEX
+    16                          ; BNE loop

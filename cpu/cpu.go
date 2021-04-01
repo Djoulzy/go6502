@@ -1,7 +1,6 @@
 package cpu
 
 import (
-	"fmt"
 	"go6502/databus"
 	"go6502/globals"
 	"go6502/mem"
@@ -109,8 +108,7 @@ func (C *CPU) fetchByte(mem *mem.Memory) globals.Byte {
 	}
 	value := mem.Data[C.PC]
 	C.PC++
-	<-C.Cycle
-	fmt.Printf("CPU\n")
+	C.dbus.WaitBusLow()
 	return value
 }
 
@@ -267,7 +265,6 @@ func (C *CPU) initLanguage() {
 }
 
 func (C *CPU) Init(dbus *databus.Databus, mem *mem.Memory, disp bool) {
-	C.Cycle = make(chan bool, 1)
 	C.Display = disp
 	C.ram = mem
 	C.dbus = dbus

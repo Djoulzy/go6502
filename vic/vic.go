@@ -42,50 +42,16 @@ const (
 	visibleLastCol  = 412
 )
 
-func (V *VIC) Init(dbus *databus.Databus, mem *mem.Memory, cpuCycle chan bool) {
+func (V *VIC) Init(dbus *databus.Databus, mem *mem.Memory) {
 	V.graph = &graphic.SDLDriver{}
 	V.graph.Init(winWidth, winHeight)
 
-	V.cpuCycle = cpuCycle
 	V.ram = mem
 	V.dbus = dbus
 	V.ram.Data[REG_EC] = Lightblue
 	V.ram.Data[REG_B0C] = Blue
 	V.BA = true
-
-	V.dbus.GetAccess()
 }
-
-// func (V *VIC) readScreenData(mem *mem.Memory, y int) {
-// 	if (y >= firstDisplayLine) && (y <= lastDisplayLine) {
-// 		start := globals.Word(V.RowCounter) * 40
-// 		for i := 0; i < 40; i++ {
-// 			V.Buffer[i] = globals.Word(mem.Color[int(start)+i]) << 8
-// 			V.Buffer[i] |= globals.Word(mem.Screen[int(start)+i])
-// 		}
-// 	}
-// }
-
-// func (V *VIC) readCharGen() {
-// 	if V.displayArea {
-// 		V.VC++
-// 		V.VMLI++
-// 	}
-// }
-
-// func (V *VIC) getPixelColor(beamX int) globals.Byte {
-// 	origin := beamX - visibleFirstCol
-// 	col := origin >> 3
-// 	bufferValue := V.Buffer[col]
-
-// 	bit := globals.Byte(0b10000000 >> (origin % 8))
-// 	charAddr := globals.Byte(bufferValue)
-// 	charRomAddr := V.ram.CharGen[globals.Word(charAddr)<<3+globals.Word(V.BadLineCounter)]
-// 	if charRomAddr&bit > 0 {
-// 		return globals.Byte(bufferValue>>8) & 0b00001111
-// 	}
-// 	return V.ram.Data[REG_B0C] & 0b00001111
-// }
 
 func (V *VIC) saveRasterPos(val int) {
 	V.ram.Data[REG_RASTER] = globals.Byte(val)
@@ -102,7 +68,7 @@ func (V *VIC) readVideoMatrix() {
 		V.ColorBuffer[V.VMLI] = V.ram.Color[V.VC]
 		V.CharBuffer[V.VMLI] = V.ram.Screen[V.VC]
 	} else {
-		V.cpuCycle <- true
+		V.dbus.WaitBusHigh()
 	}
 }
 
@@ -145,210 +111,213 @@ func (V *VIC) Run() {
 
 	beamY := 0
 	V.VCBASE = 0
+	V.dbus.WaitBusHigh()
 	for {
-		select {
-		case <-ticker.C:
-			V.saveRasterPos(beamY)
-			V.visibleArea = (beamY > lastVBlankLine) && (beamY < firstVBlankLine)
-			V.displayArea = (beamY >= firstDisplayLine) && (beamY <= lastDisplayLine) && V.visibleArea
-			V.BA = !(((beamY-firstDisplayLine)%8 == 0) && V.displayArea)
-			beamX := 0
-			for cycle := 1; cycle <= cyclesPerLine; cycle++ {
-				V.drawArea = ((cycle > 15) && (cycle < 56)) && V.displayArea
-				// if V.drawArea {
-				// 	fmt.Printf("Raster: %d - Cycle: %d - BA: %t - VMLI: %d - VCBASE/VC: %d/%d - RC: %d - Char: %02X\n", beamY, cycle, V.BA, V.VMLI, V.VCBASE, V.VC, V.RC, V.CharBuffer[V.VMLI])
-				// }
-				switch cycle {
-				case 1:
-					V.cpuCycle <- true
-				case 2:
-					V.cpuCycle <- true
-				case 3:
-					V.cpuCycle <- true
-				case 4:
-					V.cpuCycle <- true
-				case 5:
-					V.cpuCycle <- true
-				case 6:
-					V.cpuCycle <- true
-				case 7:
-					V.cpuCycle <- true
-				case 8:
-					V.cpuCycle <- true
-				case 9:
-					V.cpuCycle <- true
-				case 10:
-					V.cpuCycle <- true
-				case 11: // Debut de la zone visible
-					V.drawChar(beamX, beamY)
-					V.cpuCycle <- true
-				case 12:
-					V.drawChar(beamX, beamY)
-					V.cpuCycle <- true
-				case 13:
-					V.drawChar(beamX, beamY)
-					V.cpuCycle <- true
-				case 14:
-					V.VC = V.VCBASE
-					V.VMLI = 0
-					if !V.BA {
-						V.RC = 0
-					}
-					V.drawChar(beamX, beamY)
-					V.cpuCycle <- true
-				case 15: // Debut de la lecture de la memoire video en mode BadLine
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 16: // Debut de la zone d'affichage
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 17:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 18:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 19:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 20:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 21:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 22:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 23:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 24:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 25:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 26:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 27:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 28:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 29:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 30:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 31:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 32:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 33:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 34:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 35:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 36:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 37:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 38:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 39:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 40:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 41:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 42:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 43:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 44:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 45:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 46:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 47:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 48:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 49:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 50:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 51:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 52:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 53:
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 54: // Dernier lecture de la matrice video ram
-					V.drawChar(beamX, beamY)
-					V.readVideoMatrix()
-				case 55: // Fin de la zone de display
-					V.drawChar(beamX, beamY)
-					V.cpuCycle <- true
-				case 56: // Debut de la zone visible
-					V.drawChar(beamX, beamY)
-					V.cpuCycle <- true
-				case 57:
-					V.drawChar(beamX, beamY)
-					V.cpuCycle <- true
-				case 58:
-					if V.RC == 7 {
-						V.VCBASE = V.VC
-					}
-					if V.displayArea {
-						V.RC++
-					}
-					V.drawChar(beamX, beamY)
-					V.cpuCycle <- true
-				case 59:
-					V.drawChar(beamX, beamY)
-					V.cpuCycle <- true
-				case 60:
-					V.cpuCycle <- true
-				case 61:
-					V.cpuCycle <- true
-				case 62:
-					V.cpuCycle <- true
-				case 63:
-					V.cpuCycle <- true
+
+		<-ticker.C
+		V.saveRasterPos(beamY)
+		V.visibleArea = (beamY > lastVBlankLine) && (beamY < firstVBlankLine)
+		V.displayArea = (beamY >= firstDisplayLine) && (beamY <= lastDisplayLine) && V.visibleArea
+		V.BA = !(((beamY-firstDisplayLine)%8 == 0) && V.displayArea)
+		beamX := 0
+		for cycle := 1; cycle <= cyclesPerLine; cycle++ {
+			V.drawArea = ((cycle > 15) && (cycle < 56)) && V.displayArea
+			// if V.drawArea {
+			// 	fmt.Printf("Raster: %d - Cycle: %d - BA: %t - VMLI: %d - VCBASE/VC: %d/%d - RC: %d - Char: %02X\n", beamY, cycle, V.BA, V.VMLI, V.VCBASE, V.VC, V.RC, V.CharBuffer[V.VMLI])
+			// }
+
+			// fmt.Printf("VIC\n")
+			switch cycle {
+			case 1:
+				V.dbus.WaitBusHigh()
+			case 2:
+				V.dbus.WaitBusHigh()
+			case 3:
+				V.dbus.WaitBusHigh()
+			case 4:
+				V.dbus.WaitBusHigh()
+			case 5:
+				V.dbus.WaitBusHigh()
+			case 6:
+				V.dbus.WaitBusHigh()
+			case 7:
+				V.dbus.WaitBusHigh()
+			case 8:
+				V.dbus.WaitBusHigh()
+			case 9:
+				V.dbus.WaitBusHigh()
+			case 10:
+				V.dbus.WaitBusHigh()
+			case 11: // Debut de la zone visible
+				V.drawChar(beamX, beamY)
+				V.dbus.WaitBusHigh()
+			case 12:
+				V.drawChar(beamX, beamY)
+				V.dbus.WaitBusHigh()
+			case 13:
+				V.drawChar(beamX, beamY)
+				V.dbus.WaitBusHigh()
+			case 14:
+				V.VC = V.VCBASE
+				V.VMLI = 0
+				if !V.BA {
+					V.RC = 0
 				}
-				beamX += 8
+				V.drawChar(beamX, beamY)
+				V.dbus.WaitBusHigh()
+			case 15: // Debut de la lecture de la memoire video en mode BadLine
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 16: // Debut de la zone d'affichage
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 17:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 18:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 19:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 20:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 21:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 22:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 23:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 24:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 25:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 26:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 27:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 28:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 29:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 30:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 31:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 32:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 33:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 34:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 35:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 36:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 37:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 38:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 39:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 40:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 41:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 42:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 43:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 44:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 45:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 46:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 47:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 48:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 49:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 50:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 51:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 52:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 53:
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 54: // Dernier lecture de la matrice video ram
+				V.drawChar(beamX, beamY)
+				V.readVideoMatrix()
+			case 55: // Fin de la zone de display
+				V.drawChar(beamX, beamY)
+				V.dbus.WaitBusHigh()
+			case 56: // Debut de la zone visible
+				V.drawChar(beamX, beamY)
+				V.dbus.WaitBusHigh()
+			case 57:
+				V.drawChar(beamX, beamY)
+				V.dbus.WaitBusHigh()
+			case 58:
+				if V.RC == 7 {
+					V.VCBASE = V.VC
+				}
+				if V.displayArea {
+					V.RC++
+				}
+				V.drawChar(beamX, beamY)
+				V.dbus.WaitBusHigh()
+			case 59:
+				V.drawChar(beamX, beamY)
+				V.dbus.WaitBusHigh()
+			case 60:
+				V.dbus.WaitBusHigh()
+			case 61:
+				V.dbus.WaitBusHigh()
+			case 62:
+				V.dbus.WaitBusHigh()
+			case 63:
+				V.dbus.WaitBusHigh()
 			}
+			beamX += 8
 		}
+
 		beamY++
 		if beamY >= screenHeightPAL {
 			beamY = 0
@@ -430,7 +399,7 @@ func (V *VIC) Run() {
 // 					V.graph.DrawPixel(beamX, beamY, pixelColor)
 // 					beamX++
 // 				}
-// 				// V.cpuCycle <- true
+// 				// V.dbus.WaitBusHigh()
 // 				V.ram.WaitFor(false)
 // 			}
 // 			if beamY >= visibleFirstLine && beamY < visibleLastLine {

@@ -1,21 +1,34 @@
 package databus
 
-import "sync"
+import (
+	"sync"
+)
 
 type Databus struct {
-	access sync.Mutex
+	// CPU    sync.Mutex
+	// VIC    sync.Mutex
+	Access sync.Mutex
+	level  bool // True: CPU / False: VIC
 }
 
-func (D *Databus) WaitAccess() {
-	D.access.Lock()
-	D.access.Unlock()
+func (D *Databus) Init() {
+	D.level = false
 }
 
-func (D *Databus) GetAccess() {
-	D.access.Lock()
+// WaitBusLow : CPU wait
+func (D *Databus) WaitBusLow() {
+	D.Access.Lock()
+	D.level = true
+	D.Access.Unlock()
+	for D.level == true {
+	}
 }
 
-func (D *Databus) AllowCPU() {
-	D.access.Unlock()
-	D.access.Lock()
+// WaitBusLow : VIC wait
+func (D *Databus) WaitBusHigh() {
+	D.Access.Lock()
+	D.level = false
+	D.Access.Unlock()
+	for D.level == false {
+	}
 }
