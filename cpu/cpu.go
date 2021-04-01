@@ -262,6 +262,15 @@ func (C *CPU) Init(mem *mem.Memory, disp bool) {
 	}
 
 	C.reset(C.ram)
+	// NMI
+	C.ram.Data[0xFFFA] = 0x43
+	C.ram.Data[0xFFFB] = 0xFE
+	// Cold Start
+	C.ram.Data[0xFFFC] = 0xE2
+	C.ram.Data[0xFFFD] = 0xFC
+	// IRQ
+	C.ram.Data[0xFFFE] = 0x48
+	C.ram.Data[0xFFFF] = 0xFF
 }
 
 func (C *CPU) Run() {

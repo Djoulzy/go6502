@@ -13,11 +13,15 @@ const (
 	intAddr     = 0xFFFA
 	resetAddr   = 0xFFFC
 	brkAddr     = 0xFFFE
+
+	KernalStart = 0xE000
+	KernalEnd   = 0xEFFF
 )
 
 // Memory :
 type Memory struct {
 	Data    [memorySize]globals.Byte
+	Kernal  []globals.Byte
 	CharGen [4096]globals.Byte
 	Stack   []globals.Byte
 	Screen  []globals.Byte

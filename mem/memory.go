@@ -11,6 +11,7 @@ func (m *Memory) Init() {
 	m.Stack = m.Data[stackStart : stackEnd+1]
 	m.Screen = m.Data[screenStart : screenEnd+1]
 	m.Color = m.Data[colorStart : colorEnd+1]
+	m.Kernal = m.Data[KernalStart:KernalEnd]
 
 	m.Vic[0] = m.Data[0x0000:0x3FFF]
 	m.Vic[1] = m.Data[0x4000:0x7FFF]
@@ -32,7 +33,8 @@ func (m *Memory) Init() {
 		m.Screen[i] = globals.Byte(i)
 	}
 
-	m.loadCharGenRom("char.bin")
+	m.loadCharGenRom("roms/char.bin")
+	m.loadKernalRom("roms/kernal.bin")
 }
 
 func (m *Memory) loadCharGenRom(filename string) {
@@ -45,6 +47,19 @@ func (m *Memory) loadCharGenRom(filename string) {
 	}
 	for i := 0; i < 4096; i++ {
 		m.CharGen[i] = globals.Byte(data[i])
+	}
+}
+
+func (m *Memory) loadKernalRom(filename string) {
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		panic(err)
+	}
+	if len(data) != 8192 {
+		panic("Bad ROM Size")
+	}
+	for i := 0; i < 8192; i++ {
+		m.Kernal[i] = globals.Byte(data[i])
 	}
 }
 
