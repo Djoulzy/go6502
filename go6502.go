@@ -47,6 +47,8 @@ func main() {
 			cpu.PC, _ = assembler.LoadFile(&mem, args[1])
 		case ".prg":
 			cpu.PC, _ = assembler.LoadPRG(&mem, args[1])
+		default:
+			cpu.PC = 0xFCE2
 		}
 	}
 	// mem.Dump(cpu.PC)

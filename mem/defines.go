@@ -1,8 +1,6 @@
 package mem
 
-import (
-	"go6502/globals"
-)
+import "go6502/globals"
 
 const (
 	memorySize  = 65536
@@ -17,17 +15,19 @@ const (
 	brkAddr     = 0xFFFE
 
 	KernalStart = 0xE000
-	KernalEnd   = 0xEFFF
+	KernalEnd   = 0xFFFF
+	BasicStart  = 0xA000
+	BasicEnd    = 0xC000
 )
 
 // Memory :
 type Memory struct {
 	Data    [memorySize]globals.Byte
 	Kernal  []globals.Byte
-	CharGen [4096]globals.Byte
+	Basic   []globals.Byte
+	CharGen []globals.Byte
 	Stack   []globals.Byte
 	Screen  []globals.Byte
 	Color   []globals.Byte
 	Vic     [4][]globals.Byte
-	Access  bool
 }

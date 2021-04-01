@@ -90,18 +90,6 @@ func (C *CPU) fetchWord(mem *mem.Memory) globals.Word {
 	return value
 }
 
-// func (C *CPU) storeByte(mem *mem.Memory, val globals.Byte) {
-// 	if C.Display {
-// 		C.refreshScreen(mem)
-// 	}
-// 	// <-C.Cycle
-// 	mem.Acces.Lock()
-// 	mem.Acces.Unlock()
-// 	value :=mem.Data[C.PC]
-// 	C.PC++
-// 	return value
-// }
-
 func (C *CPU) fetchByte(mem *mem.Memory) globals.Byte {
 	if C.Display {
 		C.refreshScreen(mem)

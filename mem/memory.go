@@ -11,7 +11,9 @@ func (m *Memory) Init() {
 	m.Stack = m.Data[stackStart : stackEnd+1]
 	m.Screen = m.Data[screenStart : screenEnd+1]
 	m.Color = m.Data[colorStart : colorEnd+1]
-	m.Kernal = m.Data[KernalStart:KernalEnd]
+	m.Kernal = m.Data[KernalStart : KernalEnd+1]
+	m.Basic = m.Data[BasicStart : BasicEnd+1]
+	m.CharGen = make([]globals.Byte, 4096)
 
 	m.Vic[0] = m.Data[0x0000:0x3FFF]
 	m.Vic[1] = m.Data[0x4000:0x7FFF]
@@ -33,33 +35,22 @@ func (m *Memory) Init() {
 		m.Screen[i] = globals.Byte(i)
 	}
 
-	m.loadCharGenRom("roms/char.bin")
-	m.loadKernalRom("roms/kernal.bin")
+	m.loadRom("roms/char.bin", 4096, m.CharGen)
+	m.loadRom("roms/kernal.bin", 8192, m.Kernal)
+	m.loadRom("roms/basic.bin", 8192, m.Basic)
+	m.Dump(0xFF48)
 }
 
-func (m *Memory) loadCharGenRom(filename string) {
+func (m *Memory) loadRom(filename string, fileSize int, dest []globals.Byte) {
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		panic(err)
 	}
-	if len(data) != 4096 {
+	if len(data) != fileSize {
 		panic("Bad ROM Size")
 	}
-	for i := 0; i < 4096; i++ {
-		m.CharGen[i] = globals.Byte(data[i])
-	}
-}
-
-func (m *Memory) loadKernalRom(filename string) {
-	data, err := ioutil.ReadFile(filename)
-	if err != nil {
-		panic(err)
-	}
-	if len(data) != 8192 {
-		panic("Bad ROM Size")
-	}
-	for i := 0; i < 8192; i++ {
-		m.Kernal[i] = globals.Byte(data[i])
+	for i := 0; i < fileSize; i++ {
+		dest[i] = globals.Byte(data[i])
 	}
 }
 
