@@ -1,13 +1,16 @@
 package cpu
 
 import (
+	"fmt"
 	"go6502/globals"
 	"go6502/mem"
 )
 
 func (C *CPU) op_AND_IM(mem *mem.Memory) {
-	C.opName = "AND Imm"
-	C.A &= C.fetchByte(mem)
+	C.opName = "AND #$"
+	val := C.fetchByte(mem)
+	C.A &= val
+	C.opName = fmt.Sprintf("%s%02X", C.opName, val)
 	C.setNZStatus(C.A)
 }
 
@@ -61,3 +64,31 @@ func (C *CPU) op_AND_INY(mem *mem.Memory) {
 	C.A &= mem.Data[wordZP]
 	C.setNZStatus(C.A)
 }
+
+func (C *CPU) op_EOR_IM(mem *mem.Memory) { C.opName = "ToDO" }
+func (C *CPU) op_EOR_ZP(mem *mem.Memory) { C.opName = "ToDO" }
+func (C *CPU) op_EOR_ZPX(mem *mem.Memory) { C.opName = "ToDO" }
+func (C *CPU) op_EOR_ABS(mem *mem.Memory) { C.opName = "ToDO" }
+func (C *CPU) op_EOR_ABX(mem *mem.Memory) { C.opName = "ToDO" }
+func (C *CPU) op_EOR_ABY(mem *mem.Memory) { C.opName = "ToDO" }
+func (C *CPU) op_EOR_INX(mem *mem.Memory) { C.opName = "ToDO" }
+func (C *CPU) op_EOR_INY(mem *mem.Memory) { C.opName = "ToDO" }
+
+func (C *CPU) op_ORA_IM(mem *mem.Memory) { 
+	C.opName = "ORA #$"
+	val := C.fetchByte(mem)
+	C.A |= val
+	C.opName = fmt.Sprintf("%s%02X", C.opName, val)
+	C.setNZStatus(C.A)
+}
+
+func (C *CPU) op_ORA_ZP(mem *mem.Memory) { C.opName = "ToDO" }
+func (C *CPU) op_ORA_ZPX(mem *mem.Memory) { C.opName = "ToDO" }
+func (C *CPU) op_ORA_ABS(mem *mem.Memory) { C.opName = "ToDO" }
+func (C *CPU) op_ORA_ABX(mem *mem.Memory) { C.opName = "ToDO" }
+func (C *CPU) op_ORA_ABY(mem *mem.Memory) { C.opName = "ToDO" }
+func (C *CPU) op_ORA_INX(mem *mem.Memory) { C.opName = "ToDO" }
+func (C *CPU) op_ORA_INY(mem *mem.Memory) { C.opName = "ToDO" }
+
+func (C *CPU) op_BIT_ZP(mem *mem.Memory) { C.opName = "ToDO" }
+func (C *CPU) op_BIT_ABS(mem *mem.Memory) { C.opName = "ToDO" }

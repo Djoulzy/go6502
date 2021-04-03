@@ -145,9 +145,33 @@ var CodeAddr = map[string]globals.Byte{
 	"AND_INX": 0x21,
 	"AND_INY": 0x31,
 
+	"EOR_IM":  0x49,
+	"EOR_ZP":  0x45,
+	"EOR_ZPX": 0x55,
+	"EOR_ABS": 0x4D,
+	"EOR_ABX": 0x5D,
+	"EOR_ABY": 0x59,
+	"EOR_INX": 0x41,
+	"EOR_INY": 0x51,
+
+	"ORA_IM":  0x09,
+	"ORA_ZP":  0x05,
+	"ORA_ZPX": 0x15,
+	"ORA_ABS": 0x0D,
+	"ORA_ABX": 0x1D,
+	"ORA_ABY": 0x19,
+	"ORA_INX": 0x01,
+	"ORA_INY": 0x11,
+
+	"BIT_ZP":  0x24,
+	"BIT_ABS": 0x2C,
+
 	"TXS": 0x9A,
+	"TSX": 0xBA,
 	"PHA": 0x48,
+	"PHP": 0x08,
 	"PLA": 0x68,
+	"PLP": 0x28,
 
 	"TAX": 0xAA,
 	"TAY": 0xA8,
@@ -166,4 +190,28 @@ var CodeAddr = map[string]globals.Byte{
 	"SEC": 0x38,
 	"SED": 0xF8,
 	"SEI": 0x78,
+
+	"ASL_IM":  0x0A,
+	"ASL_ZP":  0x06,
+	"ASL_ZPX": 0x16,
+	"ASL_ABS": 0x0E,
+	"ASL_ABX": 0x1E,
+
+	"LSR_IM":  0x4A,
+	"LSR_ZP":  0x46,
+	"LSR_ZPX": 0x56,
+	"LSR_ABS": 0x4E,
+	"LSR_ABX": 0x5E,
+
+	"ROL_IM":  0x2A,
+	"ROL_ZP":  0x26,
+	"ROL_ZPX": 0x36,
+	"ROL_ABS": 0x2E,
+	"ROL_ABX": 0x3E,
+
+	"ROR_IM":  0x6A,
+	"ROR_ZP":  0x66,
+	"ROR_ZPX": 0x76,
+	"ROR_ABS": 0x6E,
+	"ROR_ABX": 0x7E,
 }

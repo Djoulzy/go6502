@@ -25,5 +25,5 @@ func (C *CPU) op_JSR(mem *mem.Memory) {
 
 func (C *CPU) op_RTS(mem *mem.Memory) {
 	C.opName = "RTS"
-	C.PC = C.fetchWordStack(mem) + 1
+	C.PC = C.pullWordStack(mem) + 1
 }

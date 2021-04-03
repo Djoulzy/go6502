@@ -21,6 +21,30 @@ func (C *CPU) setZ(register globals.Byte) {
 	}
 }
 
+func (C *CPU) setD(on bool) {
+	if on {
+		C.S |= ^D_mask
+	} else {
+		C.S &= D_mask
+	}
+}
+
+func (C *CPU) setI(register globals.Byte) {
+	if register == 0 {
+		C.S |= ^I_mask
+	} else {
+		C.S &= I_mask
+	}
+}
+
+func (C *CPU) setB(on bool) {
+	if on {
+		C.S |= ^B_mask
+	} else {
+		C.S &= B_mask
+	}
+}
+
 func (C *CPU) setC(on bool) {
 	if on {
 		C.S |= ^C_mask
@@ -56,16 +80,28 @@ func (C *CPU) setV(m, n, result globals.Byte) {
 func (C *CPU) op_CLC(mem *mem.Memory) {
 	C.opName = "CLC"
 	C.setC(false)
+	C.dbus.WaitBusLow()
 }
 
-func (C *CPU) op_CLD(mem *mem.Memory) { C.opName = "ToDO" }
+func (C *CPU) op_CLD(mem *mem.Memory) {
+	C.opName = "CLD"
+	C.setD(false)
+	C.dbus.WaitBusLow()
+}
+
 func (C *CPU) op_CLI(mem *mem.Memory) { C.opName = "ToDO" }
 func (C *CPU) op_CLV(mem *mem.Memory) { C.opName = "ToDO" }
 
 func (C *CPU) op_SEC(mem *mem.Memory) {
 	C.opName = "SEC"
 	C.setC(true)
+	C.dbus.WaitBusLow()
 }
 
 func (C *CPU) op_SED(mem *mem.Memory) { C.opName = "ToDO" }
-func (C *CPU) op_SEI(mem *mem.Memory) { C.opName = "ToDO" }
+
+func (C *CPU) op_SEI(mem *mem.Memory) {
+	C.opName = "SEI"
+	C.setC(true)
+	C.dbus.WaitBusLow()
+}

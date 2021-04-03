@@ -21,7 +21,7 @@ func (m *Memory) Init() {
 	m.Vic[3] = m.Data[0xC000:0xFFFF]
 
 	for i := range m.Data {
-		m.Data[i] = 0xEA
+		m.Data[i] = 0x00
 	}
 	cpt := 0
 	for i := range m.Color {
@@ -38,7 +38,6 @@ func (m *Memory) Init() {
 	m.loadRom("roms/char.bin", 4096, m.CharGen)
 	m.loadRom("roms/kernal.bin", 8192, m.Kernal)
 	m.loadRom("roms/basic.bin", 8192, m.Basic)
-	m.Dump(0xFF48)
 }
 
 func (m *Memory) loadRom(filename string, fileSize int, dest []globals.Byte) {

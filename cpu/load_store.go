@@ -98,13 +98,13 @@ func (C *CPU) op_LDX_ZPY(mem *mem.Memory) {
 
 func (C *CPU) op_LDX_ABS(mem *mem.Memory) {
 	C.opName = "LDX Abs"
-
+	C.opName = "ToDO"
 	C.setNZStatus(C.A)
 }
 
 func (C *CPU) op_LDX_ABY(mem *mem.Memory) {
 	C.opName = "LDX Abs,X"
-
+	C.opName = "ToDO"
 	C.setNZStatus(C.A)
 }
 
@@ -137,13 +137,13 @@ func (C *CPU) op_LDY_ZPX(mem *mem.Memory) {
 
 func (C *CPU) op_LDY_ABS(mem *mem.Memory) {
 	C.opName = "LDY Abs"
-
+	C.opName = "ToDO"
 	C.setNZStatus(C.A)
 }
 
 func (C *CPU) op_LDY_ABX(mem *mem.Memory) {
 	C.opName = "LDY Abs,X"
-
+	C.opName = "ToDO"
 	C.setNZStatus(C.A)
 }
 
@@ -172,11 +172,17 @@ func (C *CPU) op_STA_ABS(mem *mem.Memory) {
 func (C *CPU) op_STA_ABX(mem *mem.Memory) {
 	C.opName = "STA Abs,X"
 	absAddress := C.fetchWord(mem) + globals.Word(C.X)
+	C.dbus.WaitBusLow()
 	mem.Data[absAddress] = C.A
+	C.dbus.WaitBusLow()
 }
 
 func (C *CPU) op_STA_ABY(mem *mem.Memory) {
-	C.opName = "ToDO"
+	C.opName = "STA Abs,Y"
+	absAddress := C.fetchWord(mem) + globals.Word(C.Y)
+	C.dbus.WaitBusLow()
+	mem.Data[absAddress] = C.A
+	C.dbus.WaitBusLow()
 }
 
 func (C *CPU) op_STA_INX(mem *mem.Memory) {
@@ -201,6 +207,7 @@ func (C *CPU) op_STX_ZP(mem *mem.Memory) {
 	C.opName = "STX ZP"
 	zpAddress := C.fetchByte(mem)
 	mem.Data[zpAddress] = C.X
+	C.dbus.WaitBusLow()
 }
 
 func (C *CPU) op_STX_ZPY(mem *mem.Memory) {
@@ -220,7 +227,10 @@ func (C *CPU) op_STX_ABS(mem *mem.Memory) {
 //////////////////////////////////
 
 func (C *CPU) op_STY_ZP(mem *mem.Memory) {
-	C.opName = "ToDO"
+	C.opName = "STY ZP"
+	zpAddress := C.fetchByte(mem)
+	mem.Data[zpAddress] = C.Y
+	C.dbus.WaitBusLow()
 }
 
 func (C *CPU) op_STY_ZPX(mem *mem.Memory) {

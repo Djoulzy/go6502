@@ -33,7 +33,7 @@ func main() {
 	mem.Init()
 
 	cpu := cpu.CPU{}
-	cpu.Init(&dbus, &mem, false)
+	cpu.Init(&dbus, &mem, true)
 
 	if len(args) > 1 {
 		ass := assembler.Assembler{}
@@ -48,14 +48,21 @@ func main() {
 		case ".prg":
 			cpu.PC, _ = assembler.LoadPRG(&mem, args[1])
 		default:
-			cpu.PC = 0xFCE2
+			cpu.PC = 0xFCE2 // Reset call
 		}
 	}
+	cpu.PC = 0xFCE2
 	// mem.Dump(cpu.PC)
 
 	vic := vic.VIC{}
 	vic.Init(&dbus, &mem)
 
 	go cpu.Run()
+	if cpu.Display {
+		for {
+			// time.Sleep(time.Second / 8)
+			dbus.WaitBusHigh()
+		}
+	}
 	vic.Run()
 }
