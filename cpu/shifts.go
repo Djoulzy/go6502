@@ -1,6 +1,9 @@
 package cpu
 
-import "go6502/mem"
+import (
+	"go6502/globals"
+	"go6502/mem"
+)
 
 func (C *CPU) op_ASL_IM(mem *mem.Memory)  { C.opName = "ToDO" }
 func (C *CPU) op_ASL_ZP(mem *mem.Memory)  { C.opName = "ToDO" }
@@ -14,7 +17,15 @@ func (C *CPU) op_LSR_ZPX(mem *mem.Memory) { C.opName = "ToDO" }
 func (C *CPU) op_LSR_ABS(mem *mem.Memory) { C.opName = "ToDO" }
 func (C *CPU) op_LSR_ABX(mem *mem.Memory) { C.opName = "ToDO" }
 
-func (C *CPU) op_ROL_IM(mem *mem.Memory)  { C.opName = "ToDO" }
+func (C *CPU) op_ROL_IM(mem *mem.Memory) {
+	C.opName = "\tROL"
+	result := globals.Word(C.A << 1)
+	C.setC(result > 0x0FF)
+	C.A = globals.Byte(result)
+	C.dbus.WaitBusLow()
+	C.setNZStatus(C.Y)
+}
+
 func (C *CPU) op_ROL_ZP(mem *mem.Memory)  { C.opName = "ToDO" }
 func (C *CPU) op_ROL_ZPX(mem *mem.Memory) { C.opName = "ToDO" }
 func (C *CPU) op_ROL_ABS(mem *mem.Memory) { C.opName = "ToDO" }

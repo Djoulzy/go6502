@@ -102,18 +102,19 @@ func (C *CPU) fetchByte(mem *mem.Memory) globals.Byte {
 	// 	C.refreshScreen(mem)
 	// }
 	value := mem.Data[C.PC]
+	fmt.Printf(" %02X", value)
 	C.PC++
 	C.dbus.WaitBusLow()
 	return value
 }
 
 func (C *CPU) exec(mem *mem.Memory) {
-	if C.exit {
+	if C.exit || C.PC == C.BP {
 		time.Sleep(time.Second)
 		os.Exit(1)
 	}
 	if C.Display {
-		fmt.Printf("\n%04X", C.PC)
+		fmt.Printf("\n%08b - A:%02X X:%02X Y:%02X - %04X", C.SP, C.A, C.X, C.Y, C.PC)
 	}
 	opCode := C.fetchByte(mem)
 	if C.Display {
@@ -123,6 +124,10 @@ func (C *CPU) exec(mem *mem.Memory) {
 	if C.Display {
 		fmt.Printf("\t%s", C.opName)
 	}
+}
+
+func (C *CPU) SetBreakpoint(bp globals.Word) {
+	C.BP = bp
 }
 
 //////////////////////////////////
@@ -320,6 +325,7 @@ func (C *CPU) Init(dbus *databus.Databus, mem *mem.Memory, disp bool) {
 	C.Display = disp
 	C.ram = mem
 	C.dbus = dbus
+	C.BP = 0
 
 	C.initLanguage()
 	// if C.Display {

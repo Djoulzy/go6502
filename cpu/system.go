@@ -16,7 +16,7 @@ func (C *CPU) op_SHW(mem *mem.Memory) {
 
 func (C *CPU) op_BRK(mem *mem.Memory) {
 	// C.op_SHW(mem)
-	C.opName = "BRK"
+	C.opName = "\tBRK"
 	C.pushWordStack(mem, C.PC)
 	C.pushByteStack(mem, C.S)
 	address := C.readWord(0xFFFE)

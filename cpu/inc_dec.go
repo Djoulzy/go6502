@@ -1,6 +1,7 @@
 package cpu
 
 import (
+	"fmt"
 	"go6502/globals"
 	"go6502/mem"
 )
@@ -10,8 +11,8 @@ import (
 //////////////////////////////////
 
 func (C *CPU) op_INC_ZP(mem *mem.Memory) {
-	C.opName = "INC ZP"
 	zpAddr := C.fetchByte(mem)
+	C.opName = fmt.Sprintf("INC $%02X", zpAddr)
 	mem.Data[zpAddr] += 1
 	C.setNZStatus(mem.Data[zpAddr])
 }
@@ -98,7 +99,7 @@ func (C *CPU) op_INX(mem *mem.Memory) {
 //////////////////////////////////
 
 func (C *CPU) op_INY(mem *mem.Memory) {
-	C.opName = "INY"
+	C.opName = "\tINY"
 	C.Y += 1
 	C.setNZStatus(C.Y)
 }

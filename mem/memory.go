@@ -23,17 +23,17 @@ func (m *Memory) Init() {
 	for i := range m.Data {
 		m.Data[i] = 0x00
 	}
-	cpt := 0
-	for i := range m.Color {
-		m.Color[i] = globals.Byte(cpt)
-		cpt++
-		if cpt > 15 {
-			cpt = 0
-		}
-	}
-	for i := range m.Screen {
-		m.Screen[i] = globals.Byte(i)
-	}
+	// cpt := 0
+	// for i := range m.Color {
+	// 	m.Color[i] = globals.Byte(cpt)
+	// 	cpt++
+	// 	if cpt > 15 {
+	// 		cpt = 0
+	// 	}
+	// }
+	// for i := range m.Screen {
+	// 	m.Screen[i] = globals.Byte(i)
+	// }
 
 	m.loadRom("roms/char.bin", 4096, m.CharGen)
 	m.loadRom("roms/kernal.bin", 8192, m.Kernal)

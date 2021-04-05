@@ -32,6 +32,7 @@ type CPU struct {
 	Display bool
 	ram     *mem.Memory
 	dbus    *databus.Databus
+	BP      globals.Word
 }
 
 // Mnemonic :

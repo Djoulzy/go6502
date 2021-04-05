@@ -1,6 +1,7 @@
 package cpu
 
 import (
+	"fmt"
 	"go6502/globals"
 	"go6502/mem"
 )
@@ -185,6 +186,7 @@ func (C *CPU) op_CMP_INX(mem *mem.Memory) {
 func (C *CPU) op_CMP_INY(mem *mem.Memory) {
 	C.opName = "CMP (ZP),Y"
 	zpAddr := C.fetchByte(mem)
+	C.opName = fmt.Sprintf("CMP ($%02X),Y", zpAddr)
 	wordZP := C.Indirect_index_Y(zpAddr, C.Y)
 	value := mem.Data[wordZP]
 	C.setC(C.A >= value)

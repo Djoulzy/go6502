@@ -52,7 +52,9 @@ func main() {
 		}
 	}
 	cpu.PC = 0xFCE2
-	// mem.Dump(cpu.PC)
+	mem.Dump(cpu.PC)
+	cpu.SetBreakpoint(0xFF48)
+	// os.Exit(1)
 
 	vic := vic.VIC{}
 	vic.Init(&dbus, &mem)
