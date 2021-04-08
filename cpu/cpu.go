@@ -3,7 +3,6 @@ package cpu
 import (
 	"fmt"
 	"go6502/databus"
-	"go6502/globals"
 	"go6502/mem"
 	"os"
 	"time"
@@ -26,21 +25,21 @@ func (C *CPU) reset(mem *mem.Memory) {
 //////////////////////////////////
 
 // Word
-func (C *CPU) pushWordStack(mem *mem.Memory, val globals.Word) {
-	low := globals.Byte(val)
-	hi := globals.Byte(val >> 8)
+func (C *CPU) pushWordStack(mem *mem.Memory, val uint16) {
+	low := byte(val)
+	hi := byte(val >> 8)
 	C.pushByteStack(mem, hi)
 	C.pushByteStack(mem, low)
 }
 
-func (C *CPU) pullWordStack(mem *mem.Memory) globals.Word {
+func (C *CPU) pullWordStack(mem *mem.Memory) uint16 {
 	low := C.pullByteStack(mem)
-	hi := globals.Word(C.pullByteStack(mem)) << 8
-	return hi + globals.Word(low)
+	hi := uint16(C.pullByteStack(mem)) << 8
+	return hi + uint16(low)
 }
 
 // Byte
-func (C *CPU) pushByteStack(mem *mem.Memory, val globals.Byte) {
+func (C *CPU) pushByteStack(mem *mem.Memory, val byte) {
 	mem.Stack[C.SP] = val
 	C.SP--
 	if C.SP < 0 {
@@ -49,7 +48,7 @@ func (C *CPU) pushByteStack(mem *mem.Memory, val globals.Byte) {
 	C.dbus.WaitBusLow()
 }
 
-func (C *CPU) pullByteStack(mem *mem.Memory) globals.Byte {
+func (C *CPU) pullByteStack(mem *mem.Memory) byte {
 	C.SP++
 	if C.SP > 0xFF {
 		panic("Stack overflow")
@@ -65,14 +64,14 @@ func (C *CPU) pullByteStack(mem *mem.Memory) globals.Byte {
 // https://stackoverflow.com/questions/46262435/indirect-y-indexed-addressing-mode-in-mos-6502
 // http://www.emulator101.com/6502-addressing-modes.html
 
-func (C *CPU) Indirect_index_Y(addr globals.Byte, y globals.Byte) globals.Word {
-	zpAddr := globals.Word(addr)
-	wordZP := C.readWord(zpAddr) + globals.Word(y)
+func (C *CPU) Indirect_index_Y(addr byte, y byte) uint16 {
+	zpAddr := uint16(addr)
+	wordZP := C.readWord(zpAddr) + uint16(y)
 	return wordZP
 }
 
-func (C *CPU) Indexed_indirect_X(addr globals.Byte, x globals.Byte) globals.Word {
-	zpAddr := globals.Word(addr + x)
+func (C *CPU) Indexed_indirect_X(addr byte, x byte) uint16 {
+	zpAddr := uint16(addr + x)
 	wordZP := C.readWord(zpAddr)
 	return wordZP
 }
@@ -81,23 +80,23 @@ func (C *CPU) Indexed_indirect_X(addr globals.Byte, x globals.Byte) globals.Word
 /////// Memory Operations ////////
 //////////////////////////////////
 
-func (C *CPU) readWord(addr globals.Word) globals.Word {
+func (C *CPU) readWord(addr uint16) uint16 {
 	low := C.ram.Data[addr]
-	value := globals.Word(C.ram.Data[addr+1]) << 8
+	value := uint16(C.ram.Data[addr+1]) << 8
 	C.dbus.WaitBusLow()
-	value += globals.Word(low)
+	value += uint16(low)
 	C.dbus.WaitBusLow()
 	return value
 }
 
-func (C *CPU) fetchWord(mem *mem.Memory) globals.Word {
+func (C *CPU) fetchWord(mem *mem.Memory) uint16 {
 	low := C.fetchByte(mem)
-	value := globals.Word(C.fetchByte(mem)) << 8
-	value += globals.Word(low)
+	value := uint16(C.fetchByte(mem)) << 8
+	value += uint16(low)
 	return value
 }
 
-func (C *CPU) fetchByte(mem *mem.Memory) globals.Byte {
+func (C *CPU) fetchByte(mem *mem.Memory) byte {
 	// if C.Display {
 	// 	C.refreshScreen(mem)
 	// }
@@ -126,7 +125,7 @@ func (C *CPU) exec(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) SetBreakpoint(bp globals.Word) {
+func (C *CPU) SetBreakpoint(bp uint16) {
 	C.BP = bp
 }
 
@@ -139,7 +138,7 @@ func (C *CPU) SetBreakpoint(bp globals.Word) {
 // }
 
 func (C *CPU) initLanguage() {
-	Mnemonic = make(map[globals.Byte]func(*mem.Memory))
+	Mnemonic = make(map[byte]func(*mem.Memory))
 
 	Mnemonic[CodeAddr["SHW"]] = C.op_SHW
 	Mnemonic[CodeAddr["DMP"]] = C.op_DMP

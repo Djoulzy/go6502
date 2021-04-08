@@ -2,7 +2,6 @@ package cpu
 
 import (
 	"fmt"
-	"go6502/globals"
 	"go6502/mem"
 )
 
@@ -38,7 +37,7 @@ func (C *CPU) op_INC_ABS(mem *mem.Memory) {
 
 func (C *CPU) op_INC_ABX(mem *mem.Memory) {
 	C.opName = "INC Abs,X"
-	absAddress := C.fetchWord(mem) + globals.Word(C.X)
+	absAddress := C.fetchWord(mem) + uint16(C.X)
 	mem.Data[absAddress] += 1
 	C.setNZStatus(mem.Data[absAddress])
 }
@@ -70,7 +69,7 @@ func (C *CPU) op_DEC_ABS(mem *mem.Memory) {
 
 func (C *CPU) op_DEC_ABX(mem *mem.Memory) {
 	C.opName = "DEC Abs,X"
-	absAddress := C.fetchWord(mem) + globals.Word(C.X)
+	absAddress := C.fetchWord(mem) + uint16(C.X)
 	mem.Data[absAddress] -= 1
 	C.setNZStatus(mem.Data[absAddress])
 }

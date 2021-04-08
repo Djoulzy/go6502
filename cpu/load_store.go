@@ -2,7 +2,6 @@ package cpu
 
 import (
 	"fmt"
-	"go6502/globals"
 	"go6502/mem"
 )
 
@@ -43,14 +42,14 @@ func (C *CPU) op_LDA_ABS(mem *mem.Memory) {
 
 func (C *CPU) op_LDA_ABX(mem *mem.Memory) {
 	absAddress := C.fetchWord(mem)
-	C.A = mem.Data[absAddress+globals.Word(C.X)]
+	C.A = mem.Data[absAddress+uint16(C.X)]
 	C.opName = fmt.Sprintf("LDA $%04X,X", absAddress)
 	C.setNZStatus(C.A)
 }
 
 func (C *CPU) op_LDA_ABY(mem *mem.Memory) {
 	C.opName = "LDA Abs,Y"
-	absAddress := C.fetchWord(mem) + globals.Word(C.Y)
+	absAddress := C.fetchWord(mem) + uint16(C.Y)
 	C.A = mem.Data[absAddress]
 	C.setNZStatus(C.A)
 }
@@ -173,7 +172,7 @@ func (C *CPU) op_STA_ABS(mem *mem.Memory) {
 
 func (C *CPU) op_STA_ABX(mem *mem.Memory) {
 	C.opName = "STA Abs,X"
-	absAddress := C.fetchWord(mem) + globals.Word(C.X)
+	absAddress := C.fetchWord(mem) + uint16(C.X)
 	C.dbus.WaitBusLow()
 	mem.Data[absAddress] = C.A
 	C.dbus.WaitBusLow()
@@ -182,7 +181,7 @@ func (C *CPU) op_STA_ABX(mem *mem.Memory) {
 func (C *CPU) op_STA_ABY(mem *mem.Memory) {
 	C.opName = "STA Abs,Y"
 	absAddress := C.fetchWord(mem)
-	result := absAddress + globals.Word(C.Y)
+	result := absAddress + uint16(C.Y)
 	C.opName = fmt.Sprintf("STA $%04X,Y", absAddress)
 	C.dbus.WaitBusLow()
 	mem.Data[result] = C.A
@@ -200,7 +199,7 @@ func (C *CPU) op_STA_INY(mem *mem.Memory) {
 	zpAddr := C.fetchByte(mem)
 	wordZP := C.Indirect_index_Y(zpAddr, C.Y)
 	C.opName = fmt.Sprintf("STA ($%02X),Y -> %04X", zpAddr, wordZP)
-	// mem.Dump(globals.Word(zpAddr))
+	// mem.Dump(uint16(zpAddr))
 	mem.Data[wordZP] = C.A
 }
 

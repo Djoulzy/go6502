@@ -2,14 +2,13 @@ package cpu
 
 import (
 	"fmt"
-	"go6502/globals"
 	"go6502/mem"
 )
 
-func (C *CPU) getRelativeAddr(dist globals.Byte) globals.Word {
+func (C *CPU) getRelativeAddr(dist byte) uint16 {
 	signedDist := int(int8(dist))
 	newAddr := int(C.PC) + signedDist
-	return globals.Word(newAddr)
+	return uint16(newAddr)
 }
 
 func (C *CPU) op_BCC_REL(mem *mem.Memory) { C.opName = "ToDO" }

@@ -3,7 +3,6 @@ package vic
 import (
 	"fmt"
 	"go6502/databus"
-	"go6502/globals"
 	"go6502/graphic"
 	"go6502/mem"
 	"time"
@@ -18,7 +17,7 @@ const (
 	rasterHeightPAL = 284
 	cyclesPerLine   = 63
 
-	rasterTime = 1                  // Nb of cycle to put 1 globals.Byte on a line
+	rasterTime = 1                  // Nb of cycle to put 1 byte on a line
 	rasterLine = rasterWidthPAL / 8 // Nb of cycle to draw a full line
 	fullRaster = rasterLine * rasterHeightPAL
 
@@ -54,8 +53,8 @@ func (V *VIC) Init(dbus *databus.Databus, mem *mem.Memory) {
 }
 
 func (V *VIC) saveRasterPos(val int) {
-	V.ram.Data[REG_RASTER] = globals.Byte(val)
-	if (globals.Byte(globals.Word(val) >> 8)) == 0x1 {
+	V.ram.Data[REG_RASTER] = byte(val)
+	if (byte(uint16(val) >> 8)) == 0x1 {
 		V.ram.Data[REG_RST8] |= 0b10000000
 	} else {
 		V.ram.Data[REG_RST8] &= 0b01111111
@@ -74,14 +73,14 @@ func (V *VIC) readVideoMatrix() {
 
 func (V *VIC) drawChar(X int, Y int) {
 	if V.drawArea {
-		charAddr := (globals.Word(V.CharBuffer[V.VMLI]) << 3) + globals.Word(V.RC)
+		charAddr := (uint16(V.CharBuffer[V.VMLI]) << 3) + uint16(V.RC)
 		charData := V.ram.CharGen[charAddr]
 		// fmt.Printf("SC: %02X - RC: %d - %04X - %02X = %08b\n", V.CharBuffer[V.VMLI], V.RC, charAddr, charData, charData)
 		// if V.CharBuffer[V.VMLI] == 0 {
 		// fmt.Printf("Raster: %d - Cycle: %d - BA: %t - VMLI: %d - VCBASE/VC: %d/%d - RC: %d - Char: %02X\n", Y, X, V.BA, V.VMLI, V.VCBASE, V.VC, V.RC, V.CharBuffer[V.VMLI])
 		// }
 		for column := 0; column < 8; column++ {
-			bit := globals.Byte(0b10000000 >> column)
+			bit := byte(0b10000000 >> column)
 			if charData&bit > 0 {
 				V.graph.DrawPixel(X+column, Y, Colors[V.ColorBuffer[V.VMLI]])
 			} else {

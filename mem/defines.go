@@ -1,7 +1,5 @@
 package mem
 
-import "go6502/globals"
-
 const (
 	memorySize  = 65536
 	stackStart  = 0x0100
@@ -20,10 +18,18 @@ const (
 	BasicEnd    = 0xC000
 )
 
+type cell struct {
+	romMode byte
+	expMode byte
+	exp     byte
+	rom     byte
+	ram     byte
+}
+
 type bank struct {
 	rom   bool
-	start globals.Word
-	data  []globals.Byte
+	start uint16
+	data  []byte
 }
 
 type memoryMap [4]bank
@@ -31,11 +37,11 @@ type memoryMap [4]bank
 // Memory :
 type Memory struct {
 	bank    memoryMap
-	Kernal  []globals.Byte
-	Basic   []globals.Byte
-	CharGen []globals.Byte
-	Stack   []globals.Byte
-	Screen  []globals.Byte
-	Color   []globals.Byte
-	Vic     [4][]globals.Byte
+	Kernal  []byte
+	Basic   []byte
+	CharGen []byte
+	Stack   []byte
+	Screen  []byte
+	Color   []byte
+	Vic     [4][]byte
 }

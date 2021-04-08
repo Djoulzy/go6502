@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"go6502/cpu"
-	"go6502/globals"
 	"go6502/mem"
 	"log"
 	"os"
@@ -34,8 +33,8 @@ var relatives = map[string]bool{
 type Assembler struct {
 	mem      *mem.Memory
 	line     int
-	prgStart globals.Word
-	prgCount globals.Word
+	prgStart uint16
+	prgCount uint16
 	labels   map[string]*Labels
 	result   []string
 }
@@ -55,7 +54,7 @@ func (A *Assembler) firstPassAddrAnalyze(style []string, isRelatif bool) {
 		if isRelatif {
 			A.prgCount++
 		} else {
-			A.prgCount += globals.Word(A.labels[style[5]].size)
+			A.prgCount += uint16(A.labels[style[5]].size)
 		}
 	} else {
 		// Addresses Directes
@@ -91,14 +90,14 @@ func (A *Assembler) transfromAddr(style []string, isRelatif bool) string {
 			}
 		} else {
 			addr = A.labels[style[5]].getString()
-			A.prgCount += globals.Word(A.labels[style[5]].size)
+			A.prgCount += uint16(A.labels[style[5]].size)
 		}
 	} else {
 		// Addresses Directes
 		if isRelatif {
 			A.prgCount++
 			val, _ := strconv.ParseInt(style[1], 10, 8)
-			addr = fmt.Sprintf("%02X", globals.Byte(val))
+			addr = fmt.Sprintf("%02X", byte(val))
 		} else {
 			style[4] = strings.ToUpper(style[4])
 			if len(style[4]) == 2 {
@@ -213,8 +212,8 @@ func (A *Assembler) computeMacro(cmd []string) {
 			if tmp, err = strconv.ParseUint(cmd[3], 16, 16); err != nil {
 				panic("Parse error: Bad start address code")
 			}
-			A.prgStart = globals.Word(tmp)
-			A.prgCount = globals.Word(tmp)
+			A.prgStart = uint16(tmp)
+			A.prgCount = uint16(tmp)
 			fmt.Printf("Start Code at $%04X\n", A.prgStart)
 		} else {
 			newLab := Labels{name: cmd[1]}

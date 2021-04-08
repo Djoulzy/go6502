@@ -1,11 +1,10 @@
 package cpu
 
 import (
-	"go6502/globals"
 	"go6502/mem"
 )
 
-func (C *CPU) setN(register globals.Byte) {
+func (C *CPU) setN(register byte) {
 	if register&0b10000000 > 0 {
 		C.S |= ^N_mask
 	} else {
@@ -13,7 +12,7 @@ func (C *CPU) setN(register globals.Byte) {
 	}
 }
 
-func (C *CPU) setZ(register globals.Byte) {
+func (C *CPU) setZ(register byte) {
 	if register == 0 {
 		C.S |= ^Z_mask
 	} else {
@@ -29,7 +28,7 @@ func (C *CPU) setD(on bool) {
 	}
 }
 
-func (C *CPU) setI(register globals.Byte) {
+func (C *CPU) setI(register byte) {
 	if register == 0 {
 		C.S |= ^I_mask
 	} else {
@@ -53,14 +52,14 @@ func (C *CPU) setC(on bool) {
 	}
 }
 
-func (C *CPU) testC() globals.Byte {
+func (C *CPU) testC() byte {
 	if C.S & ^C_mask > 0 {
 		return 0x01
 	}
 	return 0x00
 }
 
-func (C *CPU) setNZStatus(register globals.Byte) {
+func (C *CPU) setNZStatus(register byte) {
 	C.setN(register)
 	C.setZ(register)
 }
@@ -69,7 +68,7 @@ func (C *CPU) testZ() bool {
 	return C.S & ^Z_mask > 0
 }
 
-func (C *CPU) setV(m, n, result globals.Byte) {
+func (C *CPU) setV(m, n, result byte) {
 	if (m^result)&(n^result)&0x80 != 0 {
 		C.S |= ^V_mask
 	} else {

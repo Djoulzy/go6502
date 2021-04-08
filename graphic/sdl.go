@@ -1,7 +1,6 @@
 package graphic
 
 import (
-	"go6502/globals"
 	"os"
 
 	"github.com/veandco/go-sdl2/sdl"
@@ -16,7 +15,7 @@ type SDLDriver struct {
 	screen    []byte
 }
 
-func (S *SDLDriver) DrawPixel(x, y int, color globals.RGB) {
+func (S *SDLDriver) DrawPixel(x, y int, color RGB) {
 	index := (y*S.winWidth + x) * 3
 	S.screen[index] = byte(color.R)
 	S.screen[index+1] = byte(color.G)

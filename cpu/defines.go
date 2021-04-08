@@ -2,42 +2,41 @@ package cpu
 
 import (
 	"go6502/databus"
-	"go6502/globals"
 	"go6502/mem"
 )
 
 //
 const (
-	C_mask globals.Byte = 0b11111110
-	Z_mask globals.Byte = 0b11111101
-	I_mask globals.Byte = 0b11111011
-	D_mask globals.Byte = 0b11110111
-	B_mask globals.Byte = 0b11101111
+	C_mask byte = 0b11111110
+	Z_mask byte = 0b11111101
+	I_mask byte = 0b11111011
+	D_mask byte = 0b11110111
+	B_mask byte = 0b11101111
 
-	V_mask globals.Byte = 0b10111111
-	N_mask globals.Byte = 0b01111111
+	V_mask byte = 0b10111111
+	N_mask byte = 0b01111111
 )
 
 // CPU :
 type CPU struct {
-	PC globals.Word
-	SP globals.Byte
-	A  globals.Byte
-	X  globals.Byte
-	Y  globals.Byte
-	S  globals.Byte
+	PC uint16
+	SP byte
+	A  byte
+	X  byte
+	Y  byte
+	S  byte
 
 	opName  string
 	exit    bool
 	Display bool
 	ram     *mem.Memory
 	dbus    *databus.Databus
-	BP      globals.Word
+	BP      uint16
 }
 
 // Mnemonic :
-var Mnemonic map[globals.Byte]func(*mem.Memory)
-var CodeAddr = map[string]globals.Byte{
+var Mnemonic map[byte]func(*mem.Memory)
+var CodeAddr = map[string]byte{
 	"SHW": 0xEF,
 	"DMP": 0xFF,
 	"BRK": 0x00,

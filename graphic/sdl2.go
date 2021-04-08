@@ -1,7 +1,6 @@
 package graphic
 
 import (
-	"go6502/globals"
 	"os"
 
 	"github.com/veandco/go-sdl2/sdl"
@@ -14,7 +13,7 @@ type SDL2Driver struct {
 	renderer  *sdl.Renderer
 }
 
-func (S *SDL2Driver) DrawPixel(x, y int, color globals.RGB) {
+func (S *SDL2Driver) DrawPixel(x, y int, color RGB) {
 	S.renderer.SetDrawColor(byte(color.R), byte(color.R), byte(color.R), 255)
 	S.renderer.DrawPoint(int32(x), int32(y))
 }

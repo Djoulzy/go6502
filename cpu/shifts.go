@@ -1,7 +1,6 @@
 package cpu
 
 import (
-	"go6502/globals"
 	"go6502/mem"
 )
 
@@ -19,9 +18,9 @@ func (C *CPU) op_LSR_ABX(mem *mem.Memory) { C.opName = "ToDO" }
 
 func (C *CPU) op_ROL_IM(mem *mem.Memory) {
 	C.opName = "\tROL"
-	result := globals.Word(C.A << 1)
+	result := uint16(C.A << 1)
 	C.setC(result > 0x0FF)
-	C.A = globals.Byte(result)
+	C.A = byte(result)
 	C.dbus.WaitBusLow()
 	C.setNZStatus(C.Y)
 }

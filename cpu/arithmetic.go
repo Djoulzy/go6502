@@ -2,17 +2,16 @@ package cpu
 
 import (
 	"fmt"
-	"go6502/globals"
 	"go6502/mem"
 )
 
 func (C *CPU) op_ADC_IM(mem *mem.Memory) {
 	C.opName = "ADC Im"
 	value := C.fetchByte(mem)
-	result := globals.Word(C.A) + globals.Word(value) + globals.Word(C.testC())
+	result := uint16(C.A) + uint16(value) + uint16(C.testC())
 	C.setC(result > 0x0FF)
-	C.setV(C.A, value, globals.Byte(result))
-	C.A = globals.Byte(result)
+	C.setV(C.A, value, byte(result))
+	C.A = byte(result)
 	C.setNZStatus(C.A)
 }
 
@@ -20,10 +19,10 @@ func (C *CPU) op_ADC_ZP(mem *mem.Memory) {
 	C.opName = "ADC ZP"
 	zpAddress := C.fetchByte(mem)
 	value := mem.Data[zpAddress]
-	result := globals.Word(C.A) + globals.Word(value) + globals.Word(C.testC())
+	result := uint16(C.A) + uint16(value) + uint16(C.testC())
 	C.setC(result > 0x0FF)
-	C.setV(C.A, value, globals.Byte(result))
-	C.A = globals.Byte(result)
+	C.setV(C.A, value, byte(result))
+	C.A = byte(result)
 	C.setNZStatus(C.A)
 }
 
@@ -31,10 +30,10 @@ func (C *CPU) op_ADC_ZPX(mem *mem.Memory) {
 	C.opName = "ADC ZP,X"
 	zpAddress := C.fetchByte(mem) + C.X
 	value := mem.Data[zpAddress]
-	result := globals.Word(C.A) + globals.Word(value) + globals.Word(C.testC())
+	result := uint16(C.A) + uint16(value) + uint16(C.testC())
 	C.setC(result > 0x0FF)
-	C.setV(C.A, value, globals.Byte(result))
-	C.A = globals.Byte(result)
+	C.setV(C.A, value, byte(result))
+	C.A = byte(result)
 	C.setNZStatus(C.A)
 }
 
@@ -42,32 +41,32 @@ func (C *CPU) op_ADC_ABS(mem *mem.Memory) {
 	C.opName = "ADC Abs"
 	absAddress := C.fetchWord(mem)
 	value := mem.Data[absAddress]
-	result := globals.Word(C.A) + globals.Word(value) + globals.Word(C.testC())
+	result := uint16(C.A) + uint16(value) + uint16(C.testC())
 	C.setC(result > 0x0FF)
-	C.setV(C.A, value, globals.Byte(result))
-	C.A = globals.Byte(result)
+	C.setV(C.A, value, byte(result))
+	C.A = byte(result)
 	C.setNZStatus(C.A)
 }
 
 func (C *CPU) op_ADC_ABX(mem *mem.Memory) {
 	C.opName = "ADC Abs,X"
-	absAddress := C.fetchWord(mem) + globals.Word(C.X)
+	absAddress := C.fetchWord(mem) + uint16(C.X)
 	value := mem.Data[absAddress]
-	result := globals.Word(C.A) + globals.Word(value) + globals.Word(C.testC())
+	result := uint16(C.A) + uint16(value) + uint16(C.testC())
 	C.setC(result > 0x0FF)
-	C.setV(C.A, value, globals.Byte(result))
-	C.A = globals.Byte(result)
+	C.setV(C.A, value, byte(result))
+	C.A = byte(result)
 	C.setNZStatus(C.A)
 }
 
 func (C *CPU) op_ADC_ABY(mem *mem.Memory) {
 	C.opName = "ADC Abs,Y"
-	absAddress := C.fetchWord(mem) + globals.Word(C.Y)
+	absAddress := C.fetchWord(mem) + uint16(C.Y)
 	value := mem.Data[absAddress]
-	result := globals.Word(C.A) + globals.Word(value) + globals.Word(C.testC())
+	result := uint16(C.A) + uint16(value) + uint16(C.testC())
 	C.setC(result > 0x0FF)
-	C.setV(C.A, value, globals.Byte(result))
-	C.A = globals.Byte(result)
+	C.setV(C.A, value, byte(result))
+	C.A = byte(result)
 	C.setNZStatus(C.A)
 }
 
@@ -76,10 +75,10 @@ func (C *CPU) op_ADC_INX(mem *mem.Memory) {
 	zpAddr := C.fetchByte(mem)
 	wordZP := C.Indexed_indirect_X(zpAddr, C.X)
 	value := mem.Data[wordZP]
-	result := globals.Word(C.A) + globals.Word(value) + globals.Word(C.testC())
+	result := uint16(C.A) + uint16(value) + uint16(C.testC())
 	C.setC(result > 0x0FF)
-	C.setV(C.A, value, globals.Byte(result))
-	C.A = globals.Byte(result)
+	C.setV(C.A, value, byte(result))
+	C.A = byte(result)
 	C.setNZStatus(C.A)
 }
 
@@ -88,20 +87,20 @@ func (C *CPU) op_ADC_INY(mem *mem.Memory) {
 	zpAddr := C.fetchByte(mem)
 	wordZP := C.Indirect_index_Y(zpAddr, C.Y)
 	value := mem.Data[wordZP]
-	result := globals.Word(C.A) + globals.Word(value) + globals.Word(C.testC())
+	result := uint16(C.A) + uint16(value) + uint16(C.testC())
 	C.setC(result > 0x0FF)
-	C.setV(C.A, value, globals.Byte(result))
-	C.A = globals.Byte(result)
+	C.setV(C.A, value, byte(result))
+	C.A = byte(result)
 	C.setNZStatus(C.A)
 }
 
 func (C *CPU) op_SBC_IM(mem *mem.Memory) {
 	C.opName = "SBC Im"
 	value := ^C.fetchByte(mem)
-	result := globals.Word(C.A) + globals.Word(value) + globals.Word(C.testC())
+	result := uint16(C.A) + uint16(value) + uint16(C.testC())
 	C.setC(result > 0x0FF)
-	C.setV(C.A, value, globals.Byte(result))
-	C.A = globals.Byte(result)
+	C.setV(C.A, value, byte(result))
+	C.A = byte(result)
 	C.setNZStatus(C.A)
 }
 
@@ -154,7 +153,7 @@ func (C *CPU) op_CMP_ABS(mem *mem.Memory) {
 
 func (C *CPU) op_CMP_ABX(mem *mem.Memory) {
 	C.opName = "CMP Abs,X"
-	absAddress := C.fetchWord(mem) + globals.Word(C.X)
+	absAddress := C.fetchWord(mem) + uint16(C.X)
 	value := mem.Data[absAddress]
 	C.setC(C.A >= value)
 	res := C.A - value
@@ -164,7 +163,7 @@ func (C *CPU) op_CMP_ABX(mem *mem.Memory) {
 
 func (C *CPU) op_CMP_ABY(mem *mem.Memory) {
 	C.opName = "CMP Abs,Y"
-	absAddress := C.fetchWord(mem) + globals.Word(C.Y)
+	absAddress := C.fetchWord(mem) + uint16(C.Y)
 	value := mem.Data[absAddress]
 	C.setC(C.A >= value)
 	res := C.A - value

@@ -1,12 +1,14 @@
 package graphic
 
-import (
-	"go6502/globals"
-)
+type RGB struct {
+	R byte
+	G byte
+	B byte
+}
 
 type Driver interface {
 	Init(int, int)
-	DrawPixel(int, int, globals.RGB)
+	DrawPixel(int, int, RGB)
 	DisplayFrame()
 	CloseAll()
 }
