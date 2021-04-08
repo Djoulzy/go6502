@@ -40,7 +40,7 @@ func (C *CPU) pullWordStack(mem *mem.Memory) uint16 {
 
 // Byte
 func (C *CPU) pushByteStack(mem *mem.Memory, val byte) {
-	mem.Stack[C.SP] = val
+	mem.Stack[C.SP].Ram = val
 	C.SP--
 	if C.SP < 0 {
 		panic("Stack overflow")
@@ -54,7 +54,7 @@ func (C *CPU) pullByteStack(mem *mem.Memory) byte {
 		panic("Stack overflow")
 	}
 	C.dbus.WaitBusLow()
-	return mem.Stack[C.SP]
+	return mem.Stack[C.SP].Ram
 }
 
 //////////////////////////////////
@@ -81,8 +81,8 @@ func (C *CPU) Indexed_indirect_X(addr byte, x byte) uint16 {
 //////////////////////////////////
 
 func (C *CPU) readWord(addr uint16) uint16 {
-	low := C.ram.Data[addr]
-	value := uint16(C.ram.Data[addr+1]) << 8
+	low := C.ram.Read(addr)
+	value := uint16(C.ram.Read(addr+1)) << 8
 	C.dbus.WaitBusLow()
 	value += uint16(low)
 	C.dbus.WaitBusLow()
@@ -100,7 +100,7 @@ func (C *CPU) fetchByte(mem *mem.Memory) byte {
 	// if C.Display {
 	// 	C.refreshScreen(mem)
 	// }
-	value := mem.Data[C.PC]
+	value := mem.Mem[C.PC].Ram
 	fmt.Printf(" %02X", value)
 	C.PC++
 	C.dbus.WaitBusLow()
@@ -333,14 +333,14 @@ func (C *CPU) Init(dbus *databus.Databus, mem *mem.Memory, disp bool) {
 
 	C.reset(C.ram)
 	// NMI
-	C.ram.Data[0xFFFA] = 0x43
-	C.ram.Data[0xFFFB] = 0xFE
+	C.ram.Mem[0xFFFA].Ram = 0x43
+	C.ram.Mem[0xFFFB].Ram = 0xFE
 	// Cold Start
-	C.ram.Data[0xFFFC] = 0xE2
-	C.ram.Data[0xFFFD] = 0xFC
+	C.ram.Mem[0xFFFC].Ram = 0xE2
+	C.ram.Mem[0xFFFD].Ram = 0xFC
 	// IRQ
-	C.ram.Data[0xFFFE] = 0x48
-	C.ram.Data[0xFFFF] = 0xFF
+	C.ram.Mem[0xFFFE].Ram = 0x48
+	C.ram.Mem[0xFFFF].Ram = 0xFF
 }
 
 func (C *CPU) Run() {

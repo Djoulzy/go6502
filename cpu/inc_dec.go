@@ -12,8 +12,10 @@ import (
 func (C *CPU) op_INC_ZP(mem *mem.Memory) {
 	zpAddr := C.fetchByte(mem)
 	C.opName = fmt.Sprintf("INC $%02X", zpAddr)
-	mem.Data[zpAddr] += 1
-	C.setNZStatus(mem.Data[zpAddr])
+	val := mem.Read(zpAddr)
+	val += 1
+	C.setNZStatus(val)
+	mem.Write(zpAddr, val)
 }
 
 func (C *CPU) op_INC_ZPX(mem *mem.Memory) {
@@ -27,12 +29,12 @@ func (C *CPU) op_INC_ABS(mem *mem.Memory) {
 	C.opName = "INC Abs"
 	address := C.fetchWord(mem)
 	C.dbus.WaitBusLow()
-	val := mem.Data[address]
+	val := mem.Read(address)
 	C.dbus.WaitBusLow()
 	val += 1
 	C.dbus.WaitBusLow()
-	mem.Data[address] = val
-	C.setNZStatus(mem.Data[address])
+	C.setNZStatus(val)
+	mem.Write(address, val)
 }
 
 func (C *CPU) op_INC_ABX(mem *mem.Memory) {

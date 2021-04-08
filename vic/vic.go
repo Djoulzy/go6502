@@ -47,25 +47,25 @@ func (V *VIC) Init(dbus *databus.Databus, mem *mem.Memory) {
 
 	V.ram = mem
 	V.dbus = dbus
-	V.ram.Data[REG_EC] = Lightblue
-	V.ram.Data[REG_B0C] = Blue
+	V.ram.Mem[REG_EC].Rom = Lightblue
+	V.ram.Mem[REG_B0C].Rom = Blue
 	V.BA = true
 }
 
 func (V *VIC) saveRasterPos(val int) {
-	V.ram.Data[REG_RASTER] = byte(val)
+	V.ram.Mem[REG_RASTER].Rom = byte(val)
 	if (byte(uint16(val) >> 8)) == 0x1 {
-		V.ram.Data[REG_RST8] |= 0b10000000
+		V.ram.Mem[REG_RST8].Rom |= 0b10000000
 	} else {
-		V.ram.Data[REG_RST8] &= 0b01111111
+		V.ram.Mem[REG_RST8].Rom &= 0b01111111
 	}
 	// fmt.Printf("val: %d - RST8: %08b - RASTER: %08b\n", val, V.ram.Data[REG_RST8], V.ram.Data[REG_RASTER])
 }
 
 func (V *VIC) readVideoMatrix() {
 	if !V.BA {
-		V.ColorBuffer[V.VMLI] = V.ram.Color[V.VC]
-		V.CharBuffer[V.VMLI] = V.ram.Screen[V.VC]
+		V.ColorBuffer[V.VMLI] = V.ram.Color[V.VC].Ram
+		V.CharBuffer[V.VMLI] = V.ram.Screen[V.VC].Ram
 	} else {
 		V.dbus.WaitBusHigh()
 	}
@@ -74,7 +74,7 @@ func (V *VIC) readVideoMatrix() {
 func (V *VIC) drawChar(X int, Y int) {
 	if V.drawArea {
 		charAddr := (uint16(V.CharBuffer[V.VMLI]) << 3) + uint16(V.RC)
-		charData := V.ram.CharGen[charAddr]
+		charData := V.ram.CharGen[charAddr].Rom
 		// fmt.Printf("SC: %02X - RC: %d - %04X - %02X = %08b\n", V.CharBuffer[V.VMLI], V.RC, charAddr, charData, charData)
 		// if V.CharBuffer[V.VMLI] == 0 {
 		// fmt.Printf("Raster: %d - Cycle: %d - BA: %t - VMLI: %d - VCBASE/VC: %d/%d - RC: %d - Char: %02X\n", Y, X, V.BA, V.VMLI, V.VCBASE, V.VC, V.RC, V.CharBuffer[V.VMLI])
@@ -84,14 +84,14 @@ func (V *VIC) drawChar(X int, Y int) {
 			if charData&bit > 0 {
 				V.graph.DrawPixel(X+column, Y, Colors[V.ColorBuffer[V.VMLI]])
 			} else {
-				V.graph.DrawPixel(X+column, Y, Colors[V.ram.Data[REG_B0C]&0b00001111])
+				V.graph.DrawPixel(X+column, Y, Colors[V.ram.Mem[REG_B0C].Rom&0b00001111])
 			}
 		}
 		V.VMLI++
 		V.VC++
 	} else if V.visibleArea {
 		for column := 0; column < 8; column++ {
-			V.graph.DrawPixel(X+column, Y, Colors[V.ram.Data[REG_EC]&0b00001111])
+			V.graph.DrawPixel(X+column, Y, Colors[V.ram.Mem[REG_EC].Rom&0b00001111])
 		}
 	}
 }

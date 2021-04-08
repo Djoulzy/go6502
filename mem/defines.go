@@ -11,37 +11,39 @@ const (
 	intAddr     = 0xFFFA
 	resetAddr   = 0xFFFC
 	brkAddr     = 0xFFFE
-
 	KernalStart = 0xE000
 	KernalEnd   = 0xFFFF
 	BasicStart  = 0xA000
 	BasicEnd    = 0xC000
+	vic2        = 0x4000
+	vic3        = 0x8000
+	vic4        = 0xC000
 )
 
+type latch struct {
+	kernal bool
+	basic  bool
+	char   bool
+	io     bool
+}
+
 type cell struct {
-	romMode byte
-	expMode byte
-	exp     byte
-	rom     byte
-	ram     byte
+	romMode *bool
+	expMode *bool
+	Exp     byte
+	Rom     byte
+	Ram     byte
 }
-
-type bank struct {
-	rom   bool
-	start uint16
-	data  []byte
-}
-
-type memoryMap [4]bank
 
 // Memory :
 type Memory struct {
-	bank    memoryMap
-	Kernal  []byte
-	Basic   []byte
-	CharGen []byte
-	Stack   []byte
-	Screen  []byte
-	Color   []byte
-	Vic     [4][]byte
+	latch   latch
+	Mem     [memorySize]cell
+	Kernal  []cell
+	Basic   []cell
+	CharGen []cell
+	Stack   []cell
+	Screen  []cell
+	Color   []cell
+	Vic     [4][]cell
 }
