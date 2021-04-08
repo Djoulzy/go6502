@@ -20,9 +20,17 @@ const (
 	BasicEnd    = 0xC000
 )
 
+type bank struct {
+	rom   bool
+	start globals.Word
+	data  []globals.Byte
+}
+
+type memoryMap [4]bank
+
 // Memory :
 type Memory struct {
-	Data    [memorySize]globals.Byte
+	bank    memoryMap
 	Kernal  []globals.Byte
 	Basic   []globals.Byte
 	CharGen []globals.Byte

@@ -8,21 +8,21 @@ import (
 
 // Init :
 func (m *Memory) Init() {
-	m.Stack = m.Data[stackStart : stackEnd+1]
-	m.Screen = m.Data[screenStart : screenEnd+1]
-	m.Color = m.Data[colorStart : colorEnd+1]
-	m.Kernal = m.Data[KernalStart : KernalEnd+1]
-	m.Basic = m.Data[BasicStart : BasicEnd+1]
+	m.Stack = m.bank[0].data[stackStart : stackEnd+1]
+	m.Screen = m.bank[0].data[screenStart : screenEnd+1]
+	m.Color = m.bank[2].data[colorStart : colorEnd+1]
+	m.Kernal = m.bank[3].data
+	m.Basic = m.bank[1].data
 	m.CharGen = make([]globals.Byte, 4096)
 
-	m.Vic[0] = m.Data[0x0000:0x3FFF]
-	m.Vic[1] = m.Data[0x4000:0x7FFF]
-	m.Vic[2] = m.Data[0x8000:0xBFFF]
-	m.Vic[3] = m.Data[0xC000:0xFFFF]
+	m.Vic[0] = m.bank[0].data
+	m.Vic[1] = m.bank[1].data
+	m.Vic[2] = m.bank[2].data
+	m.Vic[3] = m.bank[3].data
 
-	for i := range m.Data {
-		m.Data[i] = 0x00
-	}
+	// for i := range m.Data {
+	// 	m.Data[i] = 0x00
+	// }
 	// cpt := 0
 	// for i := range m.Color {
 	// 	m.Color[i] = globals.Byte(cpt)
@@ -38,6 +38,10 @@ func (m *Memory) Init() {
 	m.loadRom("roms/char.bin", 4096, m.CharGen)
 	m.loadRom("roms/kernal.bin", 8192, m.Kernal)
 	m.loadRom("roms/basic.bin", 8192, m.Basic)
+}
+
+func (m *Memory) getBank(addr globals.Word) int {
+	return int(addr / 0xA000)
 }
 
 func (m *Memory) loadRom(filename string, fileSize int, dest []globals.Byte) {
@@ -65,22 +69,33 @@ func (m *Memory) DumpChar(screenCode globals.Byte) {
 }
 
 func (m *Memory) Dump(startAddr globals.Word) {
+	bank := m.getBank(startAddr)
 	cpt := startAddr
 	for j := 0; j < 10; j++ {
 		fmt.Printf("%04X : ", cpt)
 		for i := 0; i < 8; i++ {
-			fmt.Printf("%02X", m.Data[cpt])
+			fmt.Printf("%02X", m.bank[bank].data[cpt])
 			cpt++
-			fmt.Printf("%02X ", m.Data[cpt])
+			fmt.Printf("%02X ", m.bank[bank].data[cpt])
 			cpt++
 		}
 		fmt.Println()
 	}
 }
 
-func (m *Memory) String2screenCode(startMem globals.Word, message string) {
-	runes := []rune(message)
-	for i := 0; i < len(runes); i++ {
-		m.Data[startMem+globals.Word(i)] = globals.Byte(runes[i])
-	}
+func (m *Memory) Read(addr globals.Word) globals.Byte {
+	bank := m.getBank(addr)
+	return m.bank[bank].data[addr]
 }
+
+func (m *Memory) Write(addr globals.Word, value globals.Byte)  {
+	bank := m.getBank(addr)
+	m.bank[bank].data[addr] = value
+}
+
+// func (m *Memory) String2screenCode(startMem globals.Word, message string) {
+// 	runes := []rune(message)
+// 	for i := 0; i < len(runes); i++ {
+// 		m.Data[startMem+globals.Word(i)] = globals.Byte(runes[i])
+// 	}
+// }

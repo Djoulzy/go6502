@@ -77,8 +77,8 @@ func (C *CPU) op_LDA_INY(mem *mem.Memory) {
 
 // op_LDX_IM : LDA Immediate
 func (C *CPU) op_LDX_IM(mem *mem.Memory) {
-	C.opName = "LDX Imm"
 	C.X = C.fetchByte(mem)
+	C.opName = fmt.Sprintf("LDY #$%02X", C.X)
 	C.setNZStatus(C.X)
 }
 
@@ -116,8 +116,8 @@ func (C *CPU) op_LDX_ABY(mem *mem.Memory) {
 
 // op_LDY_IM : LDA Immediate
 func (C *CPU) op_LDY_IM(mem *mem.Memory) {
-	C.opName = "LDY Imm"
 	C.Y = C.fetchByte(mem)
+	C.opName = fmt.Sprintf("LDY #$%02X", C.Y)
 	C.setNZStatus(C.Y)
 }
 
@@ -154,8 +154,8 @@ func (C *CPU) op_LDY_ABX(mem *mem.Memory) {
 //////////////////////////////////
 
 func (C *CPU) op_STA_ZP(mem *mem.Memory) {
-	C.opName = "STA ZP"
 	zpAddress := C.fetchByte(mem)
+	C.opName = fmt.Sprintf("STA $%02X", zpAddress)
 	mem.Data[zpAddress] = C.A
 }
 
@@ -181,9 +181,11 @@ func (C *CPU) op_STA_ABX(mem *mem.Memory) {
 
 func (C *CPU) op_STA_ABY(mem *mem.Memory) {
 	C.opName = "STA Abs,Y"
-	absAddress := C.fetchWord(mem) + globals.Word(C.Y)
+	absAddress := C.fetchWord(mem)
+	result := absAddress + globals.Word(C.Y)
+	C.opName = fmt.Sprintf("STA $%04X,Y", absAddress)
 	C.dbus.WaitBusLow()
-	mem.Data[absAddress] = C.A
+	mem.Data[result] = C.A
 	C.dbus.WaitBusLow()
 }
 
@@ -196,8 +198,9 @@ func (C *CPU) op_STA_INX(mem *mem.Memory) {
 
 func (C *CPU) op_STA_INY(mem *mem.Memory) {
 	zpAddr := C.fetchByte(mem)
-	C.opName = fmt.Sprintf("STA ($%02X),Y", zpAddr)
 	wordZP := C.Indirect_index_Y(zpAddr, C.Y)
+	C.opName = fmt.Sprintf("STA ($%02X),Y -> %04X", zpAddr, wordZP)
+	// mem.Dump(globals.Word(zpAddr))
 	mem.Data[wordZP] = C.A
 }
 
@@ -206,8 +209,8 @@ func (C *CPU) op_STA_INY(mem *mem.Memory) {
 //////////////////////////////////
 
 func (C *CPU) op_STX_ZP(mem *mem.Memory) {
-	C.opName = "STX ZP"
 	zpAddress := C.fetchByte(mem)
+	C.opName = fmt.Sprintf("STX $%02X", zpAddress)
 	mem.Data[zpAddress] = C.X
 	C.dbus.WaitBusLow()
 }
@@ -229,8 +232,8 @@ func (C *CPU) op_STX_ABS(mem *mem.Memory) {
 //////////////////////////////////
 
 func (C *CPU) op_STY_ZP(mem *mem.Memory) {
-	C.opName = "STY ZP"
 	zpAddress := C.fetchByte(mem)
+	C.opName = fmt.Sprintf("STY $%02X", zpAddress)
 	mem.Data[zpAddress] = C.Y
 	C.dbus.WaitBusLow()
 }

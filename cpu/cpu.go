@@ -114,7 +114,7 @@ func (C *CPU) exec(mem *mem.Memory) {
 		os.Exit(1)
 	}
 	if C.Display {
-		fmt.Printf("\n%08b - A:%02X X:%02X Y:%02X - %04X", C.SP, C.A, C.X, C.Y, C.PC)
+		fmt.Printf("\n%08b - A:%02X X:%02X Y:%02X - %04X:", C.SP, C.A, C.X, C.Y, C.PC)
 	}
 	opCode := C.fetchByte(mem)
 	if C.Display {
