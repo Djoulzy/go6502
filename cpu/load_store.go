@@ -42,7 +42,7 @@ func (C *CPU) op_LDA_ABS(mem *mem.Memory) {
 
 func (C *CPU) op_LDA_ABX(mem *mem.Memory) {
 	absAddress := C.fetchWord(mem)
-	C.A = mem.Read(absAddress+uint16(C.X))
+	C.A = mem.Read(absAddress + uint16(C.X))
 	C.opName = fmt.Sprintf("LDA $%04X,X", absAddress)
 	C.setNZStatus(C.A)
 }
@@ -98,9 +98,10 @@ func (C *CPU) op_LDX_ZPY(mem *mem.Memory) {
 }
 
 func (C *CPU) op_LDX_ABS(mem *mem.Memory) {
-	C.opName = "LDX Abs"
-	C.opName = "ToDO"
-	C.setNZStatus(C.A)
+	absAddress := C.fetchWord(mem)
+	C.X = mem.Read(absAddress)
+	C.opName = fmt.Sprintf("LDX $%02X", absAddress)
+	C.setNZStatus(C.X)
 }
 
 func (C *CPU) op_LDX_ABY(mem *mem.Memory) {
@@ -137,9 +138,10 @@ func (C *CPU) op_LDY_ZPX(mem *mem.Memory) {
 }
 
 func (C *CPU) op_LDY_ABS(mem *mem.Memory) {
-	C.opName = "LDY Abs"
-	C.opName = "ToDO"
-	C.setNZStatus(C.A)
+	absAddress := C.fetchWord(mem)
+	C.Y = mem.Read(absAddress)
+	C.opName = fmt.Sprintf("LDY $%02X", absAddress)
+	C.setNZStatus(C.Y)
 }
 
 func (C *CPU) op_LDY_ABX(mem *mem.Memory) {
@@ -215,14 +217,14 @@ func (C *CPU) op_STX_ZP(mem *mem.Memory) {
 }
 
 func (C *CPU) op_STX_ZPY(mem *mem.Memory) {
-	C.opName = "STX ZP,Y"
 	zpAddress := C.fetchByte(mem) + C.Y
+	C.opName = fmt.Sprintf("STX $%02X,Y", zpAddress)
 	mem.Write(zpAddress, C.X)
 }
 
 func (C *CPU) op_STX_ABS(mem *mem.Memory) {
-	C.opName = "STX Abs"
 	absAddress := C.fetchWord(mem)
+	C.opName = fmt.Sprintf("STX $%02X", absAddress)
 	mem.Write(absAddress, C.X)
 }
 
@@ -238,11 +240,13 @@ func (C *CPU) op_STY_ZP(mem *mem.Memory) {
 }
 
 func (C *CPU) op_STY_ZPX(mem *mem.Memory) {
-	C.opName = "ToDO"
+	zpAddress := C.fetchByte(mem) + C.X
+	C.opName = fmt.Sprintf("STY $%02X,X", zpAddress)
+	mem.Write(zpAddress, C.Y)
 }
 
 func (C *CPU) op_STY_ABS(mem *mem.Memory) {
-	C.opName = "STY Abs"
 	absAddress := C.fetchWord(mem)
+	C.opName = fmt.Sprintf("STY $%02X", absAddress)
 	mem.Write(absAddress, C.Y)
 }

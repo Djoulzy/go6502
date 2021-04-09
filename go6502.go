@@ -33,7 +33,7 @@ func main() {
 	mem.Init()
 
 	cpu := cpu.CPU{}
-	cpu.Init(&dbus, &mem, true)
+	cpu.Init(&dbus, &mem, false)
 
 	if len(args) > 1 {
 		ass := assembler.Assembler{}
@@ -53,7 +53,7 @@ func main() {
 	}
 	cpu.PC = 0xFCE2
 	mem.Dump(cpu.PC)
-	cpu.SetBreakpoint(0xFD88)
+	// cpu.SetBreakpoint(0xFD88)
 	// os.Exit(1)
 
 	vic := vic.VIC{}

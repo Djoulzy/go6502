@@ -8,7 +8,7 @@ import (
 func (C *CPU) op_ADC_IM(mem *mem.Memory) {
 	C.opName = "ADC Im"
 	value := C.fetchByte(mem)
-	result := uint16(C.A) + uint16(value) + uint16(C.testC())
+	result := uint16(C.A) + uint16(value) + uint16(C.getC())
 	C.setC(result > 0x0FF)
 	C.setV(C.A, value, byte(result))
 	C.A = byte(result)
@@ -19,7 +19,7 @@ func (C *CPU) op_ADC_ZP(mem *mem.Memory) {
 	C.opName = "ADC ZP"
 	zpAddress := C.fetchByte(mem)
 	value := mem.Read(zpAddress)
-	result := uint16(C.A) + uint16(value) + uint16(C.testC())
+	result := uint16(C.A) + uint16(value) + uint16(C.getC())
 	C.setC(result > 0x0FF)
 	C.setV(C.A, value, byte(result))
 	C.A = byte(result)
@@ -30,7 +30,7 @@ func (C *CPU) op_ADC_ZPX(mem *mem.Memory) {
 	C.opName = "ADC ZP,X"
 	zpAddress := C.fetchByte(mem) + C.X
 	value := mem.Read(zpAddress)
-	result := uint16(C.A) + uint16(value) + uint16(C.testC())
+	result := uint16(C.A) + uint16(value) + uint16(C.getC())
 	C.setC(result > 0x0FF)
 	C.setV(C.A, value, byte(result))
 	C.A = byte(result)
@@ -41,7 +41,7 @@ func (C *CPU) op_ADC_ABS(mem *mem.Memory) {
 	C.opName = "ADC Abs"
 	absAddress := C.fetchWord(mem)
 	value := mem.Read(absAddress)
-	result := uint16(C.A) + uint16(value) + uint16(C.testC())
+	result := uint16(C.A) + uint16(value) + uint16(C.getC())
 	C.setC(result > 0x0FF)
 	C.setV(C.A, value, byte(result))
 	C.A = byte(result)
@@ -52,7 +52,7 @@ func (C *CPU) op_ADC_ABX(mem *mem.Memory) {
 	C.opName = "ADC Abs,X"
 	absAddress := C.fetchWord(mem) + uint16(C.X)
 	value := mem.Read(absAddress)
-	result := uint16(C.A) + uint16(value) + uint16(C.testC())
+	result := uint16(C.A) + uint16(value) + uint16(C.getC())
 	C.setC(result > 0x0FF)
 	C.setV(C.A, value, byte(result))
 	C.A = byte(result)
@@ -63,7 +63,7 @@ func (C *CPU) op_ADC_ABY(mem *mem.Memory) {
 	C.opName = "ADC Abs,Y"
 	absAddress := C.fetchWord(mem) + uint16(C.Y)
 	value := mem.Read(absAddress)
-	result := uint16(C.A) + uint16(value) + uint16(C.testC())
+	result := uint16(C.A) + uint16(value) + uint16(C.getC())
 	C.setC(result > 0x0FF)
 	C.setV(C.A, value, byte(result))
 	C.A = byte(result)
@@ -75,7 +75,7 @@ func (C *CPU) op_ADC_INX(mem *mem.Memory) {
 	zpAddr := C.fetchByte(mem)
 	wordZP := C.Indexed_indirect_X(zpAddr, C.X)
 	value := mem.Read(wordZP)
-	result := uint16(C.A) + uint16(value) + uint16(C.testC())
+	result := uint16(C.A) + uint16(value) + uint16(C.getC())
 	C.setC(result > 0x0FF)
 	C.setV(C.A, value, byte(result))
 	C.A = byte(result)
@@ -87,7 +87,7 @@ func (C *CPU) op_ADC_INY(mem *mem.Memory) {
 	zpAddr := C.fetchByte(mem)
 	wordZP := C.Indirect_index_Y(zpAddr, C.Y)
 	value := mem.Read(wordZP)
-	result := uint16(C.A) + uint16(value) + uint16(C.testC())
+	result := uint16(C.A) + uint16(value) + uint16(C.getC())
 	C.setC(result > 0x0FF)
 	C.setV(C.A, value, byte(result))
 	C.A = byte(result)
@@ -97,7 +97,7 @@ func (C *CPU) op_ADC_INY(mem *mem.Memory) {
 func (C *CPU) op_SBC_IM(mem *mem.Memory) {
 	C.opName = "SBC Im"
 	value := ^C.fetchByte(mem)
-	result := uint16(C.A) + uint16(value) + uint16(C.testC())
+	result := uint16(C.A) + uint16(value) + uint16(C.getC())
 	C.setC(result > 0x0FF)
 	C.setV(C.A, value, byte(result))
 	C.A = byte(result)

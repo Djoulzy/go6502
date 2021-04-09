@@ -8,10 +8,11 @@ import (
 // Init :
 func (m *Memory) Init() {
 	m.latch = latch{
-		kernal: true,
-		basic:  true,
-		io:     true,
-		char:   false,
+		kernal:   true,
+		basic:    true,
+		io:       true,
+		char:     false,
+		disabled: false,
 	}
 
 	m.Stack = m.Mem[stackStart : stackEnd+1]
@@ -29,9 +30,10 @@ func (m *Memory) Init() {
 	m.Mem[0].Ram = 0x2F // Processor port data direction register
 	m.Mem[1].Ram = 0x37 // Processor port / memory map configuration
 
-	// for i := range m.Data {
-	// 	m.Data[i] = 0x00
-	// }
+	for i := range m.Mem {
+		m.Mem[i].romMode = &m.latch.disabled
+		m.Mem[i].expMode = &m.latch.disabled
+	}
 	// cpt := 0
 	// for i := range m.Color {
 	// 	m.Color[i] = byte(cpt)
@@ -75,7 +77,14 @@ func (m *Memory) DumpChar(screenCode byte) {
 }
 
 func (m *Memory) Read(addr interface{}) byte {
-	cell := m.Mem[addr.(uint16)]
+	var cell cell
+
+	switch typed := addr.(type) {
+	case uint16:
+		cell = m.Mem[typed]
+	case uint8:
+		cell = m.Mem[typed]
+	}
 	if *cell.romMode {
 		return cell.Rom
 	}
@@ -83,7 +92,14 @@ func (m *Memory) Read(addr interface{}) byte {
 }
 
 func (m *Memory) Write(addr interface{}, value byte) {
-	cell := m.Mem[addr.(uint16)]
+	var cell cell
+
+	switch typed := addr.(type) {
+	case uint16:
+		cell = m.Mem[typed]
+	case uint8:
+		cell = m.Mem[typed]
+	}
 	if *cell.romMode {
 		return
 	}
@@ -103,7 +119,6 @@ func (m *Memory) Dump(startAddr uint16) {
 		fmt.Println()
 	}
 }
-
 
 // func (m *Memory) String2screenCode(startMem uint16, message string) {
 // 	runes := []rune(message)

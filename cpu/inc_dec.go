@@ -94,7 +94,11 @@ func (C *CPU) op_DEX(mem *mem.Memory) {
 	C.setNZStatus(C.X)
 }
 
-func (C *CPU) op_DEY(mem *mem.Memory) {}
+func (C *CPU) op_DEY(mem *mem.Memory) {
+	C.opName = "DEY"
+	C.Y -= 1
+	C.setNZStatus(C.Y)
+}
 
 //////////////////////////////////
 ///////////// INX ////////////////
@@ -112,7 +116,7 @@ func (C *CPU) op_INX(mem *mem.Memory) {
 //////////////////////////////////
 
 func (C *CPU) op_INY(mem *mem.Memory) {
-	C.opName = "\tINY"
+	C.opName = "INY"
 	C.Y += 1
 	C.setNZStatus(C.Y)
 }

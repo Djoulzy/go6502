@@ -12,6 +12,10 @@ func (C *CPU) setN(register byte) {
 	}
 }
 
+func (C *CPU) testN() bool {
+	return C.S & ^N_mask > 0
+}
+
 func (C *CPU) setZ(register byte) {
 	if register == 0 {
 		C.S |= ^Z_mask
@@ -28,8 +32,8 @@ func (C *CPU) setD(on bool) {
 	}
 }
 
-func (C *CPU) setI(register byte) {
-	if register == 0 {
+func (C *CPU) setI(on bool) {
+	if on {
 		C.S |= ^I_mask
 	} else {
 		C.S &= I_mask
@@ -52,11 +56,15 @@ func (C *CPU) setC(on bool) {
 	}
 }
 
-func (C *CPU) testC() byte {
+func (C *CPU) getC() byte {
 	if C.S & ^C_mask > 0 {
 		return 0x01
 	}
 	return 0x00
+}
+
+func (C *CPU) testC() bool {
+	return C.S & ^C_mask > 0
 }
 
 func (C *CPU) setNZStatus(register byte) {
@@ -88,7 +96,12 @@ func (C *CPU) op_CLD(mem *mem.Memory) {
 	C.dbus.WaitBusLow()
 }
 
-func (C *CPU) op_CLI(mem *mem.Memory) { C.opName = "ToDO" }
+func (C *CPU) op_CLI(mem *mem.Memory) {
+	C.opName = "CLI"
+	C.setI(false)
+	C.dbus.WaitBusLow()
+}
+
 func (C *CPU) op_CLV(mem *mem.Memory) { C.opName = "ToDO" }
 
 func (C *CPU) op_SEC(mem *mem.Memory) {

@@ -21,10 +21,11 @@ const (
 )
 
 type latch struct {
-	kernal bool
-	basic  bool
-	char   bool
-	io     bool
+	kernal   bool
+	basic    bool
+	char     bool
+	io       bool
+	disabled bool
 }
 
 type cell struct {

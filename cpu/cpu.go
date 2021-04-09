@@ -44,9 +44,6 @@ func (C *CPU) pullWordStack(mem *mem.Memory) uint16 {
 func (C *CPU) pushByteStack(mem *mem.Memory, val byte) {
 	mem.Stack[C.SP].Ram = val
 	C.SP--
-	if C.SP < 0 {
-		panic("Stack overflow")
-	}
 	C.dbus.WaitBusLow()
 }
 
