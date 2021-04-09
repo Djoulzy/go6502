@@ -152,9 +152,10 @@ func (C *CPU) op_CMP_ABS(mem *mem.Memory) {
 }
 
 func (C *CPU) op_CMP_ABX(mem *mem.Memory) {
-	C.opName = "CMP Abs,X"
-	absAddress := C.fetchWord(mem) + uint16(C.X)
-	value := mem.Read(absAddress)
+	absAddress := C.fetchWord(mem)
+	dest := absAddress + uint16(C.X)
+	value := mem.Read(dest)
+	C.opName = fmt.Sprintf("CMP $%04X,X -> %02X", absAddress, value)
 	C.setC(C.A >= value)
 	res := C.A - value
 	C.setZ(res)
@@ -183,7 +184,6 @@ func (C *CPU) op_CMP_INX(mem *mem.Memory) {
 }
 
 func (C *CPU) op_CMP_INY(mem *mem.Memory) {
-	C.opName = "CMP (ZP),Y"
 	zpAddr := C.fetchByte(mem)
 	wordZP := C.Indirect_index_Y(zpAddr, C.Y)
 	value := mem.Read(wordZP)

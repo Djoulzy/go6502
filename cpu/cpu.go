@@ -20,6 +20,8 @@ func (C *CPU) reset(mem *mem.Memory) {
 	C.exit = false
 }
 
+var output = ""
+
 //////////////////////////////////
 //////// Stack Operations ////////
 //////////////////////////////////
@@ -100,28 +102,29 @@ func (C *CPU) fetchByte(mem *mem.Memory) byte {
 	// if C.Display {
 	// 	C.refreshScreen(mem)
 	// }
-	value := mem.Mem[C.PC].Ram
-	fmt.Printf(" %02X", value)
+	value := mem.Read(C.PC)
 	C.PC++
+	if C.Display {
+		output = fmt.Sprintf("%s %02X", output, value)
+	}
 	C.dbus.WaitBusLow()
 	return value
 }
 
 func (C *CPU) exec(mem *mem.Memory) {
+
 	if C.exit || C.PC == C.BP {
 		time.Sleep(time.Second)
 		os.Exit(1)
 	}
 	if C.Display {
+		output = ""
 		fmt.Printf("\n%08b - A:%02X X:%02X Y:%02X - %04X:", C.SP, C.A, C.X, C.Y, C.PC)
 	}
 	opCode := C.fetchByte(mem)
-	if C.Display {
-		fmt.Printf(" %02X", opCode)
-	}
 	Mnemonic[opCode](mem)
 	if C.Display {
-		fmt.Printf("\t%s", C.opName)
+		fmt.Printf("%-15s %s", output, C.opName)
 	}
 }
 
@@ -333,14 +336,14 @@ func (C *CPU) Init(dbus *databus.Databus, mem *mem.Memory, disp bool) {
 
 	C.reset(C.ram)
 	// NMI
-	C.ram.Mem[0xFFFA].Ram = 0x43
-	C.ram.Mem[0xFFFB].Ram = 0xFE
-	// Cold Start
-	C.ram.Mem[0xFFFC].Ram = 0xE2
-	C.ram.Mem[0xFFFD].Ram = 0xFC
-	// IRQ
-	C.ram.Mem[0xFFFE].Ram = 0x48
-	C.ram.Mem[0xFFFF].Ram = 0xFF
+	// C.ram.Mem[0xFFFA].Ram = 0x43
+	// C.ram.Mem[0xFFFB].Ram = 0xFE
+	// // Cold Start
+	// C.ram.Mem[0xFFFC].Ram = 0xE2
+	// C.ram.Mem[0xFFFD].Ram = 0xFC
+	// // IRQ
+	// C.ram.Mem[0xFFFE].Ram = 0x48
+	// C.ram.Mem[0xFFFF].Ram = 0xFF
 }
 
 func (C *CPU) Run() {

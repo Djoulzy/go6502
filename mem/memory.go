@@ -75,13 +75,19 @@ func (m *Memory) DumpChar(screenCode byte) {
 }
 
 func (m *Memory) Read(addr interface{}) byte {
-	final := addr.(uint16)
-	return m.Mem[final].Ram
+	cell := m.Mem[addr.(uint16)]
+	if *cell.romMode {
+		return cell.Rom
+	}
+	return cell.Ram
 }
 
 func (m *Memory) Write(addr interface{}, value byte) {
-	final := addr.(uint16)
-	m.Mem[final].Ram = value
+	cell := m.Mem[addr.(uint16)]
+	if *cell.romMode {
+		return
+	}
+	cell.Ram = value
 }
 
 func (m *Memory) Dump(startAddr uint16) {
