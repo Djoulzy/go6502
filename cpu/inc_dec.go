@@ -21,8 +21,10 @@ func (C *CPU) op_INC_ZP(mem *mem.Memory) {
 func (C *CPU) op_INC_ZPX(mem *mem.Memory) {
 	C.opName = "INC ZP,X"
 	zpAddr := C.fetchByte(mem) + C.X
-	mem.Data[zpAddr] += 1
-	C.setNZStatus(mem.Data[zpAddr])
+	val := mem.Read(zpAddr)
+	val += 1
+	C.setNZStatus(val)
+	mem.Write(zpAddr, val)
 }
 
 func (C *CPU) op_INC_ABS(mem *mem.Memory) {
@@ -40,8 +42,10 @@ func (C *CPU) op_INC_ABS(mem *mem.Memory) {
 func (C *CPU) op_INC_ABX(mem *mem.Memory) {
 	C.opName = "INC Abs,X"
 	absAddress := C.fetchWord(mem) + uint16(C.X)
-	mem.Data[absAddress] += 1
-	C.setNZStatus(mem.Data[absAddress])
+	val := mem.Read(absAddress)
+	val += 1
+	C.setNZStatus(val)
+	mem.Write(absAddress, val)
 }
 
 //////////////////////////////////
@@ -51,29 +55,37 @@ func (C *CPU) op_INC_ABX(mem *mem.Memory) {
 func (C *CPU) op_DEC_ZP(mem *mem.Memory) {
 	C.opName = "DEC ZP"
 	zpAddr := C.fetchByte(mem)
-	mem.Data[zpAddr] -= 1
-	C.setNZStatus(mem.Data[zpAddr])
+	val := mem.Read(zpAddr)
+	val -= 1
+	C.setNZStatus(val)
+	mem.Write(zpAddr, val)
 }
 
 func (C *CPU) op_DEC_ZPX(mem *mem.Memory) {
 	C.opName = "DEC ZP,X"
 	zpAddr := C.fetchByte(mem) + C.X
-	mem.Data[zpAddr] -= 1
-	C.setNZStatus(mem.Data[zpAddr])
+	val := mem.Read(zpAddr)
+	val -= 1
+	C.setNZStatus(val)
+	mem.Write(zpAddr, val)
 }
 
 func (C *CPU) op_DEC_ABS(mem *mem.Memory) {
 	C.opName = "DEC Abs"
 	address := C.fetchWord(mem)
-	mem.Data[address] -= 1
-	C.setNZStatus(mem.Data[address])
+	val := mem.Read(address)
+	val -= 1
+	C.setNZStatus(val)
+	mem.Write(address, val)
 }
 
 func (C *CPU) op_DEC_ABX(mem *mem.Memory) {
 	C.opName = "DEC Abs,X"
 	absAddress := C.fetchWord(mem) + uint16(C.X)
-	mem.Data[absAddress] -= 1
-	C.setNZStatus(mem.Data[absAddress])
+	val := mem.Read(absAddress)
+	val -= 1
+	C.setNZStatus(val)
+	mem.Write(absAddress, val)
 }
 
 func (C *CPU) op_DEX(mem *mem.Memory) {
