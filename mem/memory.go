@@ -92,15 +92,16 @@ func (m *Memory) Read(addr interface{}) byte {
 }
 
 func (m *Memory) Write(addr interface{}, value byte) {
-	var cell cell
+	var cell *cell
 
 	switch typed := addr.(type) {
 	case uint16:
-		cell = m.Mem[typed]
+		cell = &m.Mem[typed]
 	case uint8:
-		cell = m.Mem[typed]
+		cell = &m.Mem[typed]
 	}
 	if *cell.romMode {
+		fmt.Printf("ROM Write")
 		return
 	}
 	cell.Ram = value

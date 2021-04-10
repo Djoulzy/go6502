@@ -53,7 +53,7 @@ func (V *VIC) Init(dbus *databus.Databus, mem *mem.Memory) {
 }
 
 func (V *VIC) saveRasterPos(val int) {
-	V.ram.Mem[REG_RASTER].Rom = byte(val)
+	V.ram.Mem[REG_RASTER].Ram = byte(val)
 	if (byte(uint16(val) >> 8)) == 0x1 {
 		V.ram.Mem[REG_RST8].Rom |= 0b10000000
 	} else {

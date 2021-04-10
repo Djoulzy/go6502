@@ -5,7 +5,6 @@ import (
 	"go6502/databus"
 	"go6502/mem"
 	"os"
-	"time"
 )
 
 func (C *CPU) reset(mem *mem.Memory) {
@@ -111,7 +110,8 @@ func (C *CPU) fetchByte(mem *mem.Memory) byte {
 func (C *CPU) exec(mem *mem.Memory) {
 
 	if C.exit || C.PC == C.BP {
-		time.Sleep(time.Second)
+		fmt.Printf("\n")
+		mem.Dump(0x0180)
 		os.Exit(1)
 	}
 	if C.Display {

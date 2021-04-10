@@ -122,11 +122,11 @@ func (C *CPU) op_CMP_IM(mem *mem.Memory) {
 }
 
 func (C *CPU) op_CMP_ZP(mem *mem.Memory) {
-	C.opName = "CMP ZP"
 	zpAddress := C.fetchByte(mem)
 	value := mem.Read(zpAddress)
 	C.setC(C.A >= value)
 	res := C.A - value
+	C.opName = fmt.Sprintf("CMP $%02X -> %02X", zpAddress, value)
 	C.setZ(res)
 	C.setN(res)
 }
@@ -233,11 +233,11 @@ func (C *CPU) op_CPY_IM(mem *mem.Memory) {
 }
 
 func (C *CPU) op_CPY_ZP(mem *mem.Memory) {
-	C.opName = "CPY ZP"
 	zpAddress := C.fetchByte(mem)
 	value := mem.Read(zpAddress)
 	C.setC(C.Y >= value)
 	res := C.Y - value
+	C.opName = fmt.Sprintf("CPY $%02X -> %02X", zpAddress, value)
 	C.setZ(res)
 	C.setN(res)
 }
