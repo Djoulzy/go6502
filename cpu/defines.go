@@ -32,6 +32,7 @@ type CPU struct {
 	ram     *mem.Memory
 	dbus    *databus.Databus
 	BP      uint16
+	Dump    uint16
 }
 
 // Mnemonic :

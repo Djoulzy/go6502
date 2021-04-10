@@ -111,7 +111,7 @@ func (C *CPU) exec(mem *mem.Memory) {
 
 	if C.exit || C.PC == C.BP {
 		fmt.Printf("\n")
-		mem.Dump(0x0180)
+		mem.Dump(C.Dump)
 		os.Exit(1)
 	}
 	if C.Display {
@@ -125,8 +125,9 @@ func (C *CPU) exec(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) SetBreakpoint(bp uint16) {
+func (C *CPU) SetBreakpoint(bp uint16, dump uint16) {
 	C.BP = bp
+	C.Dump = dump
 }
 
 //////////////////////////////////

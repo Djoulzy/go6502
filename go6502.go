@@ -4,6 +4,8 @@ package main
 
 import (
 	"go6502/assembler"
+	"go6502/clog"
+	"go6502/confload"
 	"go6502/cpu"
 	"go6502/databus"
 	"go6502/mem"
@@ -13,6 +15,8 @@ import (
 	"runtime"
 )
 
+var conf = &confload.ConfigData{}
+
 func init() {
 	// This is needed to arrange that main() runs on main thread.
 	// See documentation for functions that are only allowed to be called from the main thread.
@@ -21,6 +25,13 @@ func init() {
 
 func main() {
 	args := os.Args
+	confload.Load("config.ini", conf)
+
+	clog.LogLevel = conf.LogLevel
+	clog.StartLogging = conf.StartLogging
+	if conf.FileLog != "" {
+		clog.EnableFileLog(conf.FileLog)
+	}
 
 	// test := 0xF4
 	// fmt.Printf("%d\n", int8(test))
@@ -53,7 +64,7 @@ func main() {
 	}
 	cpu.PC = 0xFCE2
 	mem.Dump(cpu.PC)
-	cpu.SetBreakpoint(0xE303)
+	//cpu.SetBreakpoint(0xFE27, 0x0283)
 
 	// os.Exit(1)
 
