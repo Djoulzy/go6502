@@ -42,7 +42,6 @@ func main() {
 
 	cia2 := cia.CIA{}
 	cia2.Init(mem.Mem[0xDD00:])
-	mem.Dump(0xDD00)
 
 	cpu := cpu.CPU{}
 	cpu.Init(&dbus, &mem, conf)

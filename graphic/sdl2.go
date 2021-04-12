@@ -1,8 +1,6 @@
 package graphic
 
 import (
-	"os"
-
 	"github.com/veandco/go-sdl2/sdl"
 )
 
@@ -16,6 +14,7 @@ type SDL2Driver struct {
 func (S *SDL2Driver) DrawPixel(x, y int, color RGB) {
 	S.renderer.SetDrawColor(byte(color.R), byte(color.R), byte(color.R), 255)
 	S.renderer.DrawPoint(int32(x), int32(y))
+	S.renderer.Present()
 }
 
 func (S *SDL2Driver) CloseAll() {
@@ -47,13 +46,13 @@ func (S *SDL2Driver) Init(winWidth, winHeight int) {
 }
 
 func (S *SDL2Driver) DisplayFrame() {
-	S.renderer.Present()
+	// S.renderer.Present()
 
-	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
-		switch event.(type) {
-		case *sdl.QuitEvent:
-			os.Exit(1)
-		}
-	}
+	// for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
+	// 	switch event.(type) {
+	// 	case *sdl.QuitEvent:
+	// 		os.Exit(1)
+	// 	}
+	// }
 
 }

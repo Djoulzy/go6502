@@ -15,7 +15,7 @@ func (m *Memory) Init() {
 		disabled: false,
 	}
 
-	m.Stack = m.Mem[stackStart : stackEnd+1]
+	m.Stack = m.Mem[stackStart : stackEnd + 1]
 	m.Screen = m.Mem[screenStart : screenEnd+1]
 	m.Color = m.Mem[colorStart : colorEnd+1]
 	m.Kernal = m.Mem[KernalStart : KernalEnd+1]
@@ -124,7 +124,7 @@ func (m *Memory) DumpStack(SP byte, nbline int) {
 	if nbline == 0 {
 		nbline = 16
 	}
-	cpt := 255
+	cpt := 0
 	for y := 0; y < nbline; y++ {
 		for x := 0; x < 16; x++ {
 			if byte(cpt) == SP {
@@ -132,7 +132,7 @@ func (m *Memory) DumpStack(SP byte, nbline int) {
 			} else {
 				fmt.Printf(" %02X", m.Stack[cpt].Ram)
 			}
-			cpt--
+			cpt++
 		}
 		if y < nbline-1 {
 			fmt.Printf("\n")

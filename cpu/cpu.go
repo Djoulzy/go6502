@@ -46,7 +46,8 @@ func (C *CPU) pullWordStack(mem *mem.Memory) uint16 {
 
 // Byte
 func (C *CPU) pushByteStack(mem *mem.Memory, val byte) {
-	mem.Stack[C.SP].Ram = val
+	//mem.Stack[C.SP].Ram = val
+	mem.Mem[0x0100 + uint16(C.SP)].Ram = val
 	C.SP--
 	// mem.DumpStack(C.SP, 1)
 	//C.dbus.WaitBusLow()
@@ -121,7 +122,7 @@ func (C *CPU) exec(mem *mem.Memory) {
 	}
 	if C.Display {
 		output = ""
-		fmt.Printf("\n%08b - A:%c[1;33m%02X%c[0m X:%c[1;33m%02X%c[0m Y:%c[1;33m%02X%c[0m - %c[1;31m%04X%c[0m:", C.S, 27, C.A, 27, 27, C.X, 27, 27, C.Y, 27, 27, C.PC, 27)
+		fmt.Printf("\n%08b - A:%c[1;33m%02X%c[0m X:%c[1;33m%02X%c[0m Y:%c[1;33m%02X%c[0m SP:%c[1;33m%02X%c[0m - %c[1;31m%04X%c[0m:", C.S, 27, C.A, 27, 27, C.X, 27, 27, C.Y, 27, 27, C.SP, 27, 27, C.PC, 27)
 	}
 	opCode := C.fetchByte(mem)
 	Mnemonic[opCode](mem)
@@ -180,9 +181,19 @@ func (C *CPU) Run() {
 		C.exec(C.ram)
 
 		if C.Step {
-			_, err := tty.ReadRune()
+		COMMAND:
+			r, err := tty.ReadRune()
 			if err != nil {
 				log.Fatal(err)
+			}
+			switch r {
+			case 'd':
+				C.ram.Dump(C.Dump)
+				goto COMMAND
+			case 's':
+				fmt.Printf("\n")
+				C.ram.DumpStack(C.SP, 0)
+				goto COMMAND
 			}
 		}
 	}
