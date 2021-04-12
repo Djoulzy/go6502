@@ -114,6 +114,6 @@ func (C *CPU) op_SED(mem *mem.Memory) { C.opName = "ToDO" }
 
 func (C *CPU) op_SEI(mem *mem.Memory) {
 	C.opName = "SEI"
-	C.setC(true)
+	C.setI(true)
 	C.dbus.WaitBusLow()
 }

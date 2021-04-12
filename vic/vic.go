@@ -50,6 +50,7 @@ func (V *VIC) Init(dbus *databus.Databus, mem *mem.Memory) {
 	V.ram.Mem[REG_EC].Rom = Lightblue
 	V.ram.Mem[REG_B0C].Rom = Blue
 	V.BA = true
+	V.ram.Mem[PALNTSC].Ram = 0x01 // PAL
 }
 
 func (V *VIC) saveRasterPos(val int) {

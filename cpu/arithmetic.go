@@ -11,6 +11,8 @@ func (C *CPU) op_ADC_IM(mem *mem.Memory) {
 	result := uint16(C.A) + uint16(value) + uint16(C.getC())
 	C.setC(result > 0x0FF)
 	C.setV(C.A, value, byte(result))
+	C.opName = fmt.Sprintf("ADC #$%02X", value)
+	C.debug = fmt.Sprintf(" = %02X", result)
 	C.A = byte(result)
 	C.setNZStatus(C.A)
 }
@@ -113,10 +115,10 @@ func (C *CPU) op_SBC_INX(mem *mem.Memory) { C.opName = "ToDO" }
 func (C *CPU) op_SBC_INY(mem *mem.Memory) { C.opName = "ToDO" }
 
 func (C *CPU) op_CMP_IM(mem *mem.Memory) {
-	C.opName = "CMP Im"
 	value := C.fetchByte(mem)
 	C.setC(C.A >= value)
 	res := C.A - value
+	C.opName = fmt.Sprintf("CMP #$%02X", value)
 	C.setZ(res)
 	C.setN(res)
 }
@@ -155,7 +157,8 @@ func (C *CPU) op_CMP_ABX(mem *mem.Memory) {
 	absAddress := C.fetchWord(mem)
 	dest := absAddress + uint16(C.X)
 	value := mem.Read(dest)
-	C.opName = fmt.Sprintf("CMP $%04X,X -> %02X", absAddress, value)
+	C.opName = fmt.Sprintf("CMP $%04X,X", absAddress)
+	C.debug = fmt.Sprintf("($%04X) = %02X vs %02X", dest, value, C.A)
 	C.setC(C.A >= value)
 	res := C.A - value
 	C.setZ(res)
@@ -187,7 +190,8 @@ func (C *CPU) op_CMP_INY(mem *mem.Memory) {
 	zpAddr := C.fetchByte(mem)
 	wordZP := C.Indirect_index_Y(zpAddr, C.Y)
 	value := mem.Read(wordZP)
-	C.opName = fmt.Sprintf("CMP ($%02X),Y -> %02X", zpAddr, value)
+	C.opName = fmt.Sprintf("CMP ($%02X),Y", zpAddr)
+	C.debug = fmt.Sprintf("%02X vs %02X", value, C.A)
 	C.setC(C.A >= value)
 	res := C.A - value
 	C.setZ(res)
@@ -195,10 +199,10 @@ func (C *CPU) op_CMP_INY(mem *mem.Memory) {
 }
 
 func (C *CPU) op_CPX_IM(mem *mem.Memory) {
-	C.opName = "CPX Im"
 	value := C.fetchByte(mem)
 	C.setC(C.X >= value)
 	res := C.X - value
+	C.opName = fmt.Sprintf("CPX #$%02X", value)
 	C.setZ(res)
 	C.setN(res)
 }

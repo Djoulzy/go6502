@@ -27,11 +27,13 @@ type CPU struct {
 	S  byte
 
 	opName  string
+	debug   string
 	exit    bool
 	Display bool
 	ram     *mem.Memory
 	dbus    *databus.Databus
 	BP      uint16
+	Step    bool
 	Dump    uint16
 }
 

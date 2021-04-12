@@ -160,7 +160,7 @@ func (C *CPU) op_STA_ZP(mem *mem.Memory) {
 	C.opName = fmt.Sprintf("STA $%02X", zpAddress)
 	mem.Write(zpAddress, C.A)
 	val := mem.Read(zpAddress)
-	C.opName = fmt.Sprintf("%s = %02X", C.opName, val)
+	C.debug = fmt.Sprintf("%02X -> $%02X", val, zpAddress)
 }
 
 func (C *CPU) op_STA_ZPX(mem *mem.Memory) {
@@ -171,26 +171,30 @@ func (C *CPU) op_STA_ZPX(mem *mem.Memory) {
 }
 
 func (C *CPU) op_STA_ABS(mem *mem.Memory) {
-	C.opName = "STA Abs"
 	absAddress := C.fetchWord(mem)
-	mem.Write(absAddress, C.A)
+	C.opName = fmt.Sprintf("STA $%04X", absAddress)
+	if !mem.Write(absAddress, C.A) {
+		C.debug = fmt.Sprintf("Write to ROM")
+	}
 }
 
 func (C *CPU) op_STA_ABX(mem *mem.Memory) {
-	C.opName = "STA Abs,X"
-	absAddress := C.fetchWord(mem) + uint16(C.X)
+	absAddress := C.fetchWord(mem)
+	dest := absAddress + uint16(C.X)
 	C.dbus.WaitBusLow()
-	mem.Write(absAddress, C.A)
+	C.opName = fmt.Sprintf("STA $%04X,X", absAddress)
+	C.debug = fmt.Sprintf("%02X -> $%04X", C.A, dest)
+	mem.Write(dest, C.A)
 	C.dbus.WaitBusLow()
 }
 
 func (C *CPU) op_STA_ABY(mem *mem.Memory) {
-	C.opName = "STA Abs,Y"
 	absAddress := C.fetchWord(mem)
-	result := absAddress + uint16(C.Y)
+	dest := absAddress + uint16(C.Y)
 	C.opName = fmt.Sprintf("STA $%04X,Y", absAddress)
+	C.debug = fmt.Sprintf("%02X -> $%04X", C.A, dest)
 	C.dbus.WaitBusLow()
-	mem.Write(result, C.A)
+	mem.Write(dest, C.A)
 	C.dbus.WaitBusLow()
 }
 
@@ -198,15 +202,17 @@ func (C *CPU) op_STA_INX(mem *mem.Memory) {
 	zpAddr := C.fetchByte(mem)
 	C.opName = fmt.Sprintf("STA ($%02X,X)", zpAddr)
 	wordZP := C.Indexed_indirect_X(zpAddr, C.X)
+	C.debug = fmt.Sprintf("%02X -> $%04X", C.A, wordZP)
 	mem.Write(wordZP, C.A)
 }
 
 func (C *CPU) op_STA_INY(mem *mem.Memory) {
 	zpAddr := C.fetchByte(mem)
 	wordZP := C.Indirect_index_Y(zpAddr, C.Y)
-	C.opName = fmt.Sprintf("STA ($%02X),Y -> %04X", zpAddr, wordZP)
+	C.opName = fmt.Sprintf("STA ($%02X),Y", zpAddr)
 	// mem.Dump(uint16(zpAddr))
 	mem.Write(wordZP, C.A)
+	C.debug = fmt.Sprintf("%02X -> $%04X", C.A, wordZP)
 }
 
 //////////////////////////////////
@@ -244,9 +250,10 @@ func (C *CPU) op_STY_ZP(mem *mem.Memory) {
 }
 
 func (C *CPU) op_STY_ZPX(mem *mem.Memory) {
-	zpAddress := C.fetchByte(mem) + C.X
+	zpAddress := C.fetchByte(mem)
+	dest := zpAddress + C.X
 	C.opName = fmt.Sprintf("STY $%02X,X", zpAddress)
-	mem.Write(zpAddress, C.Y)
+	mem.Write(dest, C.Y)
 }
 
 func (C *CPU) op_STY_ABS(mem *mem.Memory) {

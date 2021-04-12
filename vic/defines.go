@@ -66,8 +66,9 @@ type VIC struct {
 }
 
 const (
-	REG_RST8   = uint16(0xD011) // Raster 9eme bit
-	REG_RASTER = uint16(0xD012) // Raster 8 first bits
-	REG_EC     = uint16(0xD020) // Border Color
-	REG_B0C    = uint16(0xD021) // Background color 0
+	REG_RST8   = 0xD011 // Raster 9eme bit
+	REG_RASTER = 0xD012 // Raster 8 first bits
+	REG_EC     = 0xD020 // Border Color
+	REG_B0C    = 0xD021 // Background color 0
+	PALNTSC    = 0x02A6
 )

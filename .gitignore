@@ -15,5 +15,5 @@ go6502
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
-log/
+log/*
 !log/.gitkeep

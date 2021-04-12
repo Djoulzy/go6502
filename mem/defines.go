@@ -28,9 +28,9 @@ type latch struct {
 	disabled bool
 }
 
-type cell struct {
-	romMode *bool
-	expMode *bool
+type Cell struct {
+	RomMode *bool
+	ExpMode *bool
 	Exp     byte
 	Rom     byte
 	Ram     byte
@@ -39,12 +39,12 @@ type cell struct {
 // Memory :
 type Memory struct {
 	latch   latch
-	Mem     [memorySize]cell
-	Kernal  []cell
-	Basic   []cell
-	CharGen []cell
-	Stack   []cell
-	Screen  []cell
-	Color   []cell
-	Vic     [4][]cell
+	Mem     [memorySize]Cell
+	Kernal  []Cell
+	Basic   []Cell
+	CharGen []Cell
+	Stack   []Cell
+	Screen  []Cell
+	Color   []Cell
+	Vic     [4][]Cell
 }

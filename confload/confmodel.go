@@ -8,7 +8,13 @@ type Globals struct {
 	LogLevel     int
 }
 
+type Debug struct {
+	Breakpoint uint16
+	Dump uint16
+}
+
 // ConfigData : Data structure du fichier de conf
 type ConfigData struct {
 	Globals
+	Debug
 }

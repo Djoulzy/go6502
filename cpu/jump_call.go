@@ -16,7 +16,8 @@ func (C *CPU) op_JMP_IND(mem *mem.Memory) {
 	C.opName = "JMP Ind"
 	address := C.fetchWord(mem)
 	C.PC = C.readWord(address)
-	C.opName = fmt.Sprintf("JMP ($%04X) -> %04X", address, C.PC)
+	C.opName = fmt.Sprintf("JMP ($%04X)", address)
+	C.debug = fmt.Sprintf("target: $%04X", C.PC)
 }
 
 func (C *CPU) op_JSR(mem *mem.Memory) {
@@ -33,7 +34,8 @@ func (C *CPU) op_RTS(mem *mem.Memory) {
 	originPC := C.PC - 1
 	C.opName = "RTS"
 	dest := C.pullWordStack(mem)
-	C.opName = fmt.Sprintf("RTS -> $%04X", dest)
+	C.opName = fmt.Sprintf("RTS")
+	C.debug = fmt.Sprintf("target: $%04X", dest)
 	C.PC = dest + 1
 	clog.File("go6502", "RTS", "PC:%04X -> %04X - Pull: %04X - Call from: %04X", originPC, C.PC, dest, dest-2)
 }

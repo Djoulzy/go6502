@@ -2,21 +2,26 @@ package cpu
 
 import (
 	"fmt"
+	"go6502/confload"
 	"go6502/databus"
 	"go6502/mem"
+	"log"
 	"os"
+
+	"github.com/mattn/go-tty"
 )
 
 func (C *CPU) reset(mem *mem.Memory) {
 	C.A = 0xAA
 	C.X = 0
 	C.Y = 0
-	C.S = 0b00000000
+	C.S = 0b00100000
 
 	C.PC = 0xFF00
 	C.SP = 0xFF
 
 	C.exit = false
+	C.Step = false
 }
 
 var output = ""
@@ -43,7 +48,8 @@ func (C *CPU) pullWordStack(mem *mem.Memory) uint16 {
 func (C *CPU) pushByteStack(mem *mem.Memory, val byte) {
 	mem.Stack[C.SP].Ram = val
 	C.SP--
-	C.dbus.WaitBusLow()
+	// mem.DumpStack(C.SP, 1)
+	//C.dbus.WaitBusLow()
 }
 
 func (C *CPU) pullByteStack(mem *mem.Memory) byte {
@@ -51,7 +57,8 @@ func (C *CPU) pullByteStack(mem *mem.Memory) byte {
 	if C.SP > 0xFF {
 		panic("Stack overflow")
 	}
-	C.dbus.WaitBusLow()
+	// mem.DumpStack(C.SP, 1)
+	//C.dbus.WaitBusLow()
 	return mem.Stack[C.SP].Ram
 }
 
@@ -109,25 +116,76 @@ func (C *CPU) fetchByte(mem *mem.Memory) byte {
 
 func (C *CPU) exec(mem *mem.Memory) {
 
-	if C.exit || C.PC == C.BP {
-		fmt.Printf("\n")
-		mem.Dump(C.Dump)
+	if C.exit {
 		os.Exit(1)
 	}
 	if C.Display {
 		output = ""
-		fmt.Printf("\n%08b - A:%02X X:%02X Y:%02X - %04X:", C.SP, C.A, C.X, C.Y, C.PC)
+		fmt.Printf("\n%08b - A:%c[1;33m%02X%c[0m X:%c[1;33m%02X%c[0m Y:%c[1;33m%02X%c[0m - %c[1;31m%04X%c[0m:", C.S, 27, C.A, 27, 27, C.X, 27, 27, C.Y, 27, 27, C.PC, 27)
 	}
 	opCode := C.fetchByte(mem)
 	Mnemonic[opCode](mem)
 	if C.Display {
-		fmt.Printf("%-15s %s", output, C.opName)
+		fmt.Printf("%c[1;30m%-15s%c[0m %-15s%c[0;32m; %s%c[0m", 27, output, 27, C.opName, 27, C.debug, 27)
+		C.debug = ""
 	}
 }
 
-func (C *CPU) SetBreakpoint(bp uint16, dump uint16) {
+func (C *CPU) SetBreakpoint(bp uint16) {
 	C.BP = bp
-	C.Dump = dump
+}
+
+func (C *CPU) Init(dbus *databus.Databus, mem *mem.Memory, conf *confload.ConfigData) {
+	C.Display = conf.Globals.Disassamble
+	C.ram = mem
+	C.dbus = dbus
+	C.BP = 0
+
+	if conf.Debug.Dump != 0 {
+		C.Dump = conf.Debug.Dump
+	}
+	if conf.Debug.Breakpoint != 0 {
+		C.BP = conf.Debug.Breakpoint
+	}
+
+	C.initLanguage()
+	// if C.Display {
+	// 	C.initOutput(C.ram)
+	// }
+
+	C.reset(C.ram)
+	// // NMI
+	// C.ram.Mem[0xFFFA].Ram = 0x43
+	// C.ram.Mem[0xFFFB].Ram = 0xFE
+	// // Cold Start
+	// C.ram.Mem[0xFFFC].Ram = 0xE2
+	// C.ram.Mem[0xFFFD].Ram = 0xFC
+	// // IRQ
+	// C.ram.Mem[0xFFFE].Ram = 0x48
+	// C.ram.Mem[0xFFFF].Ram = 0xFF
+}
+
+func (C *CPU) Run() {
+	tty, err := tty.Open()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer tty.Close()
+
+	for {
+		if C.PC == C.BP {
+			C.Step = true
+		}
+
+		C.exec(C.ram)
+
+		if C.Step {
+			_, err := tty.ReadRune()
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+	}
 }
 
 //////////////////////////////////
@@ -319,33 +377,4 @@ func (C *CPU) initLanguage() {
 	Mnemonic[CodeAddr["ROR_ZPX"]] = C.op_ROR_ZPX
 	Mnemonic[CodeAddr["ROR_ABS"]] = C.op_ROR_ABS
 	Mnemonic[CodeAddr["ROR_ABX"]] = C.op_ROR_ABX
-}
-
-func (C *CPU) Init(dbus *databus.Databus, mem *mem.Memory, disp bool) {
-	C.Display = disp
-	C.ram = mem
-	C.dbus = dbus
-	C.BP = 0
-
-	C.initLanguage()
-	// if C.Display {
-	// 	C.initOutput(C.ram)
-	// }
-
-	C.reset(C.ram)
-	// NMI
-	// C.ram.Mem[0xFFFA].Ram = 0x43
-	// C.ram.Mem[0xFFFB].Ram = 0xFE
-	// // Cold Start
-	// C.ram.Mem[0xFFFC].Ram = 0xE2
-	// C.ram.Mem[0xFFFD].Ram = 0xFC
-	// // IRQ
-	// C.ram.Mem[0xFFFE].Ram = 0x48
-	// C.ram.Mem[0xFFFF].Ram = 0xFF
-}
-
-func (C *CPU) Run() {
-	for {
-		C.exec(C.ram)
-	}
 }

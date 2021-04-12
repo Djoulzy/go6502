@@ -4,6 +4,7 @@ package main
 
 import (
 	"go6502/assembler"
+	"go6502/cia"
 	"go6502/clog"
 	"go6502/confload"
 	"go6502/cpu"
@@ -33,18 +34,18 @@ func main() {
 		clog.EnableFileLog(conf.FileLog)
 	}
 
-	// test := 0xF4
-	// fmt.Printf("%d\n", int8(test))
-	// os.Exit(1)
-
 	dbus := databus.Databus{}
 	dbus.Init()
 
 	mem := mem.Memory{}
 	mem.Init()
 
+	cia2 := cia.CIA{}
+	cia2.Init(mem.Mem[0xDD00:])
+	mem.Dump(0xDD00)
+
 	cpu := cpu.CPU{}
-	cpu.Init(&dbus, &mem, true)
+	cpu.Init(&dbus, &mem, conf)
 
 	if len(args) > 1 {
 		ass := assembler.Assembler{}
@@ -63,20 +64,10 @@ func main() {
 		}
 	}
 	cpu.PC = 0xFCE2
-	mem.Dump(cpu.PC)
-	//cpu.SetBreakpoint(0xFE27, 0x0283)
-
-	// os.Exit(1)
 
 	vic := vic.VIC{}
 	vic.Init(&dbus, &mem)
 
 	go cpu.Run()
-	// if cpu.Display {
-	// 	for {
-	// 		// time.Sleep(time.Second / 8)
-	// 		dbus.WaitBusHigh()
-	// 	}
-	// }
 	vic.Run()
 }
