@@ -44,7 +44,7 @@ func (m *Memory) Init() {
 	}
 
 	for i := range m.Color {
-		m.Color[i].Ram = 0
+		m.Color[i].Ram = 0x0E
 	}
 	// for i := range m.Screen {
 	// 	m.Screen[i] = byte(i)
