@@ -34,7 +34,6 @@ func (C *CPU) op_RTS(mem *mem.Memory) {
 	originPC := C.PC - 1
 	C.opName = "RTS"
 	dest := C.pullWordStack(mem)
-	C.opName = fmt.Sprintf("RTS")
 	C.debug = fmt.Sprintf("target: $%04X", dest)
 	C.PC = dest + 1
 	clog.File("go6502", "RTS", "PC:%04X -> %04X - Pull: %04X - Call from: %04X", originPC, C.PC, dest, dest-2)

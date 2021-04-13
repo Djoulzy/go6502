@@ -21,7 +21,7 @@ func (C *CPU) op_BRK(mem *mem.Memory) {
 	C.pushByteStack(mem, C.S)
 	address := C.readWord(0xFFFE)
 	C.PC = address
-	C.dbus.WaitBusLow()
+	C.dbus.Release()
 	C.setB(true)
 }
 

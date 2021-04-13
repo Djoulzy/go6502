@@ -1,7 +1,6 @@
 package vic
 
 import (
-	"go6502/databus"
 	"go6502/graphic"
 	"go6502/mem"
 )
@@ -53,6 +52,10 @@ type VIC struct {
 	RC     byte       // Row counter
 	BA     bool       // High: normal / Low: BadLine
 
+	beamX int
+	beamY int
+	cycle int
+
 	visibleArea bool
 	displayArea bool
 	drawArea    bool
@@ -62,13 +65,13 @@ type VIC struct {
 
 	graph graphic.Driver
 	ram   *mem.Memory
-	dbus  *databus.Databus
 }
 
 const (
-	REG_RST8   = 0xD011 // Raster 9eme bit
-	REG_RASTER = 0xD012 // Raster 8 first bits
-	REG_EC     = 0xD020 // Border Color
-	REG_B0C    = 0xD021 // Background color 0
-	PALNTSC    = 0x02A6
+	REG_RST8        = 0xD011 // Raster 9eme bit of Raster (0b10000000)
+	REG_SCR_CONTROL = 0xD011 // Screen control (0b01111111)
+	REG_RASTER      = 0xD012 // Raster 8 first bits
+	REG_EC          = 0xD020 // Border Color
+	REG_B0C         = 0xD021 // Background color 0
+	PALNTSC         = 0x02A6
 )

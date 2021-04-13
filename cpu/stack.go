@@ -27,12 +27,12 @@ func (C *CPU) op_PLA(mem *mem.Memory) {
 func (C *CPU) op_PHP(mem *mem.Memory) {
 	C.opName = "PHP"
 	C.pushByteStack(mem, C.S)
-	C.dbus.WaitBusLow()
+	C.dbus.Release()
 }
 
 func (C *CPU) op_PLP(mem *mem.Memory) {
 	C.opName = "PLP"
-	C.dbus.WaitBusLow()
+	C.dbus.Release()
 	C.S = C.pullByteStack(mem)
-	C.dbus.WaitBusLow()
+	C.dbus.Release()
 }

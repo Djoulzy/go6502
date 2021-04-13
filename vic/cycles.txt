@@ -42,3 +42,21 @@ X coo. \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\|\\\\\\\\\\\\\\\\\\\\\\\\
        1111111111111111111111111110000000000000|111111111111111111111111
        89999aaaabbbbccccddddeeeeff0000111122223|344445555666677778888999
        c048c048c048c048c048c048c04048c048c048c0|c048c048c048c048c048c048
+
+BUS:
+ø0      Processor clock output
+IRQ     Interrupt level
+BA      Bad Lines
+AEC     This is used for making the processor address bus inactive during VIC accesses
+
+
+  c  Access to video matrix and Color RAM (c-access)
+  g  Access to character generator or bitmap (g-access)
+ 0-7 Reading the sprite data pointer for sprite 0-7 (p-access)
+  s  Reading the sprite data (s-access)
+  r  DRAM refresh
+  i  Idle access
+
+  x  Read or write access of the processor
+  X  Processor may do write accesses, stops on first read (BA is low and so
+     is RDY)

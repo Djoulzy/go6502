@@ -47,10 +47,10 @@ func (C *CPU) pullWordStack(mem *mem.Memory) uint16 {
 // Byte
 func (C *CPU) pushByteStack(mem *mem.Memory, val byte) {
 	//mem.Stack[C.SP].Ram = val
-	mem.Mem[0x0100 + uint16(C.SP)].Ram = val
+	mem.Mem[0x0100+uint16(C.SP)].Ram = val
 	C.SP--
 	// mem.DumpStack(C.SP, 1)
-	//C.dbus.WaitBusLow()
+	//C.dbus.Release()
 }
 
 func (C *CPU) pullByteStack(mem *mem.Memory) byte {
@@ -59,7 +59,7 @@ func (C *CPU) pullByteStack(mem *mem.Memory) byte {
 		panic("Stack overflow")
 	}
 	// mem.DumpStack(C.SP, 1)
-	//C.dbus.WaitBusLow()
+	//C.dbus.Release()
 	return mem.Stack[C.SP].Ram
 }
 
@@ -89,9 +89,9 @@ func (C *CPU) Indexed_indirect_X(addr byte, x byte) uint16 {
 func (C *CPU) readWord(addr uint16) uint16 {
 	low := C.ram.Read(addr)
 	value := uint16(C.ram.Read(addr+1)) << 8
-	C.dbus.WaitBusLow()
+	C.dbus.Release()
 	value += uint16(low)
-	C.dbus.WaitBusLow()
+	C.dbus.Release()
 	return value
 }
 
@@ -111,7 +111,7 @@ func (C *CPU) fetchByte(mem *mem.Memory) byte {
 	if C.Display {
 		output = fmt.Sprintf("%s %02X", output, value)
 	}
-	C.dbus.WaitBusLow()
+	C.dbus.Release()
 	return value
 }
 
@@ -136,7 +136,7 @@ func (C *CPU) SetBreakpoint(bp uint16) {
 	C.BP = bp
 }
 
-func (C *CPU) Init(dbus *databus.Databus, mem *mem.Memory, conf *confload.ConfigData) {
+func (C *CPU) Init(dbus *databus.Bus, mem *mem.Memory, conf *confload.ConfigData) {
 	C.Display = conf.Globals.Disassamble
 	C.ram = mem
 	C.dbus = dbus

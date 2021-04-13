@@ -87,19 +87,19 @@ func (C *CPU) setV(m, n, result byte) {
 func (C *CPU) op_CLC(mem *mem.Memory) {
 	C.opName = "CLC"
 	C.setC(false)
-	C.dbus.WaitBusLow()
+	C.dbus.Release()
 }
 
 func (C *CPU) op_CLD(mem *mem.Memory) {
 	C.opName = "CLD"
 	C.setD(false)
-	C.dbus.WaitBusLow()
+	C.dbus.Release()
 }
 
 func (C *CPU) op_CLI(mem *mem.Memory) {
 	C.opName = "CLI"
 	C.setI(false)
-	C.dbus.WaitBusLow()
+	C.dbus.Release()
 }
 
 func (C *CPU) op_CLV(mem *mem.Memory) { C.opName = "ToDO" }
@@ -107,7 +107,7 @@ func (C *CPU) op_CLV(mem *mem.Memory) { C.opName = "ToDO" }
 func (C *CPU) op_SEC(mem *mem.Memory) {
 	C.opName = "SEC"
 	C.setC(true)
-	C.dbus.WaitBusLow()
+	C.dbus.Release()
 }
 
 func (C *CPU) op_SED(mem *mem.Memory) { C.opName = "ToDO" }
@@ -115,5 +115,5 @@ func (C *CPU) op_SED(mem *mem.Memory) { C.opName = "ToDO" }
 func (C *CPU) op_SEI(mem *mem.Memory) {
 	C.opName = "SEI"
 	C.setI(true)
-	C.dbus.WaitBusLow()
+	C.dbus.Release()
 }

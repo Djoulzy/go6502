@@ -174,18 +174,18 @@ func (C *CPU) op_STA_ABS(mem *mem.Memory) {
 	absAddress := C.fetchWord(mem)
 	C.opName = fmt.Sprintf("STA $%04X", absAddress)
 	if !mem.Write(absAddress, C.A) {
-		C.debug = fmt.Sprintf("Write to ROM")
+		C.debug = "Write to ROM"
 	}
 }
 
 func (C *CPU) op_STA_ABX(mem *mem.Memory) {
 	absAddress := C.fetchWord(mem)
 	dest := absAddress + uint16(C.X)
-	C.dbus.WaitBusLow()
+	C.dbus.Release()
 	C.opName = fmt.Sprintf("STA $%04X,X", absAddress)
 	C.debug = fmt.Sprintf("%02X -> $%04X", C.A, dest)
 	mem.Write(dest, C.A)
-	C.dbus.WaitBusLow()
+	C.dbus.Release()
 }
 
 func (C *CPU) op_STA_ABY(mem *mem.Memory) {
@@ -193,9 +193,9 @@ func (C *CPU) op_STA_ABY(mem *mem.Memory) {
 	dest := absAddress + uint16(C.Y)
 	C.opName = fmt.Sprintf("STA $%04X,Y", absAddress)
 	C.debug = fmt.Sprintf("%02X -> $%04X", C.A, dest)
-	C.dbus.WaitBusLow()
+	C.dbus.Release()
 	mem.Write(dest, C.A)
-	C.dbus.WaitBusLow()
+	C.dbus.Release()
 }
 
 func (C *CPU) op_STA_INX(mem *mem.Memory) {
@@ -223,7 +223,7 @@ func (C *CPU) op_STX_ZP(mem *mem.Memory) {
 	zpAddress := C.fetchByte(mem)
 	C.opName = fmt.Sprintf("STX $%02X", zpAddress)
 	mem.Write(zpAddress, C.X)
-	C.dbus.WaitBusLow()
+	C.dbus.Release()
 }
 
 func (C *CPU) op_STX_ZPY(mem *mem.Memory) {
@@ -246,7 +246,7 @@ func (C *CPU) op_STY_ZP(mem *mem.Memory) {
 	zpAddress := C.fetchByte(mem)
 	C.opName = fmt.Sprintf("STY $%02X", zpAddress)
 	mem.Write(zpAddress, C.Y)
-	C.dbus.WaitBusLow()
+	C.dbus.Release()
 }
 
 func (C *CPU) op_STY_ZPX(mem *mem.Memory) {

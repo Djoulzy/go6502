@@ -30,11 +30,11 @@ func (C *CPU) op_INC_ZPX(mem *mem.Memory) {
 func (C *CPU) op_INC_ABS(mem *mem.Memory) {
 	C.opName = "INC Abs"
 	address := C.fetchWord(mem)
-	C.dbus.WaitBusLow()
+	C.dbus.Release()
 	val := mem.Read(address)
-	C.dbus.WaitBusLow()
+	C.dbus.Release()
 	val += 1
-	C.dbus.WaitBusLow()
+	C.dbus.Release()
 	C.setNZStatus(val)
 	mem.Write(address, val)
 }

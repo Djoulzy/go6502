@@ -34,17 +34,17 @@ func main() {
 		clog.EnableFileLog(conf.FileLog)
 	}
 
-	dbus := databus.Databus{}
-	dbus.Init()
-
-	mem := mem.Memory{}
-	mem.Init()
-
-	cia2 := cia.CIA{}
-	cia2.Init(mem.Mem[0xDD00:])
-
 	cpu := cpu.CPU{}
+	vic := vic.VIC{}
+	dbus := databus.Bus{}
+	mem := mem.Memory{}
+	cia2 := cia.CIA{}
+
+	dbus.Init(&vic)
+	mem.Init()
+	cia2.Init(mem.Mem[0xDD00:])
 	cpu.Init(&dbus, &mem, conf)
+	vic.Init(&mem)
 
 	if len(args) > 1 {
 		ass := assembler.Assembler{}
@@ -64,9 +64,5 @@ func main() {
 	}
 	cpu.PC = 0xFCE2
 
-	vic := vic.VIC{}
-	vic.Init(&dbus, &mem)
-
-	go cpu.Run()
-	vic.Run()
+	cpu.Run()
 }

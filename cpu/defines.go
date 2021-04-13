@@ -31,7 +31,7 @@ type CPU struct {
 	exit    bool
 	Display bool
 	ram     *mem.Memory
-	dbus    *databus.Databus
+	dbus    *databus.Bus
 	BP      uint16
 	Step    bool
 	Dump    uint16
