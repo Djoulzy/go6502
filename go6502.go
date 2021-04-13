@@ -40,8 +40,8 @@ func main() {
 	mem := mem.Memory{}
 	cia2 := cia.CIA{}
 
-	dbus.Init(&vic)
 	mem.Init()
+	dbus.Init(&vic)
 	cia2.Init(mem.Mem[0xDD00:])
 	cpu.Init(&dbus, &mem, conf)
 	vic.Init(&mem)

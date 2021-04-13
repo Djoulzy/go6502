@@ -20,7 +20,6 @@ func (m *Memory) Init() {
 	m.Color = m.Mem[colorStart : colorEnd+1]
 	m.Kernal = m.Mem[KernalStart : KernalEnd+1]
 	m.Basic = m.Mem[BasicStart : BasicEnd+1]
-	// m.CharGen = make([]Cell, 4096)
 	m.CharGen = m.Mem[charStart : charEnd+1]
 
 	cpt := 0
@@ -53,8 +52,6 @@ func (m *Memory) Init() {
 	for i := range m.Color {
 		m.Color[i].Zone[IO] = 0x0E
 	}
-
-	m.Dump(KernalStart)
 }
 
 func (m *Memory) loadRom(filename string, fileSize int, dest []Cell, rmode *int, wmode *int) {
@@ -84,12 +81,12 @@ func (m *Memory) DumpChar(screenCode byte) {
 }
 
 func (m *Memory) Read(addr uint16) byte {
-	cell := m.Mem[addr]
+	cell := &m.Mem[addr]
 	return cell.Zone[*cell.read]
 }
 
 func (m *Memory) Write(addr uint16, value byte) {
-	cell := m.Mem[addr]
+	cell := &m.Mem[addr]
 	cell.Zone[*cell.write] = value
 }
 
