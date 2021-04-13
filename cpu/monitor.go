@@ -2,7 +2,6 @@ package cpu
 
 import (
 	"fmt"
-	"go6502/globals"
 	"go6502/mem"
 	"os"
 	"time"
@@ -48,7 +47,7 @@ func (C *CPU) refreshScreen(mem *mem.Memory) {
 	cpt := 255
 	for y := 0; y < 16; y++ {
 		for x := 0; x < 16; x++ {
-			if globals.Byte(cpt) == C.SP {
+			if byte(cpt) == C.SP {
 				tbprintf(50+x*3, y, termbox.ColorBlack, termbox.ColorWhite, "%02X", mem.Stack[cpt])
 			} else {
 				tbprintf(50+x*3, y, termbox.ColorDefault, termbox.ColorDefault, "%02X", mem.Stack[cpt])

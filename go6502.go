@@ -4,6 +4,9 @@ package main
 
 import (
 	"go6502/assembler"
+	"go6502/cia"
+	"go6502/clog"
+	"go6502/confload"
 	"go6502/cpu"
 	"go6502/databus"
 	"go6502/mem"
@@ -13,6 +16,8 @@ import (
 	"runtime"
 )
 
+var conf = &confload.ConfigData{}
+
 func init() {
 	// This is needed to arrange that main() runs on main thread.
 	// See documentation for functions that are only allowed to be called from the main thread.
@@ -21,19 +26,25 @@ func init() {
 
 func main() {
 	args := os.Args
+	confload.Load("config.ini", conf)
 
-	// test := 0xF4
-	// fmt.Printf("%d\n", int8(test))
-	// os.Exit(1)
-
-	dbus := databus.Databus{}
-	dbus.Init()
-
-	mem := mem.Memory{}
-	mem.Init()
+	clog.LogLevel = conf.LogLevel
+	clog.StartLogging = conf.StartLogging
+	if conf.FileLog != "" {
+		clog.EnableFileLog(conf.FileLog)
+	}
 
 	cpu := cpu.CPU{}
-	cpu.Init(&dbus, &mem, false)
+	vic := vic.VIC{}
+	dbus := databus.Bus{}
+	mem := mem.Memory{}
+	cia2 := cia.CIA{}
+
+	dbus.Init(&vic)
+	mem.Init()
+	cia2.Init(mem.Mem[0xDD00:])
+	cpu.Init(&dbus, &mem, conf)
+	vic.Init(&mem)
 
 	if len(args) > 1 {
 		ass := assembler.Assembler{}
@@ -47,13 +58,11 @@ func main() {
 			cpu.PC, _ = assembler.LoadFile(&mem, args[1])
 		case ".prg":
 			cpu.PC, _ = assembler.LoadPRG(&mem, args[1])
+		default:
+			cpu.PC = 0xFCE2 // Reset call
 		}
 	}
-	// mem.Dump(cpu.PC)
+	cpu.PC = 0xFCE2
 
-	vic := vic.VIC{}
-	vic.Init(&dbus, &mem)
-
-	go cpu.Run()
-	vic.Run()
+	cpu.Run()
 }

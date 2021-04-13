@@ -1,7 +1,6 @@
 package graphic
 
 import (
-	"go6502/globals"
 	"os"
 
 	"github.com/veandco/go-sdl2/sdl"
@@ -16,7 +15,7 @@ type SDLDriver struct {
 	screen    []byte
 }
 
-func (S *SDLDriver) DrawPixel(x, y int, color globals.RGB) {
+func (S *SDLDriver) DrawPixel(x, y int, color RGB) {
 	index := (y*S.winWidth + x) * 3
 	S.screen[index] = byte(color.R)
 	S.screen[index+1] = byte(color.G)
@@ -66,12 +65,18 @@ func (S *SDLDriver) DisplayFrame() {
 	S.texture.Update(nil, S.screen, S.winWidth*3)
 	S.renderer.Copy(S.texture, nil, nil)
 	S.renderer.Present()
-
-	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
-		switch event.(type) {
-		case *sdl.QuitEvent:
+	event := sdl.PollEvent()
+	if event != nil {
+		if event.GetType() == sdl.QUIT {
 			os.Exit(1)
 		}
 	}
+
+	// for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
+	// 	switch event.(type) {
+	// 	case *sdl.QuitEvent:
+	// 		os.Exit(1)
+	// 	}
+	// }
 
 }

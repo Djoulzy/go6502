@@ -1,56 +1,61 @@
 package cpu
 
 import (
+	"fmt"
+	"go6502/confload"
 	"go6502/databus"
-	"go6502/globals"
 	"go6502/mem"
+	"log"
 	"os"
-	"time"
+
+	"github.com/mattn/go-tty"
 )
 
 func (C *CPU) reset(mem *mem.Memory) {
-	C.A = 0
+	C.A = 0xAA
 	C.X = 0
 	C.Y = 0
-	C.S = 0b00000000
+	C.S = 0b00100000
 
 	C.PC = 0xFF00
 	C.SP = 0xFF
 
 	C.exit = false
+	C.Step = false
 }
+
+var output = ""
 
 //////////////////////////////////
 //////// Stack Operations ////////
 //////////////////////////////////
 
-func (C *CPU) pushWordStack(mem *mem.Memory, val globals.Word) {
-	low := globals.Byte(val)
-	hi := globals.Byte(val >> 8)
-	C.pushByteStack(mem, hi)
-	C.pushByteStack(mem, low)
+// Word
+func (C *CPU) pushWordStack(val uint16) {
+	low := byte(val)
+	hi := byte(val >> 8)
+	C.pushByteStack(hi)
+	C.pushByteStack(low)
 }
 
-func (C *CPU) fetchWordStack(mem *mem.Memory) globals.Word {
-	low := C.pullByteStack(mem)
-	hi := globals.Word(C.pullByteStack(mem)) << 8
-	return hi + globals.Word(low)
+func (C *CPU) pullWordStack() uint16 {
+	low := C.pullByteStack()
+	hi := uint16(C.pullByteStack()) << 8
+	return hi + uint16(low)
 }
 
-func (C *CPU) pushByteStack(mem *mem.Memory, val globals.Byte) {
-	mem.Stack[C.SP] = val
+// Byte
+func (C *CPU) pushByteStack(val byte) {
+	C.ram.Stack[C.SP].Zone[mem.RAM] = val
 	C.SP--
-	if C.SP < 0 {
-		panic("Stack overflow")
-	}
 }
 
-func (C *CPU) pullByteStack(mem *mem.Memory) globals.Byte {
+func (C *CPU) pullByteStack() byte {
 	C.SP++
 	if C.SP > 0xFF {
 		panic("Stack overflow")
 	}
-	return mem.Stack[C.SP]
+	return C.ram.Stack[C.SP].Zone[mem.RAM]
 }
 
 //////////////////////////////////
@@ -60,15 +65,13 @@ func (C *CPU) pullByteStack(mem *mem.Memory) globals.Byte {
 // https://stackoverflow.com/questions/46262435/indirect-y-indexed-addressing-mode-in-mos-6502
 // http://www.emulator101.com/6502-addressing-modes.html
 
-func (C *CPU) Indirect_index_Y(addr globals.Byte, y globals.Byte) globals.Word {
-	zpAddr := globals.Word(addr)
-	wordZP := C.readWord(zpAddr) + globals.Word(y)
+func (C *CPU) Indirect_index_Y(addr byte, y byte) uint16 {
+	wordZP := C.readWord(uint16(addr)) + uint16(y)
 	return wordZP
 }
 
-func (C *CPU) Indexed_indirect_X(addr globals.Byte, x globals.Byte) globals.Word {
-	zpAddr := globals.Word(addr + x)
-	wordZP := C.readWord(zpAddr)
+func (C *CPU) Indexed_indirect_X(addr byte, x byte) uint16 {
+	wordZP := C.readWord(uint16(addr + x))
 	return wordZP
 }
 
@@ -76,49 +79,130 @@ func (C *CPU) Indexed_indirect_X(addr globals.Byte, x globals.Byte) globals.Word
 /////// Memory Operations ////////
 //////////////////////////////////
 
-func (C *CPU) readWord(addr globals.Word) globals.Word {
-	low := C.ram.Data[addr]
-	value := globals.Word(C.ram.Data[addr+1]) << 8
-	value += globals.Word(low)
+func (C *CPU) readWord(addr uint16) uint16 {
+	low := C.ram.Read(addr)
+	C.dbus.Release()
+	value := uint16(C.ram.Read(addr+1)) << 8
+	value += uint16(low)
+	C.dbus.Release()
 	return value
 }
 
-func (C *CPU) fetchWord(mem *mem.Memory) globals.Word {
+func (C *CPU) readByte(addr uint16) byte {
+	value := C.ram.Read(addr)
+	C.dbus.Release()
+	return value
+}
+
+func (C *CPU) writeByte(addr uint16, value byte) {
+	C.ram.Write(addr, value)
+	C.dbus.Release()
+}
+
+//////////////////////////////////
+////////// Read OpCode ///////////
+//////////////////////////////////
+
+func (C *CPU) fetchWord(mem *mem.Memory) uint16 {
 	low := C.fetchByte(mem)
-	value := globals.Word(C.fetchByte(mem)) << 8
-	value += globals.Word(low)
+	value := uint16(C.fetchByte(mem)) << 8
+	value += uint16(low)
 	return value
 }
 
-// func (C *CPU) storeByte(mem *mem.Memory, val globals.Byte) {
-// 	if C.Display {
-// 		C.refreshScreen(mem)
-// 	}
-// 	// <-C.Cycle
-// 	mem.Acces.Lock()
-// 	mem.Acces.Unlock()
-// 	value :=mem.Data[C.PC]
-// 	C.PC++
-// 	return value
-// }
-
-func (C *CPU) fetchByte(mem *mem.Memory) globals.Byte {
-	if C.Display {
-		C.refreshScreen(mem)
-	}
-	value := mem.Data[C.PC]
+func (C *CPU) fetchByte(mem *mem.Memory) byte {
+	value := mem.Read(C.PC)
 	C.PC++
-	C.dbus.WaitBusLow()
+	if C.Display {
+		output = fmt.Sprintf("%s %02X", output, value)
+	}
+	C.dbus.Release()
 	return value
 }
 
 func (C *CPU) exec(mem *mem.Memory) {
+
 	if C.exit {
-		time.Sleep(time.Second)
 		os.Exit(1)
+	}
+	if C.Display {
+		output = ""
+		fmt.Printf("\n%08b - A:%c[1;33m%02X%c[0m X:%c[1;33m%02X%c[0m Y:%c[1;33m%02X%c[0m SP:%c[1;33m%02X%c[0m - %c[1;31m%04X%c[0m:", C.S, 27, C.A, 27, 27, C.X, 27, 27, C.Y, 27, 27, C.SP, 27, 27, C.PC, 27)
 	}
 	opCode := C.fetchByte(mem)
 	Mnemonic[opCode](mem)
+	if C.Display {
+		fmt.Printf("%c[1;30m%-15s%c[0m %-15s%c[0;32m; %s%c[0m", 27, output, 27, C.opName, 27, C.debug, 27)
+		C.debug = ""
+	}
+}
+
+func (C *CPU) SetBreakpoint(bp uint16) {
+	C.BP = bp
+}
+
+func (C *CPU) Init(dbus *databus.Bus, mem *mem.Memory, conf *confload.ConfigData) {
+	C.Display = conf.Globals.Disassamble
+	C.ram = mem
+	C.dbus = dbus
+	C.BP = 0
+
+	if conf.Debug.Dump != 0 {
+		C.Dump = conf.Debug.Dump
+	}
+	if conf.Debug.Breakpoint != 0 {
+		C.BP = conf.Debug.Breakpoint
+	}
+
+	C.initLanguage()
+	// if C.Display {
+	// 	C.initOutput(C.ram)
+	// }
+
+	C.reset(C.ram)
+	// // NMI
+	// C.ram.Mem[0xFFFA].Ram = 0x43
+	// C.ram.Mem[0xFFFB].Ram = 0xFE
+	// // Cold Start
+	// C.ram.Mem[0xFFFC].Ram = 0xE2
+	// C.ram.Mem[0xFFFD].Ram = 0xFC
+	// // IRQ
+	// C.ram.Mem[0xFFFE].Ram = 0x48
+	// C.ram.Mem[0xFFFF].Ram = 0xFF
+}
+
+func (C *CPU) Run() {
+	tty, err := tty.Open()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer tty.Close()
+
+	for {
+		if C.PC == C.BP {
+			C.Display = true
+			C.Step = true
+		}
+
+		C.exec(C.ram)
+
+		if C.Step {
+		COMMAND:
+			r, err := tty.ReadRune()
+			if err != nil {
+				log.Fatal(err)
+			}
+			switch r {
+			case 'd':
+				C.ram.Dump(C.Dump)
+				goto COMMAND
+			case 's':
+				fmt.Printf("\n")
+				C.ram.DumpStack(C.SP, 0)
+				goto COMMAND
+			}
+		}
+	}
 }
 
 //////////////////////////////////
@@ -130,7 +214,7 @@ func (C *CPU) exec(mem *mem.Memory) {
 // }
 
 func (C *CPU) initLanguage() {
-	Mnemonic = make(map[globals.Byte]func(*mem.Memory))
+	Mnemonic = make(map[byte]func(*mem.Memory))
 
 	Mnemonic[CodeAddr["SHW"]] = C.op_SHW
 	Mnemonic[CodeAddr["DMP"]] = C.op_DMP
@@ -241,9 +325,33 @@ func (C *CPU) initLanguage() {
 	Mnemonic[CodeAddr["AND_INX"]] = C.op_AND_INX
 	Mnemonic[CodeAddr["AND_INY"]] = C.op_AND_INY
 
+	Mnemonic[CodeAddr["EOR_IM"]] = C.op_EOR_IM
+	Mnemonic[CodeAddr["EOR_ZP"]] = C.op_EOR_ZP
+	Mnemonic[CodeAddr["EOR_ZPX"]] = C.op_EOR_ZPX
+	Mnemonic[CodeAddr["EOR_ABS"]] = C.op_EOR_ABS
+	Mnemonic[CodeAddr["EOR_ABX"]] = C.op_EOR_ABX
+	Mnemonic[CodeAddr["EOR_ABY"]] = C.op_EOR_ABY
+	Mnemonic[CodeAddr["EOR_INX"]] = C.op_EOR_INX
+	Mnemonic[CodeAddr["EOR_INY"]] = C.op_EOR_INY
+
+	Mnemonic[CodeAddr["ORA_IM"]] = C.op_ORA_IM
+	Mnemonic[CodeAddr["ORA_ZP"]] = C.op_ORA_ZP
+	Mnemonic[CodeAddr["ORA_ZPX"]] = C.op_ORA_ZPX
+	Mnemonic[CodeAddr["ORA_ABS"]] = C.op_ORA_ABS
+	Mnemonic[CodeAddr["ORA_ABX"]] = C.op_ORA_ABX
+	Mnemonic[CodeAddr["ORA_ABY"]] = C.op_ORA_ABY
+	Mnemonic[CodeAddr["ORA_INX"]] = C.op_ORA_INX
+	Mnemonic[CodeAddr["ORA_INY"]] = C.op_ORA_INY
+
+	Mnemonic[CodeAddr["BIT_ZP"]] = C.op_BIT_ZP
+	Mnemonic[CodeAddr["BIT_ABS"]] = C.op_BIT_ABS
+
 	Mnemonic[CodeAddr["TXS"]] = C.op_TXS
 	Mnemonic[CodeAddr["PHA"]] = C.op_PHA
 	Mnemonic[CodeAddr["PLA"]] = C.op_PLA
+	Mnemonic[CodeAddr["TSX"]] = C.op_TSX
+	Mnemonic[CodeAddr["PHP"]] = C.op_PHP
+	Mnemonic[CodeAddr["PLP"]] = C.op_PLP
 
 	Mnemonic[CodeAddr["TAX"]] = C.op_TAX
 	Mnemonic[CodeAddr["TAY"]] = C.op_TAY
@@ -262,32 +370,28 @@ func (C *CPU) initLanguage() {
 	Mnemonic[CodeAddr["SEC"]] = C.op_SEC
 	Mnemonic[CodeAddr["SED"]] = C.op_SED
 	Mnemonic[CodeAddr["SEI"]] = C.op_SEI
-}
 
-func (C *CPU) Init(dbus *databus.Databus, mem *mem.Memory, disp bool) {
-	C.Display = disp
-	C.ram = mem
-	C.dbus = dbus
+	Mnemonic[CodeAddr["ASL_IM"]] = C.op_ASL_IM
+	Mnemonic[CodeAddr["ASL_ZP"]] = C.op_ASL_ZP
+	Mnemonic[CodeAddr["ASL_ZPX"]] = C.op_ASL_ZPX
+	Mnemonic[CodeAddr["ASL_ABS"]] = C.op_ASL_ABS
+	Mnemonic[CodeAddr["ASL_ABX"]] = C.op_ASL_ABX
 
-	C.initLanguage()
-	if C.Display {
-		C.initOutput(C.ram)
-	}
+	Mnemonic[CodeAddr["LSR_IM"]] = C.op_LSR_IM
+	Mnemonic[CodeAddr["LSR_ZP"]] = C.op_LSR_ZP
+	Mnemonic[CodeAddr["LSR_ZPX"]] = C.op_LSR_ZPX
+	Mnemonic[CodeAddr["LSR_ABS"]] = C.op_LSR_ABS
+	Mnemonic[CodeAddr["LSR_ABX"]] = C.op_LSR_ABX
 
-	C.reset(C.ram)
-	// NMI
-	C.ram.Data[0xFFFA] = 0x43
-	C.ram.Data[0xFFFB] = 0xFE
-	// Cold Start
-	C.ram.Data[0xFFFC] = 0xE2
-	C.ram.Data[0xFFFD] = 0xFC
-	// IRQ
-	C.ram.Data[0xFFFE] = 0x48
-	C.ram.Data[0xFFFF] = 0xFF
-}
+	Mnemonic[CodeAddr["ROL_IM"]] = C.op_ROL_IM
+	Mnemonic[CodeAddr["ROL_ZP"]] = C.op_ROL_ZP
+	Mnemonic[CodeAddr["ROL_ZPX"]] = C.op_ROL_ZPX
+	Mnemonic[CodeAddr["ROL_ABS"]] = C.op_ROL_ABS
+	Mnemonic[CodeAddr["ROL_ABX"]] = C.op_ROL_ABX
 
-func (C *CPU) Run() {
-	for {
-		C.exec(C.ram)
-	}
+	Mnemonic[CodeAddr["ROR_IM"]] = C.op_ROR_IM
+	Mnemonic[CodeAddr["ROR_ZP"]] = C.op_ROR_ZP
+	Mnemonic[CodeAddr["ROR_ZPX"]] = C.op_ROR_ZPX
+	Mnemonic[CodeAddr["ROR_ABS"]] = C.op_ROR_ABS
+	Mnemonic[CodeAddr["ROR_ABX"]] = C.op_ROR_ABX
 }

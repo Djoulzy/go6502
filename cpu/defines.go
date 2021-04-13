@@ -2,41 +2,44 @@ package cpu
 
 import (
 	"go6502/databus"
-	"go6502/globals"
 	"go6502/mem"
 )
 
 //
 const (
-	C_mask globals.Byte = 0b11111110
-	Z_mask globals.Byte = 0b11111101
-	I_mask globals.Byte = 0b11111011
-	D_mask globals.Byte = 0b11110111
-	B_mask globals.Byte = 0b11101111
+	C_mask byte = 0b11111110
+	Z_mask byte = 0b11111101
+	I_mask byte = 0b11111011
+	D_mask byte = 0b11110111
+	B_mask byte = 0b11101111
 
-	V_mask globals.Byte = 0b10111111
-	N_mask globals.Byte = 0b01111111
+	V_mask byte = 0b10111111
+	N_mask byte = 0b01111111
 )
 
 // CPU :
 type CPU struct {
-	PC globals.Word
-	SP globals.Byte
-	A  globals.Byte
-	X  globals.Byte
-	Y  globals.Byte
-	S  globals.Byte
+	PC uint16
+	SP byte
+	A  byte
+	X  byte
+	Y  byte
+	S  byte
 
 	opName  string
+	debug   string
 	exit    bool
 	Display bool
 	ram     *mem.Memory
-	dbus    *databus.Databus
+	dbus    *databus.Bus
+	BP      uint16
+	Step    bool
+	Dump    uint16
 }
 
 // Mnemonic :
-var Mnemonic map[globals.Byte]func(*mem.Memory)
-var CodeAddr = map[string]globals.Byte{
+var Mnemonic map[byte]func(*mem.Memory)
+var CodeAddr = map[string]byte{
 	"SHW": 0xEF,
 	"DMP": 0xFF,
 	"BRK": 0x00,
@@ -145,9 +148,33 @@ var CodeAddr = map[string]globals.Byte{
 	"AND_INX": 0x21,
 	"AND_INY": 0x31,
 
+	"EOR_IM":  0x49,
+	"EOR_ZP":  0x45,
+	"EOR_ZPX": 0x55,
+	"EOR_ABS": 0x4D,
+	"EOR_ABX": 0x5D,
+	"EOR_ABY": 0x59,
+	"EOR_INX": 0x41,
+	"EOR_INY": 0x51,
+
+	"ORA_IM":  0x09,
+	"ORA_ZP":  0x05,
+	"ORA_ZPX": 0x15,
+	"ORA_ABS": 0x0D,
+	"ORA_ABX": 0x1D,
+	"ORA_ABY": 0x19,
+	"ORA_INX": 0x01,
+	"ORA_INY": 0x11,
+
+	"BIT_ZP":  0x24,
+	"BIT_ABS": 0x2C,
+
 	"TXS": 0x9A,
+	"TSX": 0xBA,
 	"PHA": 0x48,
+	"PHP": 0x08,
 	"PLA": 0x68,
+	"PLP": 0x28,
 
 	"TAX": 0xAA,
 	"TAY": 0xA8,
@@ -166,4 +193,28 @@ var CodeAddr = map[string]globals.Byte{
 	"SEC": 0x38,
 	"SED": 0xF8,
 	"SEI": 0x78,
+
+	"ASL_IM":  0x0A,
+	"ASL_ZP":  0x06,
+	"ASL_ZPX": 0x16,
+	"ASL_ABS": 0x0E,
+	"ASL_ABX": 0x1E,
+
+	"LSR_IM":  0x4A,
+	"LSR_ZP":  0x46,
+	"LSR_ZPX": 0x56,
+	"LSR_ABS": 0x4E,
+	"LSR_ABX": 0x5E,
+
+	"ROL_IM":  0x2A,
+	"ROL_ZP":  0x26,
+	"ROL_ZPX": 0x36,
+	"ROL_ABS": 0x2E,
+	"ROL_ABX": 0x3E,
+
+	"ROR_IM":  0x6A,
+	"ROR_ZP":  0x66,
+	"ROR_ZPX": 0x76,
+	"ROR_ABS": 0x6E,
+	"ROR_ABX": 0x7E,
 }
