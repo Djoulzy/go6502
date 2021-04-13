@@ -176,6 +176,7 @@ func (C *CPU) Run() {
 	for {
 		if C.PC == C.BP {
 			C.Step = true
+			C.Display = true
 		}
 
 		C.exec(C.ram)
