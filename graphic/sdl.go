@@ -65,12 +65,18 @@ func (S *SDLDriver) DisplayFrame() {
 	S.texture.Update(nil, S.screen, S.winWidth*3)
 	S.renderer.Copy(S.texture, nil, nil)
 	S.renderer.Present()
-
-	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
-		switch event.(type) {
-		case *sdl.QuitEvent:
+	event := sdl.PollEvent()
+	if event != nil {
+		if event.GetType() == sdl.QUIT {
 			os.Exit(1)
 		}
 	}
+
+	// for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
+	// 	switch event.(type) {
+	// 	case *sdl.QuitEvent:
+	// 		os.Exit(1)
+	// 	}
+	// }
 
 }

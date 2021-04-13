@@ -97,16 +97,30 @@ func (C *CPU) op_ADC_INY(mem *mem.Memory) {
 }
 
 func (C *CPU) op_SBC_IM(mem *mem.Memory) {
-	C.opName = "SBC Im"
-	value := ^C.fetchByte(mem)
+	addr := C.fetchByte(mem)
+	value := ^addr
 	result := uint16(C.A) + uint16(value) + uint16(C.getC())
 	C.setC(result > 0x0FF)
 	C.setV(C.A, value, byte(result))
+	C.opName = fmt.Sprintf("SBC #$%02X", addr)
+	C.debug = fmt.Sprintf("%02X - %02X = %02X", C.A, addr, result)
 	C.A = byte(result)
 	C.setNZStatus(C.A)
 }
 
-func (C *CPU) op_SBC_ZP(mem *mem.Memory)  { C.opName = "ToDO" }
+func (C *CPU) op_SBC_ZP(mem *mem.Memory) {
+	zpAddr := C.fetchByte(mem)
+	content := mem.Read(zpAddr)
+	value := ^content
+	result := uint16(C.A) + uint16(value) + uint16(C.getC())
+	C.setC(result > 0x0FF)
+	C.setV(C.A, value, byte(result))
+	C.opName = fmt.Sprintf("SBC $%02X", zpAddr)
+	C.debug = fmt.Sprintf("%02X - %02X = %02X", C.A, content, result)
+	C.A = byte(result)
+	C.setNZStatus(C.A)
+}
+
 func (C *CPU) op_SBC_ZPX(mem *mem.Memory) { C.opName = "ToDO" }
 func (C *CPU) op_SBC_ABS(mem *mem.Memory) { C.opName = "ToDO" }
 func (C *CPU) op_SBC_ABX(mem *mem.Memory) { C.opName = "ToDO" }

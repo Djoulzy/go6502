@@ -1,11 +1,9 @@
 package vic
 
 import (
-	"fmt"
 	"go6502/databus"
 	"go6502/graphic"
 	"go6502/mem"
-	"time"
 )
 
 const (
@@ -102,19 +100,19 @@ func (V *VIC) Run() {
 		V.graph.CloseAll()
 	}()
 
-	cpuTimer, _ := time.ParseDuration(fmt.Sprintf("%fms", lineRefresh))
-	// fmt.Printf("cpuTimer %v.\n", cpuTimer)
-	ticker := time.NewTicker(cpuTimer)
-	defer func() {
-		ticker.Stop()
-	}()
+	// cpuTimer, _ := time.ParseDuration(fmt.Sprintf("%fms", lineRefresh))
+	// // fmt.Printf("cpuTimer %v.\n", cpuTimer)
+	// ticker := time.NewTicker(cpuTimer)
+	// defer func() {
+	// 	ticker.Stop()
+	// }()
 
 	beamY := 0
 	V.VCBASE = 0
 	V.dbus.WaitBusHigh()
 	for {
 
-		<-ticker.C
+		// <-ticker.C
 		V.saveRasterPos(beamY)
 		V.visibleArea = (beamY > lastVBlankLine) && (beamY < firstVBlankLine)
 		V.displayArea = (beamY >= firstDisplayLine) && (beamY <= lastDisplayLine) && V.visibleArea

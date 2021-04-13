@@ -65,7 +65,13 @@ func (C *CPU) op_AND_INY(mem *mem.Memory) {
 	C.setNZStatus(C.A)
 }
 
-func (C *CPU) op_EOR_IM(mem *mem.Memory)  { C.opName = "ToDO" }
+func (C *CPU) op_EOR_IM(mem *mem.Memory)  { 
+	val := C.fetchByte(mem)
+	C.A ^= val
+	C.opName = fmt.Sprintf("EOR #$%02X", val)
+	C.setNZStatus(C.A)
+}
+
 func (C *CPU) op_EOR_ZP(mem *mem.Memory)  { C.opName = "ToDO" }
 func (C *CPU) op_EOR_ZPX(mem *mem.Memory) { C.opName = "ToDO" }
 func (C *CPU) op_EOR_ABS(mem *mem.Memory) { C.opName = "ToDO" }
