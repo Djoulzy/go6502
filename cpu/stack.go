@@ -15,24 +15,24 @@ func (C *CPU) op_TSX(mem *mem.Memory) {
 
 func (C *CPU) op_PHA(mem *mem.Memory) {
 	C.opName = "PHA"
-	C.pushByteStack(mem, C.A)
+	C.pushByteStack(C.A)
 }
 
 func (C *CPU) op_PLA(mem *mem.Memory) {
 	C.opName = "PLA"
-	C.A = C.pullByteStack(mem)
+	C.A = C.pullByteStack()
 	C.setNZStatus(C.A)
 }
 
 func (C *CPU) op_PHP(mem *mem.Memory) {
 	C.opName = "PHP"
-	C.pushByteStack(mem, C.S)
+	C.pushByteStack(C.S)
 	C.dbus.Release()
 }
 
 func (C *CPU) op_PLP(mem *mem.Memory) {
 	C.opName = "PLP"
 	C.dbus.Release()
-	C.S = C.pullByteStack(mem)
+	C.S = C.pullByteStack()
 	C.dbus.Release()
 }

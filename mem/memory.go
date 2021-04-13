@@ -7,35 +7,27 @@ import (
 
 // Init :
 func (m *Memory) Init() {
-	m.latch = latch{
-		kernal:   true,
-		basic:    true,
-		io:       false,
-		char:     false,
-		disabled: false,
+	m.PLA = latch{
+		kernal:    KERNAL,
+		basic:     BASIC,
+		char_io_r: CHAR,
+		char_io_w: RAM,
+		ram:       RAM,
 	}
 
-	m.Stack = m.Mem[stackStart : stackEnd + 1]
+	m.Stack = m.Mem[stackStart : stackEnd+1]
 	m.Screen = m.Mem[screenStart : screenEnd+1]
 	m.Color = m.Mem[colorStart : colorEnd+1]
 	m.Kernal = m.Mem[KernalStart : KernalEnd+1]
 	m.Basic = m.Mem[BasicStart : BasicEnd+1]
-	m.CharGen = make([]Cell, 4096)
-
-	m.Vic[0] = m.Mem[0x0000 : vic2-1]
-	m.Vic[1] = m.Mem[vic2 : vic3-1]
-	m.Vic[2] = m.Mem[vic3 : vic4-1]
-	m.Vic[3] = m.Mem[vic4:0xFFFF]
-
-	m.Mem[0].Ram = 0x2F // Processor port data direction register
-	m.Mem[1].Ram = 0x37 // Processor port / memory map configuration
+	m.CharGen = m.Mem[charStart : charEnd+1]
 
 	cpt := 0
 	fill := byte(0x00)
 	for i := range m.Mem {
-		m.Mem[i].RomMode = &m.latch.disabled
-		m.Mem[i].ExpMode = &m.latch.disabled
-		m.Mem[i].Ram = fill
+		m.Mem[i].read = &m.PLA.ram
+		m.Mem[i].write = &m.PLA.ram
+		m.Mem[i].Zone[RAM] = fill
 		cpt++
 		if cpt == 0x40 {
 			fill = ^fill
@@ -43,22 +35,26 @@ func (m *Memory) Init() {
 		}
 	}
 
+	m.Vic[0] = m.Mem[0x0000 : vic2-1]
+	m.Vic[1] = m.Mem[vic2 : vic3-1]
+	m.Vic[2] = m.Mem[vic3 : vic4-1]
+	m.Vic[3] = m.Mem[vic4:0xFFFF]
+
+	m.loadRom("roms/kernal.bin", 8192, m.Kernal, &m.PLA.kernal, &m.PLA.ram)
+	m.loadRom("roms/basic.bin", 8192, m.Basic, &m.PLA.basic, &m.PLA.ram)
+	m.loadRom("roms/char.bin", 4096, m.CharGen, &m.PLA.char_io_r, &m.PLA.char_io_w)
+	m.PLA.char_io_r = IO
+	m.PLA.char_io_w = IO
+
+	m.Mem[0].Zone[RAM] = 0x2F // Processor port data direction register
+	m.Mem[1].Zone[RAM] = 0x37 // Processor port / memory map configuration
+
 	for i := range m.Color {
-		m.Color[i].Ram = 0x0E
+		m.Color[i].Zone[IO] = 0x0E
 	}
-	// for i := range m.Screen {
-	// 	m.Screen[i] = byte(i)
-	// }
-
-	m.loadRom("roms/char.bin", 4096, m.CharGen, &m.latch.char)
-	m.loadRom("roms/kernal.bin", 8192, m.Kernal, &m.latch.kernal)
-	m.loadRom("roms/basic.bin", 8192, m.Basic, &m.latch.basic)
-
-	m.setRomMode(0xDC00, 0xFF, &m.latch.io)
-	m.setRomMode(0xDD00, 0xFF, &m.latch.io)
 }
 
-func (m *Memory) loadRom(filename string, fileSize int, dest []Cell, mode *bool) {
+func (m *Memory) loadRom(filename string, fileSize int, dest []Cell, rmode *int, wmode *int) {
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		panic(err)
@@ -67,14 +63,9 @@ func (m *Memory) loadRom(filename string, fileSize int, dest []Cell, mode *bool)
 		panic("Bad ROM Size")
 	}
 	for i := 0; i < fileSize; i++ {
-		dest[i].RomMode = mode
-		dest[i].Rom = byte(data[i])
-	}
-}
-
-func (m *Memory) setRomMode(start uint16, size uint16, mode *bool) {
-	for i := start; i <= start+size; i++ {
-		m.Mem[i].RomMode = mode
+		dest[i].read = rmode
+		dest[i].write = wmode
+		dest[i].Zone[*rmode] = byte(data[i])
 	}
 }
 
@@ -89,35 +80,14 @@ func (m *Memory) DumpChar(screenCode byte) {
 	}
 }
 
-func (m *Memory) Read(addr interface{}) byte {
-	var Cell Cell
-
-	switch typed := addr.(type) {
-	case uint16:
-		Cell = m.Mem[typed]
-	case uint8:
-		Cell = m.Mem[typed]
-	}
-	if *Cell.RomMode {
-		return Cell.Rom
-	}
-	return Cell.Ram
+func (m *Memory) Read(addr uint16) byte {
+	cell := &m.Mem[addr]
+	return cell.Zone[*cell.read]
 }
 
-func (m *Memory) Write(addr interface{}, value byte) bool {
-	var Cell *Cell
-
-	switch typed := addr.(type) {
-	case uint16:
-		Cell = &m.Mem[typed]
-	case uint8:
-		Cell = &m.Mem[typed]
-	}
-	if *Cell.RomMode {
-		return false
-	}
-	Cell.Ram = value
-	return true
+func (m *Memory) Write(addr uint16, value byte) {
+	cell := &m.Mem[addr]
+	cell.Zone[*cell.write] = value
 }
 
 func (m *Memory) DumpStack(SP byte, nbline int) {
@@ -128,9 +98,9 @@ func (m *Memory) DumpStack(SP byte, nbline int) {
 	for y := 0; y < nbline; y++ {
 		for x := 0; x < 16; x++ {
 			if byte(cpt) == SP {
-				fmt.Printf(">%02X", m.Stack[cpt].Ram)
+				fmt.Printf(">%02X", m.Stack[cpt].Zone[RAM])
 			} else {
-				fmt.Printf(" %02X", m.Stack[cpt].Ram)
+				fmt.Printf(" %02X", m.Stack[cpt].Zone[RAM])
 			}
 			cpt++
 		}

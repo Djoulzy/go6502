@@ -21,8 +21,8 @@ func (C *CPU) op_ROL_IM(mem *mem.Memory) {
 	result := uint16(C.A << 1)
 	C.setC(result > 0x0FF)
 	C.A = byte(result)
-	C.dbus.Release()
 	C.setNZStatus(C.Y)
+	C.dbus.Release()
 }
 
 func (C *CPU) op_ROL_ZP(mem *mem.Memory)  { C.opName = "ToDO" }

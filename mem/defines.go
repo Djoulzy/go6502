@@ -6,6 +6,8 @@ const (
 	stackEnd    = 0x01FF
 	screenStart = 0x0400
 	screenEnd   = 0x07FF
+	charStart	= 0xD000
+	charEnd		= 0xDFFF
 	colorStart  = 0xD800
 	colorEnd    = 0xDBFF
 	intAddr     = 0xFFFA
@@ -20,25 +22,32 @@ const (
 	vic4        = 0xC000
 )
 
+const (
+	RAM    = 0
+	KERNAL = 1
+	BASIC  = 1
+	IO     = 1
+	CHAR   = 2
+	CART   = 2
+)
+
 type latch struct {
-	kernal   bool
-	basic    bool
-	char     bool
-	io       bool
-	disabled bool
+	kernal    int
+	basic     int
+	char_io_r int
+	char_io_w int
+	ram       int
 }
 
 type Cell struct {
-	RomMode *bool
-	ExpMode *bool
-	Exp     byte
-	Rom     byte
-	Ram     byte
+	read  *int
+	write *int
+	Zone  [3]byte
 }
 
 // Memory :
 type Memory struct {
-	latch   latch
+	PLA     latch
 	Mem     [memorySize]Cell
 	Kernal  []Cell
 	Basic   []Cell

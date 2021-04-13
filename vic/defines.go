@@ -68,10 +68,17 @@ type VIC struct {
 }
 
 const (
-	REG_RST8        = 0xD011 // Raster 9eme bit of Raster (0b10000000)
-	REG_SCR_CONTROL = 0xD011 // Screen control (0b01111111)
-	REG_RASTER      = 0xD012 // Raster 8 first bits
-	REG_EC          = 0xD020 // Border Color
-	REG_B0C         = 0xD021 // Background color 0
-	PALNTSC         = 0x02A6
+	REG_CTRL1  uint16 = 0xD011 // Screen control (0b01111111)
+	REG_RASTER uint16 = 0xD012 // Raster 8 first bits
+	REG_CTRL2  uint16 = 0xD016 // Screen control (0b01111111)
+	REG_EC     uint16 = 0xD020 // Border Color
+	REG_B0C    uint16 = 0xD021 // Background color 0
+	PALNTSC    uint16 = 0x02A6
+
+	YSCROLL byte = 0b00000111 // From REG_CTRL1
+	RSEL    byte = 0b00001000 // rom REG_CTRL1 : 0 = 24 rows; 1 = 25 rows.
+	DEN     byte = 0b00010000 // rom REG_CTRL1 : 0 = Screen off, 1 = Screen on.
+	BMM     byte = 0b00100000 // rom REG_CTRL1 : 0 = Text mode; 1 = Bitmap mode.
+	ECM     byte = 0b01000000 // rom REG_CTRL1 : 1 = Extended background mode on.
+	RST8    byte = 0b10000000 // rom REG_CTRL1 : Read: Current raster line (bit #8). Write: Raster line to generate interrupt at (bit #8).
 )

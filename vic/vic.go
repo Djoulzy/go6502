@@ -38,16 +38,17 @@ const (
 	// visibleLastCol  = 412
 )
 
-func (V *VIC) Init(mem *mem.Memory) {
+func (V *VIC) Init(memory *mem.Memory) {
 	V.graph = &graphic.SDLDriver{}
 	V.graph.Init(winWidth, winHeight)
 
-	V.ram = mem
-	V.ram.Mem[REG_EC].Rom = Lightblue
-	V.ram.Mem[REG_B0C].Rom = Blue
-	V.BA = true
-	V.ram.Mem[PALNTSC].Ram = 0x01 // PAL
+	V.ram = memory
+	V.ram.Mem[REG_EC].Zone[mem.IO] = 0xFE  // Border Color : Lightblue
+	V.ram.Mem[REG_B0C].Zone[mem.IO] = 0xF6 // Background Color : Blue
+	V.ram.Mem[REG_CTRL1].Zone[mem.IO] = 0x1B
+	V.ram.Mem[PALNTSC].Zone[mem.RAM] = 0x01 // PAL
 
+	V.BA = true
 	V.VCBASE = 0
 	V.beamX = 0
 	V.beamY = 0
@@ -55,26 +56,26 @@ func (V *VIC) Init(mem *mem.Memory) {
 }
 
 func (V *VIC) saveRasterPos(val int) {
-	V.ram.Mem[REG_RASTER].Ram = byte(val)
+	V.ram.Mem[REG_RASTER].Zone[mem.IO] = byte(val)
 	if (byte(uint16(val) >> 8)) == 0x1 {
-		V.ram.Mem[REG_RST8].Rom |= 0b10000000
+		V.ram.Mem[REG_CTRL1].Zone[mem.IO] |= RST8
 	} else {
-		V.ram.Mem[REG_RST8].Rom &= 0b01111111
+		V.ram.Mem[REG_CTRL1].Zone[mem.IO] &= ^RST8
 	}
 	// fmt.Printf("val: %d - RST8: %08b - RASTER: %08b\n", val, V.ram.Data[REG_RST8], V.ram.Data[REG_RASTER])
 }
 
 func (V *VIC) readVideoMatrix() {
 	if !V.BA {
-		V.ColorBuffer[V.VMLI] = V.ram.Color[V.VC].Ram
-		V.CharBuffer[V.VMLI] = V.ram.Screen[V.VC].Ram
+		V.ColorBuffer[V.VMLI] = V.ram.Color[V.VC].Zone[mem.IO]
+		V.CharBuffer[V.VMLI] = V.ram.Screen[V.VC].Zone[mem.RAM]
 	}
 }
 
 func (V *VIC) drawChar(X int, Y int) {
-	if V.drawArea {
+	if V.drawArea && (V.ram.Mem[REG_CTRL1].Zone[mem.IO]&DEN > 0) {
 		charAddr := (uint16(V.CharBuffer[V.VMLI]) << 3) + uint16(V.RC)
-		charData := V.ram.CharGen[charAddr].Rom
+		charData := V.ram.CharGen[charAddr].Zone[mem.CHAR]
 		// fmt.Printf("SC: %02X - RC: %d - %04X - %02X = %08b\n", V.CharBuffer[V.VMLI], V.RC, charAddr, charData, charData)
 		// if V.CharBuffer[V.VMLI] == 0 {
 		// fmt.Printf("Raster: %d - Cycle: %d - BA: %t - VMLI: %d - VCBASE/VC: %d/%d - RC: %d - Char: %02X\n", Y, X, V.BA, V.VMLI, V.VCBASE, V.VC, V.RC, V.CharBuffer[V.VMLI])
@@ -84,14 +85,14 @@ func (V *VIC) drawChar(X int, Y int) {
 			if charData&bit > 0 {
 				V.graph.DrawPixel(X+column, Y, Colors[V.ColorBuffer[V.VMLI]])
 			} else {
-				V.graph.DrawPixel(X+column, Y, Colors[V.ram.Mem[REG_B0C].Rom&0b00001111])
+				V.graph.DrawPixel(X+column, Y, Colors[V.ram.Mem[REG_B0C].Zone[mem.IO]&0b00001111])
 			}
 		}
 		V.VMLI++
 		V.VC++
 	} else if V.visibleArea {
 		for column := 0; column < 8; column++ {
-			V.graph.DrawPixel(X+column, Y, Colors[V.ram.Mem[REG_EC].Rom&0b00001111])
+			V.graph.DrawPixel(X+column, Y, Colors[V.ram.Mem[REG_EC].Zone[mem.IO]&0b00001111])
 		}
 	}
 }

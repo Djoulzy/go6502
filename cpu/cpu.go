@@ -31,36 +31,31 @@ var output = ""
 //////////////////////////////////
 
 // Word
-func (C *CPU) pushWordStack(mem *mem.Memory, val uint16) {
+func (C *CPU) pushWordStack(val uint16) {
 	low := byte(val)
 	hi := byte(val >> 8)
-	C.pushByteStack(mem, hi)
-	C.pushByteStack(mem, low)
+	C.pushByteStack(hi)
+	C.pushByteStack(low)
 }
 
-func (C *CPU) pullWordStack(mem *mem.Memory) uint16 {
-	low := C.pullByteStack(mem)
-	hi := uint16(C.pullByteStack(mem)) << 8
+func (C *CPU) pullWordStack() uint16 {
+	low := C.pullByteStack()
+	hi := uint16(C.pullByteStack()) << 8
 	return hi + uint16(low)
 }
 
 // Byte
-func (C *CPU) pushByteStack(mem *mem.Memory, val byte) {
-	//mem.Stack[C.SP].Ram = val
-	mem.Mem[0x0100+uint16(C.SP)].Ram = val
+func (C *CPU) pushByteStack(val byte) {
+	C.ram.Stack[C.SP].Zone[mem.RAM] = val
 	C.SP--
-	// mem.DumpStack(C.SP, 1)
-	//C.dbus.Release()
 }
 
-func (C *CPU) pullByteStack(mem *mem.Memory) byte {
+func (C *CPU) pullByteStack() byte {
 	C.SP++
 	if C.SP > 0xFF {
 		panic("Stack overflow")
 	}
-	// mem.DumpStack(C.SP, 1)
-	//C.dbus.Release()
-	return mem.Stack[C.SP].Ram
+	return C.ram.Stack[C.SP].Zone[mem.RAM]
 }
 
 //////////////////////////////////
@@ -71,14 +66,12 @@ func (C *CPU) pullByteStack(mem *mem.Memory) byte {
 // http://www.emulator101.com/6502-addressing-modes.html
 
 func (C *CPU) Indirect_index_Y(addr byte, y byte) uint16 {
-	zpAddr := uint16(addr)
-	wordZP := C.readWord(zpAddr) + uint16(y)
+	wordZP := C.readWord(uint16(addr)) + uint16(y)
 	return wordZP
 }
 
 func (C *CPU) Indexed_indirect_X(addr byte, x byte) uint16 {
-	zpAddr := uint16(addr + x)
-	wordZP := C.readWord(zpAddr)
+	wordZP := C.readWord(uint16(addr + x))
 	return wordZP
 }
 
@@ -88,12 +81,27 @@ func (C *CPU) Indexed_indirect_X(addr byte, x byte) uint16 {
 
 func (C *CPU) readWord(addr uint16) uint16 {
 	low := C.ram.Read(addr)
-	value := uint16(C.ram.Read(addr+1)) << 8
 	C.dbus.Release()
+	value := uint16(C.ram.Read(addr+1)) << 8
 	value += uint16(low)
 	C.dbus.Release()
 	return value
 }
+
+func (C *CPU) readByte(addr uint16) byte {
+	value := C.ram.Read(addr)
+	C.dbus.Release()
+	return value
+}
+
+func (C *CPU) writeByte(addr uint16, value byte) {
+	C.ram.Write(addr, value)
+	C.dbus.Release()
+}
+
+//////////////////////////////////
+////////// Read OpCode ///////////
+//////////////////////////////////
 
 func (C *CPU) fetchWord(mem *mem.Memory) uint16 {
 	low := C.fetchByte(mem)
@@ -103,9 +111,6 @@ func (C *CPU) fetchWord(mem *mem.Memory) uint16 {
 }
 
 func (C *CPU) fetchByte(mem *mem.Memory) byte {
-	// if C.Display {
-	// 	C.refreshScreen(mem)
-	// }
 	value := mem.Read(C.PC)
 	C.PC++
 	if C.Display {
@@ -175,8 +180,8 @@ func (C *CPU) Run() {
 
 	for {
 		if C.PC == C.BP {
-			C.Step = true
 			C.Display = true
+			C.Step = true
 		}
 
 		C.exec(C.ram)

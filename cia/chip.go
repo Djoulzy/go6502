@@ -10,7 +10,7 @@ type CIA struct {
 func (C *CIA) setValue(addr byte, value byte) {
 	for i := 0; i < 16; i++ {
 		zone := addr + byte(16*i)
-		C.mem[zone].Ram = value
+		C.mem[zone].Zone[mem.RAM] = value
 	}
 }
 
