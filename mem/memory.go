@@ -112,6 +112,7 @@ func (m *Memory) DumpStack(SP byte, nbline int) {
 
 func (m *Memory) Dump(startAddr uint16) {
 	cpt := startAddr
+	fmt.Printf("\n")
 	for j := 0; j < 16; j++ {
 		fmt.Printf("%04X : ", cpt)
 		for i := 0; i < 8; i++ {

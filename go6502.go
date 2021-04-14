@@ -24,6 +24,16 @@ func init() {
 	runtime.LockOSThread()
 }
 
+func setCIA1(chip *cia.CIA) {
+	chip.SetValue(cia.PRA, 0x08)
+	chip.SetValue(cia.PRB, 0xFF)
+}
+
+func setCIA2(chip *cia.CIA) {
+	chip.SetValue(cia.PRA, 0x47)
+	chip.SetValue(cia.PRB, 0xFF)
+}
+
 func main() {
 	args := os.Args
 	confload.Load("config.ini", conf)
@@ -38,11 +48,15 @@ func main() {
 	vic := vic.VIC{}
 	dbus := databus.Bus{}
 	mem := mem.Memory{}
+	cia1 := cia.CIA{}
 	cia2 := cia.CIA{}
 
 	mem.Init()
 	dbus.Init(&vic)
-	cia2.Init(mem.Mem[0xDD00:])
+	cia1.Init(mem.Mem[0xDC00:0xDCFF])
+	setCIA1(&cia1)
+	cia2.Init(mem.Mem[0xDD00:0xDDFF])
+	setCIA2(&cia2)
 	cpu.Init(&dbus, &mem, conf)
 	vic.Init(&mem)
 
