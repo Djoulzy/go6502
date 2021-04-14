@@ -78,5 +78,9 @@ func main() {
 	}
 	cpu.PC = 0xFCE2
 
-	cpu.Run()
+	for {
+		cpu.Run()
+		cia1.Run()
+		cia2.Run()
+	}
 }

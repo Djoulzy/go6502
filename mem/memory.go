@@ -42,9 +42,8 @@ func (m *Memory) Init() {
 
 	m.loadRom("roms/kernal.bin", 8192, m.Kernal, &m.PLA.kernal, &m.PLA.ram)
 	m.loadRom("roms/basic.bin", 8192, m.Basic, &m.PLA.basic, &m.PLA.ram)
-	m.loadRom("roms/char.bin", 4096, m.CharGen, &m.PLA.char_io_r, &m.PLA.char_io_w)
+	m.loadRom("roms/char.bin", 4096, m.CharGen, &m.PLA.char_io_r, &m.PLA.ram)
 	m.PLA.char_io_r = IO
-	m.PLA.char_io_w = IO
 
 	m.Mem[0].Zone[RAM] = 0x2F // Processor port data direction register
 	m.Mem[1].Zone[RAM] = 0x37 // Processor port / memory map configuration

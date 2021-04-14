@@ -3,6 +3,8 @@ package cpu
 import (
 	"go6502/databus"
 	"go6502/mem"
+
+	"github.com/mattn/go-tty"
 )
 
 //
@@ -35,6 +37,7 @@ type CPU struct {
 	BP      uint16
 	Step    bool
 	Dump    uint16
+	tty     *tty.TTY
 }
 
 // Mnemonic :

@@ -169,38 +169,31 @@ func (C *CPU) Init(dbus *databus.Bus, mem *mem.Memory, conf *confload.ConfigData
 	// // IRQ
 	// C.ram.Mem[0xFFFE].Ram = 0x48
 	// C.ram.Mem[0xFFFF].Ram = 0xFF
+	C.tty, _ = tty.Open()
 }
 
 func (C *CPU) Run() {
-	tty, err := tty.Open()
-	if err != nil {
-		log.Fatal(err)
+	if C.PC == C.BP {
+		C.Display = true
+		C.Step = true
 	}
-	defer tty.Close()
 
-	for {
-		if C.PC == C.BP {
-			C.Display = true
-			C.Step = true
+	C.exec(C.ram)
+
+	if C.Step {
+	COMMAND:
+		r, err := C.tty.ReadRune()
+		if err != nil {
+			log.Fatal(err)
 		}
-
-		C.exec(C.ram)
-
-		if C.Step {
-		COMMAND:
-			r, err := tty.ReadRune()
-			if err != nil {
-				log.Fatal(err)
-			}
-			switch r {
-			case 'd':
-				C.ram.Dump(C.Dump)
-				goto COMMAND
-			case 's':
-				fmt.Printf("\n")
-				C.ram.DumpStack(C.SP, 0)
-				goto COMMAND
-			}
+		switch r {
+		case 'd':
+			C.ram.Dump(C.Dump)
+			goto COMMAND
+		case 's':
+			fmt.Printf("\n")
+			C.ram.DumpStack(C.SP, 0)
+			goto COMMAND
 		}
 	}
 }
