@@ -107,6 +107,10 @@ func (C *CPU) fetchWord(mem *mem.Memory) uint16 {
 	low := C.fetchByte(mem)
 	value := uint16(C.fetchByte(mem)) << 8
 	value += uint16(low)
+
+	// if value >= 0xDC00 && value <= 0xDDFF {
+	// 	clog.File("CPU", "CIA", "%04X at PC: %02X", value, C.PC-3)
+	// }
 	return value
 }
 
@@ -173,6 +177,7 @@ func (C *CPU) Init(dbus *databus.Bus, mem *mem.Memory, conf *confload.ConfigData
 }
 
 func (C *CPU) Run() {
+			// t0 := time.Now()
 	if C.PC == C.BP {
 		C.Display = true
 		C.Step = true

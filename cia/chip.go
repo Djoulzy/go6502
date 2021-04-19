@@ -25,13 +25,6 @@ const (
 	CRB // Timer B Control
 )
 
-func (C *CIA) SetValue(port byte, value byte) {
-	for i := 0; i < 16; i++ {
-		zone := port + byte(16*i)
-		C.mem[zone].Zone[mem.IO] = value
-	}
-}
-
 func (C *CIA) Init(mem []mem.Cell) {
 	C.mem = mem
 	// C.PRA = 0
@@ -39,9 +32,16 @@ func (C *CIA) Init(mem []mem.Cell) {
 	// // C.PRA.Rom = 0x47
 }
 
-func (C *CIA) Run() {
+func (C *CIA) SetValue(port byte, value byte) {
+	for i := 0; i < 16; i++ {
+		zone := port + byte(16*i)
+		C.mem[zone].Zone[mem.IO] = value
+	}
+}
+
+func (C *CIA) updateStates() {
 	order := C.mem[ICR].Zone[mem.RAM]
-	mask := order&0b00001111
+	mask := order & 0b00001111
 	if mask > 0 {
 		if order&0b10000000 > 0 { // 7eme bit = 1 -> mask set
 			C.mem[ICR].Zone[mem.IO] |= mask
@@ -51,4 +51,8 @@ func (C *CIA) Run() {
 	}
 	C.mem[CRA].Zone[mem.IO] = C.mem[CRA].Zone[mem.RAM]
 	C.mem[CRB].Zone[mem.IO] = C.mem[CRB].Zone[mem.RAM]
+}
+
+func (C *CIA) Run() {
+	C.updateStates()
 }
