@@ -177,7 +177,7 @@ func (C *CPU) Init(dbus *databus.Bus, mem *mem.Memory, conf *confload.ConfigData
 }
 
 func (C *CPU) Run() {
-			// t0 := time.Now()
+	// t0 := time.Now()
 	if C.PC == C.BP {
 		C.Display = true
 		C.Step = true
@@ -198,6 +198,10 @@ func (C *CPU) Run() {
 		case 's':
 			fmt.Printf("\n")
 			C.ram.DumpStack(C.SP, 0)
+			goto COMMAND
+		case 'z':
+			fmt.Printf("\n")
+			C.ram.Dump(0x0000)
 			goto COMMAND
 		}
 	}

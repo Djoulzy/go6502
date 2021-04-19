@@ -30,6 +30,7 @@ func (C *CPU) op_LDA_ZPX(mem *mem.Memory) {
 	dest := zpAddress + C.X
 	C.A = C.readByte(uint16(dest))
 	C.opName = fmt.Sprintf("LDA $%02X,X", zpAddress)
+	C.debug = fmt.Sprintf("-> $%02X", dest)
 	C.setNZStatus(C.A)
 }
 
@@ -48,9 +49,10 @@ func (C *CPU) op_LDA_ABX(mem *mem.Memory) {
 }
 
 func (C *CPU) op_LDA_ABY(mem *mem.Memory) {
-	absAddress := C.fetchWord(mem) 
+	absAddress := C.fetchWord(mem)
 	dest := absAddress + uint16(C.Y)
 	C.opName = fmt.Sprintf("LDA $%04X,Y", absAddress)
+	C.debug = fmt.Sprintf("-> $%04X", dest)
 	C.A = C.readByte(dest)
 	C.setNZStatus(C.A)
 }
@@ -84,17 +86,19 @@ func (C *CPU) op_LDX_IM(mem *mem.Memory) {
 
 // op_LDX_ZP : LDA Zero Page
 func (C *CPU) op_LDX_ZP(mem *mem.Memory) {
-	C.opName = "LDX ZP"
 	zpAddress := C.fetchByte(mem)
+	C.opName = fmt.Sprintf("LDX $%02X", zpAddress)
 	C.X = C.readByte(uint16(zpAddress))
 	C.setNZStatus(C.X)
 }
 
 // op_LDX_ZPY : LDA Zero Page,Y
 func (C *CPU) op_LDX_ZPY(mem *mem.Memory) {
-	C.opName = "LDX ZP,Y"
-	zpAddress := C.fetchByte(mem) + C.Y
-	C.X = C.readByte(uint16(zpAddress))
+	zpAddress := C.fetchByte(mem)
+	dest := zpAddress + C.Y
+	C.opName = fmt.Sprintf("LDX $%02X,Y", zpAddress)
+	C.debug = fmt.Sprintf("-> $%02X", dest)
+	C.X = C.readByte(uint16(dest))
 	C.setNZStatus(C.X)
 }
 
@@ -106,9 +110,10 @@ func (C *CPU) op_LDX_ABS(mem *mem.Memory) {
 }
 
 func (C *CPU) op_LDX_ABY(mem *mem.Memory) {
-	absAddress := C.fetchWord(mem) 
+	absAddress := C.fetchWord(mem)
 	dest := absAddress + uint16(C.Y)
 	C.opName = fmt.Sprintf("LDX $%04X,Y", absAddress)
+	C.debug = fmt.Sprintf("-> $%04X", dest)
 	C.X = C.readByte(dest)
 	C.setNZStatus(C.X)
 }
@@ -117,14 +122,12 @@ func (C *CPU) op_LDX_ABY(mem *mem.Memory) {
 ///////////// LDY ////////////////
 //////////////////////////////////
 
-// op_LDY_IM : LDA Immediate
 func (C *CPU) op_LDY_IM(mem *mem.Memory) {
 	C.Y = C.fetchByte(mem)
 	C.opName = fmt.Sprintf("LDY #$%02X", C.Y)
 	C.setNZStatus(C.Y)
 }
 
-// op_LDY_ZP : LDA Zero Page
 func (C *CPU) op_LDY_ZP(mem *mem.Memory) {
 	C.opName = "LDY ZP"
 	zpAddress := C.fetchByte(mem)
@@ -132,11 +135,12 @@ func (C *CPU) op_LDY_ZP(mem *mem.Memory) {
 	C.setNZStatus(C.Y)
 }
 
-// op_LDY_ZPX : LDA Zero Page,X
 func (C *CPU) op_LDY_ZPX(mem *mem.Memory) {
-	C.opName = "LDY ZP,X"
-	zpAddress := C.fetchByte(mem) + C.X
-	C.Y = C.readByte(uint16(zpAddress))
+	zpAddress := C.fetchByte(mem)
+	dest := zpAddress + C.X
+	C.Y = C.readByte(uint16(dest))
+	C.opName = fmt.Sprintf("LDY $%02X,X", zpAddress)
+	C.debug = fmt.Sprintf("-> $%02X", dest)
 	C.setNZStatus(C.Y)
 }
 
@@ -148,7 +152,7 @@ func (C *CPU) op_LDY_ABS(mem *mem.Memory) {
 }
 
 func (C *CPU) op_LDY_ABX(mem *mem.Memory) {
-	absAddress := C.fetchWord(mem) 
+	absAddress := C.fetchWord(mem)
 	dest := absAddress + uint16(C.X)
 	C.opName = fmt.Sprintf("LDY $%04X,X", absAddress)
 	C.Y = C.readByte(dest)
@@ -171,6 +175,7 @@ func (C *CPU) op_STA_ZPX(mem *mem.Memory) {
 	zpAddress := C.fetchByte(mem)
 	dest := zpAddress + C.X
 	C.opName = fmt.Sprintf("STA $%02X,X", zpAddress)
+	C.debug = fmt.Sprintf("-> $%02X", dest)
 	C.writeByte(uint16(dest), C.A)
 }
 

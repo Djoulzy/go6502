@@ -49,7 +49,7 @@ func (m *Memory) Init() {
 	m.Mem[1].Zone[RAM] = 0x37 // Processor port / memory map configuration
 
 	for i := range m.Color {
-		m.Color[i].Zone[IO] = 0x0E
+		m.Color[i].Zone[IO] = 0xF6
 	}
 }
 
@@ -114,9 +114,7 @@ func (m *Memory) Dump(startAddr uint16) {
 	fmt.Printf("\n")
 	for j := 0; j < 16; j++ {
 		fmt.Printf("%04X : ", cpt)
-		for i := 0; i < 8; i++ {
-			fmt.Printf("%02X", m.Read(cpt))
-			cpt++
+		for i := 0; i < 16; i++ {
 			fmt.Printf("%02X ", m.Read(cpt))
 			cpt++
 		}

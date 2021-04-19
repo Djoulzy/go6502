@@ -67,7 +67,7 @@ func (V *VIC) saveRasterPos(val int) {
 
 func (V *VIC) readVideoMatrix() {
 	if !V.BA {
-		V.ColorBuffer[V.VMLI] = V.ram.Color[V.VC].Zone[mem.IO]
+		V.ColorBuffer[V.VMLI] = V.ram.Color[V.VC].Zone[mem.IO] & 0b00001111
 		V.CharBuffer[V.VMLI] = V.ram.Screen[V.VC].Zone[mem.RAM]
 	}
 }
