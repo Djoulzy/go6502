@@ -22,9 +22,17 @@ func (C *CPU) reset(mem *mem.Memory) {
 
 	C.exit = false
 	C.Step = false
+
+	C.IRQ = 0
 }
 
 var output = ""
+
+func (C *CPU) readRasterLine() uint16 {
+	val := uint16(C.ram.Mem[0xD011].Zone[mem.IO]&0b10000000) << 8
+	val += uint16(C.ram.Mem[0xD012].Zone[mem.IO])
+	return val
+}
 
 //////////////////////////////////
 //////// Stack Operations ////////
@@ -131,7 +139,8 @@ func (C *CPU) exec(mem *mem.Memory) {
 	}
 	if C.Display {
 		output = ""
-		fmt.Printf("\n%08b - A:%c[1;33m%02X%c[0m X:%c[1;33m%02X%c[0m Y:%c[1;33m%02X%c[0m SP:%c[1;33m%02X%c[0m - %c[1;31m%04X%c[0m:", C.S, 27, C.A, 27, 27, C.X, 27, 27, C.Y, 27, 27, C.SP, 27, 27, C.PC, 27)
+		fmt.Printf("\n%08b - A:%c[1;33m%02X%c[0m X:%c[1;33m%02X%c[0m Y:%c[1;33m%02X%c[0m SP:%c[1;33m%02X%c[0m", C.S, 27, C.A, 27, 27, C.X, 27, 27, C.Y, 27, 27, C.SP, 27)
+		fmt.Printf(" RastY: %c[1;31m%04X%c[0m RastX: - %c[1;31m%04X%c[0m:", 27, C.readRasterLine(), 27, 27, C.PC, 27)
 	}
 	opCode := C.fetchByte(mem)
 	Mnemonic[opCode](mem)
@@ -177,13 +186,16 @@ func (C *CPU) Init(dbus *databus.Bus, mem *mem.Memory, conf *confload.ConfigData
 }
 
 func (C *CPU) Run() {
-			// t0 := time.Now()
-	if C.PC == C.BP {
+	// t0 := time.Now()
+	if C.PC == C.BP && C.readRasterLine() == 0x8015 {
 		C.Display = true
 		C.Step = true
 	}
 
 	C.exec(C.ram)
+	if C.IRQ > 0 && C.S & ^I_mask == 0 {
+		fmt.Printf("\nInterrupt ...")
+	}
 
 	if C.Step {
 	COMMAND:
@@ -193,7 +205,7 @@ func (C *CPU) Run() {
 		}
 		switch r {
 		case 'd':
-			C.ram.Dump(C.Dump)
+			C.ram.Dump(C.Dump, mem.IO)
 			goto COMMAND
 		case 's':
 			fmt.Printf("\n")

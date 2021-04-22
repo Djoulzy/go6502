@@ -84,6 +84,10 @@ func (C *CPU) setV(m, n, result byte) {
 	}
 }
 
+func (C *CPU) testV() bool {
+	return C.S & ^V_mask > 0
+}
+
 func (C *CPU) op_CLC(mem *mem.Memory) {
 	C.opName = "CLC"
 	C.setC(false)

@@ -1,0 +1,81 @@
+
+; ******** Source: /Users/jules/go/src/go6502/asm/irq.asm
+
+; ******** Source: basic-boot.asm
+     1                          ; A BASIC booter, encodes `10 SYS <address>`.
+     2                          ; Macrofied from http://www.pouet.net/topic.php?which=6541
+     3                          
+
+; ******** Source: constants.asm
+     1                          
+     2                          ;; Start of BASIC program
+     3                          basic = $0801
+     4                          
+     5                          ;; Background color
+     6                          bgcol = $d021
+     7                          
+     8                          ;; Border color
+
+; ******** Source: basic-boot.asm
+     5                          
+     6                          !macro start_at .address {
+     7                            * = basic
+     8                            !byte $0c,$08,$00,$00,$9e
+     9                            !if .address >= 10000 { !byte 48 + ((.address / 10000) % 10) }
+    10                            !if .address >=  1000 { !byte 48 + ((.address /  1000) % 10) }
+    11                            !if .address >=   100 { !byte 48 + ((.address /   100) % 10) }
+    12                            !if .address >=    10 { !byte 48 + ((.address /    10) % 10) }
+    13                            !byte $30 + (.address % 10), $00, $00, $00
+    14                            * = .address
+    15                          }
+    16                          
+    17                          ; A cooler example is to write
+    18                          ;
+    19                          ;   10 SYS <address>: REM <backspaces>Your comment
+    20                          ;
+    21                          ; When the user types LIST, he will just see
+    22                          ;
+    23                          ;   10 Your comment
+    24                          ;
+    25                          ; but still be able to run it.
+
+; ******** Source: /Users/jules/go/src/go6502/asm/irq.asm
+     2  0801 0c0800009e323037...+start_at $0816
+     3                          ;============================================================
+     4                          ;    some initialization and interrupt redirect setup
+     5                          ;============================================================
+     6                          
+     7  0816 78                            sei         ; set interrupt disable flag
+     8                          
+     9  0817 a07f                          ldy #$7f    ; $7f = %01111111
+    10  0819 8c0ddc                        sty $dc0d   ; Turn off CIAs Timer interrupts
+    11  081c 8c0ddd                        sty $dd0d   ; Turn off CIAs Timer interrupts
+    12  081f ad0ddc                        lda $dc0d   ; cancel all CIA-IRQs in queue/unprocessed
+    13  0822 ad0ddd                        lda $dd0d   ; cancel all CIA-IRQs in queue/unprocessed
+    14                                    
+    15  0825 a901                          lda #$01    ; Set Interrupt Request Mask...
+    16  0827 8d1ad0                        sta $d01a   ; ...we want IRQ by Rasterbeam
+    17                          
+    18  082a a945                          lda #<irq   ; point IRQ Vector to our custom irq routine
+    19  082c a208                          ldx #>irq 
+    20  082e 8d1403                        sta $314    ; store in $314/$315
+    21  0831 8e1503                        stx $315   
+    22                          
+    23  0834 a901                          lda #$01    ; trigger first interrupt at row zero
+    24  0836 8d12d0                        sta $d012
+    25                          
+    26  0839 ad11d0                        lda $d011   ; Bit#0 of $d011 is basically...
+    27  083c 297f                          and #$7f    ; ...the 9th Bit for $d012
+    28  083e 8d11d0                        sta $d011   ; we need to make sure it is set to zero 
+    29                          
+    30  0841 58                            cli         ; clear interrupt disable flag
+    31  0842 4c4208                        jmp *       ; infinite loop
+    32                          
+    33                          
+    34                          ;============================================================
+    35                          ;    custom interrupt routine
+    36                          ;============================================================
+    37                          
+    38  0845 ce19d0             irq        dec $d019        ; acknowledge IRQ
+    39                          
+    40                          

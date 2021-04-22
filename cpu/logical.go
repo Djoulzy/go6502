@@ -72,7 +72,13 @@ func (C *CPU) op_EOR_IM(mem *mem.Memory) {
 	C.setNZStatus(C.A)
 }
 
-func (C *CPU) op_EOR_ZP(mem *mem.Memory)  { C.opName = "ToDO" }
+func (C *CPU) op_EOR_ZP(mem *mem.Memory) {
+	zpAddress := C.fetchByte(mem)
+	C.A ^= C.readByte(uint16(zpAddress))
+	C.opName = fmt.Sprintf("EOR $%02X", zpAddress)
+	C.setNZStatus(C.A)
+}
+
 func (C *CPU) op_EOR_ZPX(mem *mem.Memory) { C.opName = "ToDO" }
 func (C *CPU) op_EOR_ABS(mem *mem.Memory) { C.opName = "ToDO" }
 func (C *CPU) op_EOR_ABX(mem *mem.Memory) { C.opName = "ToDO" }
@@ -108,5 +114,28 @@ func (C *CPU) op_ORA_ABY(mem *mem.Memory) { C.opName = "ToDO" }
 func (C *CPU) op_ORA_INX(mem *mem.Memory) { C.opName = "ToDO" }
 func (C *CPU) op_ORA_INY(mem *mem.Memory) { C.opName = "ToDO" }
 
-func (C *CPU) op_BIT_ZP(mem *mem.Memory)  { C.opName = "ToDO" }
-func (C *CPU) op_BIT_ABS(mem *mem.Memory) { C.opName = "ToDO" }
+func (C *CPU) op_BIT_ZP(mem *mem.Memory)  {
+	zpAddress := C.fetchByte(mem)
+	C.opName = fmt.Sprintf("BIT $%02X", zpAddress)
+	val := C.readByte(uint16(zpAddress))
+	if val & 0b01000000 != 0 {
+		C.S |= ^V_mask
+	} else {
+		C.S &= V_mask
+	}
+	result := val & C.A
+	C.setNZStatus(result)
+}
+
+func (C *CPU) op_BIT_ABS(mem *mem.Memory) {
+	absAddress := C.fetchWord(mem)
+	C.opName = fmt.Sprintf("BIT $%04X", absAddress)
+	val := C.readByte(absAddress)
+	if val & 0b01000000 != 0 {
+		C.S |= ^V_mask
+	} else {
+		C.S &= V_mask
+	}
+	result := val & C.A
+	C.setNZStatus(result)
+}

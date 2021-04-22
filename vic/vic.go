@@ -1,6 +1,7 @@
 package vic
 
 import (
+	"fmt"
 	"go6502/graphic"
 	"go6502/mem"
 )
@@ -38,6 +39,8 @@ const (
 	// visibleLastCol  = 412
 )
 
+var rasterIRQ uint16 = 0x0000
+
 func (V *VIC) Init(memory *mem.Memory) {
 	V.graph = &graphic.SDLDriver{}
 	V.graph.Init(winWidth, winHeight)
@@ -45,8 +48,14 @@ func (V *VIC) Init(memory *mem.Memory) {
 	V.ram = memory
 	V.ram.Mem[REG_EC].Zone[mem.IO] = 0xFE  // Border Color : Lightblue
 	V.ram.Mem[REG_B0C].Zone[mem.IO] = 0xF6 // Background Color : Blue
-	V.ram.Mem[REG_CTRL1].Zone[mem.IO] = 0x1B
+	V.ram.Mem[REG_CTRL1].Zone[mem.IO] = 0b10011011
+	V.ram.Mem[REG_CTRL1].Zone[mem.RAM] = 0b00000000
+	V.ram.Mem[REG_RASTER].Zone[mem.RAM] = 0b00000000
+	V.ram.Mem[REG_CTRL2].Zone[mem.IO] = 0b00001000
 	V.ram.Mem[PALNTSC].Zone[mem.RAM] = 0x01 // PAL
+	V.ram.Mem[REG_IRQ].Zone[mem.IO] = 0b00000000
+	V.ram.Mem[REG_SETIRQ].Zone[mem.IO] = 0b00000000
+	V.ram.Mem[REG_SETIRQ].Zone[mem.RAM] = 0b00000000
 
 	V.BA = true
 	V.VCBASE = 0
@@ -97,8 +106,27 @@ func (V *VIC) drawChar(X int, Y int) {
 	}
 }
 
-func (V *VIC) Run() {
+func (V *VIC) registersManagement() {
 	V.saveRasterPos(V.beamY)
+
+	intMask := V.ram.Mem[REG_SETIRQ].Zone[mem.RAM]
+	actualMask := V.ram.Mem[REG_SETIRQ].Zone[mem.IO]
+	if intMask != actualMask {
+		fmt.Println("ResetMask")
+		V.ram.Mem[REG_SETIRQ].Zone[mem.IO] = intMask
+		V.ram.Mem[REG_IRQ].Zone[mem.IO] = intMask
+	}
+
+	val := uint16(V.ram.Mem[0xD011].Zone[mem.RAM]&0b10000000) << 8
+	val += uint16(V.ram.Mem[0xD012].Zone[mem.RAM])
+	if val != rasterIRQ {
+		rasterIRQ = val
+	}
+}
+
+func (V *VIC) Run() {
+	V.registersManagement()
+
 	V.visibleArea = (V.beamY > lastVBlankLine) && (V.beamY < firstVBlankLine)
 	V.displayArea = (V.beamY >= firstDisplayLine) && (V.beamY <= lastDisplayLine) && V.visibleArea
 	V.BA = !(((V.beamY-firstDisplayLine)%8 == 0) && V.displayArea)
@@ -110,6 +138,13 @@ func (V *VIC) Run() {
 
 	switch V.cycle {
 	case 1:
+		if V.ram.Mem[REG_IRQ].Zone[mem.IO]&IRQ_RASTER > 0 {
+			if rasterIRQ == uint16(V.beamY) {
+				fmt.Printf("\nIRQ: %04X - %04X", rasterIRQ, uint16(V.beamY))
+				*V.IRQ_Pin = 1
+				V.ram.Mem[REG_IRQ].Zone[mem.IO] |= 0b10000000
+			}
+		}
 	case 2:
 	case 3:
 	case 4:

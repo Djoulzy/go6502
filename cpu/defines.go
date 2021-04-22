@@ -28,6 +28,7 @@ type CPU struct {
 	Y  byte
 	S  byte
 
+	IRQ     int
 	opName  string
 	debug   string
 	exit    bool

@@ -1,0 +1,6 @@
+al C:d020 .bocol
+al C:d021 .bgcol
+
+al C:0801 .basic
+
+al C:0845 .irq
