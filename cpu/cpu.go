@@ -143,8 +143,13 @@ func (C *CPU) exec(mem *mem.Memory) {
 		fmt.Printf(" RastY: %c[1;31m%04X%c[0m RastX: - %c[1;31m%04X%c[0m:", 27, C.readRasterLine(), 27, 27, C.PC, 27)
 	}
 	opCode := C.fetchByte(mem)
-	Mnemonic[opCode](mem)
+	test := Mnemonic[opCode]
+	fmt.Printf("%02X\n", opCode)
+	test(mem)
 	if C.Display {
+		if C.opName == "ToDO" {
+			os.Exit(1)
+		}
 		fmt.Printf("%c[1;30m%-15s%c[0m %-15s%c[0;32m; %s%c[0m", 27, output, 27, C.opName, 27, C.debug, 27)
 		C.debug = ""
 	}
@@ -168,26 +173,13 @@ func (C *CPU) Init(dbus *databus.Bus, mem *mem.Memory, conf *confload.ConfigData
 	}
 
 	C.initLanguage()
-	// if C.Display {
-	// 	C.initOutput(C.ram)
-	// }
-
 	C.reset(C.ram)
-	// // NMI
-	// C.ram.Mem[0xFFFA].Ram = 0x43
-	// C.ram.Mem[0xFFFB].Ram = 0xFE
-	// // Cold Start
-	// C.ram.Mem[0xFFFC].Ram = 0xE2
-	// C.ram.Mem[0xFFFD].Ram = 0xFC
-	// // IRQ
-	// C.ram.Mem[0xFFFE].Ram = 0x48
-	// C.ram.Mem[0xFFFF].Ram = 0xFF
 	C.tty, _ = tty.Open()
 }
 
 func (C *CPU) Run() {
 	// t0 := time.Now()
-	if C.PC == C.BP && C.readRasterLine() == 0x8015 {
+	if C.PC == C.BP {
 		C.Display = true
 		C.Step = true
 	}
