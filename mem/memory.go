@@ -109,13 +109,13 @@ func (m *Memory) DumpStack(SP byte, nbline int) {
 	}
 }
 
-func (m *Memory) Dump(startAddr uint16) {
+func (m *Memory) Dump(startAddr uint16, zone int) {
 	cpt := startAddr
 	fmt.Printf("\n")
 	for j := 0; j < 16; j++ {
 		fmt.Printf("%04X : ", cpt)
 		for i := 0; i < 16; i++ {
-			fmt.Printf("%02X ", m.Read(cpt))
+			fmt.Printf("%02X ", m.Mem[cpt].Zone[zone])
 			cpt++
 		}
 		fmt.Println()

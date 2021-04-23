@@ -60,6 +60,9 @@ func main() {
 	cpu.Init(&dbus, &mem, conf)
 	vic.Init(&mem)
 
+	vic.IRQ_Pin = &cpu.IRQ
+	cpu.PC = 0xFCE2
+
 	if len(args) > 1 {
 		ass := assembler.Assembler{}
 		ass.Init()
@@ -76,7 +79,6 @@ func main() {
 			cpu.PC = 0xFCE2 // Reset call
 		}
 	}
-	cpu.PC = 0xFCE2
 
 	for {
 		cpu.Run()

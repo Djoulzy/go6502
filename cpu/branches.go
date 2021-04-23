@@ -77,4 +77,14 @@ func (C *CPU) op_BPL_REL(mem *mem.Memory) {
 	}
 }
 func (C *CPU) op_BVC_REL(mem *mem.Memory) { C.opName = "ToDO" }
-func (C *CPU) op_BVS_REL(mem *mem.Memory) { C.opName = "ToDO" }
+
+func (C *CPU) op_BVS_REL(mem *mem.Memory) { 
+	relative := C.fetchByte(mem)
+	val := C.getRelativeAddr(relative)
+	C.opName = fmt.Sprintf("BVS %02X", relative)
+	C.debug = fmt.Sprintf("($%04X)", val)
+	if C.testV() {
+		C.PC = val
+		C.debug = fmt.Sprintf("Go $%04X", val)
+	}
+}

@@ -63,14 +63,17 @@ type VIC struct {
 	ColorBuffer [40]byte
 	CharBuffer  [40]byte
 
-	graph graphic.Driver
-	ram   *mem.Memory
+	IRQ_Pin *int
+	graph   graphic.Driver
+	ram     *mem.Memory
 }
 
 const (
 	REG_CTRL1  uint16 = 0xD011 // Screen control (0b01111111)
 	REG_RASTER uint16 = 0xD012 // Raster 8 first bits
 	REG_CTRL2  uint16 = 0xD016 // Screen control (0b01111111)
+	REG_IRQ    uint16 = 0xD019 // IRQ Register
+	REG_SETIRQ uint16 = 0xD01A // IRQ Enabler
 	REG_EC     uint16 = 0xD020 // Border Color
 	REG_B0C    uint16 = 0xD021 // Background color 0
 	PALNTSC    uint16 = 0x02A6
@@ -81,4 +84,9 @@ const (
 	BMM     byte = 0b00100000 // rom REG_CTRL1 : 0 = Text mode; 1 = Bitmap mode.
 	ECM     byte = 0b01000000 // rom REG_CTRL1 : 1 = Extended background mode on.
 	RST8    byte = 0b10000000 // rom REG_CTRL1 : Read: Current raster line (bit #8). Write: Raster line to generate interrupt at (bit #8).
+
+	IRQ_RASTER    byte = 0b00000001
+	IRQ_SPRT_BG   byte = 0b00000010
+	IRQ_SPRT_SPRT byte = 0b00000100
+	IRQ_LGTPEN    byte = 0b00001000
 )

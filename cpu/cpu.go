@@ -22,9 +22,17 @@ func (C *CPU) reset(mem *mem.Memory) {
 
 	C.exit = false
 	C.Step = false
+
+	C.IRQ = 0
 }
 
 var output = ""
+
+func (C *CPU) readRasterLine() uint16 {
+	val := uint16(C.ram.Mem[0xD011].Zone[mem.IO]&0b10000000) << 8
+	val += uint16(C.ram.Mem[0xD012].Zone[mem.IO])
+	return val
+}
 
 //////////////////////////////////
 //////// Stack Operations ////////
@@ -131,11 +139,17 @@ func (C *CPU) exec(mem *mem.Memory) {
 	}
 	if C.Display {
 		output = ""
-		fmt.Printf("\n%08b - A:%c[1;33m%02X%c[0m X:%c[1;33m%02X%c[0m Y:%c[1;33m%02X%c[0m SP:%c[1;33m%02X%c[0m - %c[1;31m%04X%c[0m:", C.S, 27, C.A, 27, 27, C.X, 27, 27, C.Y, 27, 27, C.SP, 27, 27, C.PC, 27)
+		fmt.Printf("\n%08b - A:%c[1;33m%02X%c[0m X:%c[1;33m%02X%c[0m Y:%c[1;33m%02X%c[0m SP:%c[1;33m%02X%c[0m", C.S, 27, C.A, 27, 27, C.X, 27, 27, C.Y, 27, 27, C.SP, 27)
+		fmt.Printf(" RastY: %c[1;31m%04X%c[0m RastX: - %c[1;31m%04X%c[0m:", 27, C.readRasterLine(), 27, 27, C.PC, 27)
 	}
 	opCode := C.fetchByte(mem)
-	Mnemonic[opCode](mem)
+	test := Mnemonic[opCode]
+	fmt.Printf("%02X\n", opCode)
+	test(mem)
 	if C.Display {
+		if C.opName == "ToDO" {
+			os.Exit(1)
+		}
 		fmt.Printf("%c[1;30m%-15s%c[0m %-15s%c[0;32m; %s%c[0m", 27, output, 27, C.opName, 27, C.debug, 27)
 		C.debug = ""
 	}
@@ -159,20 +173,7 @@ func (C *CPU) Init(dbus *databus.Bus, mem *mem.Memory, conf *confload.ConfigData
 	}
 
 	C.initLanguage()
-	// if C.Display {
-	// 	C.initOutput(C.ram)
-	// }
-
 	C.reset(C.ram)
-	// // NMI
-	// C.ram.Mem[0xFFFA].Ram = 0x43
-	// C.ram.Mem[0xFFFB].Ram = 0xFE
-	// // Cold Start
-	// C.ram.Mem[0xFFFC].Ram = 0xE2
-	// C.ram.Mem[0xFFFD].Ram = 0xFC
-	// // IRQ
-	// C.ram.Mem[0xFFFE].Ram = 0x48
-	// C.ram.Mem[0xFFFF].Ram = 0xFF
 	C.tty, _ = tty.Open()
 }
 
@@ -184,6 +185,9 @@ func (C *CPU) Run() {
 	}
 
 	C.exec(C.ram)
+	if C.IRQ > 0 && C.S & ^I_mask == 0 {
+		fmt.Printf("\nInterrupt ...")
+	}
 
 	if C.Step {
 	COMMAND:
@@ -193,7 +197,7 @@ func (C *CPU) Run() {
 		}
 		switch r {
 		case 'd':
-			C.ram.Dump(C.Dump)
+			C.ram.Dump(C.Dump, mem.IO)
 			goto COMMAND
 		case 's':
 			fmt.Printf("\n")
