@@ -10,7 +10,8 @@ type Globals struct {
 
 type Debug struct {
 	Breakpoint uint16
-	Dump uint16
+	Dump       uint16
+	Zone       int
 }
 
 // ConfigData : Data structure du fichier de conf

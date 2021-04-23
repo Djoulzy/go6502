@@ -143,13 +143,12 @@ func (C *CPU) exec(mem *mem.Memory) {
 		fmt.Printf(" RastY: %c[1;31m%04X%c[0m RastX: - %c[1;31m%04X%c[0m:", 27, C.readRasterLine(), 27, 27, C.PC, 27)
 	}
 	opCode := C.fetchByte(mem)
-	test := Mnemonic[opCode]
-	fmt.Printf("%02X\n", opCode)
-	test(mem)
+	Mnemonic[opCode](mem)
+	if C.opName == "ToDO" {
+		fmt.Printf("\n\nToDO : %02X\n\n", opCode)
+		os.Exit(1)
+	}
 	if C.Display {
-		if C.opName == "ToDO" {
-			os.Exit(1)
-		}
 		fmt.Printf("%c[1;30m%-15s%c[0m %-15s%c[0;32m; %s%c[0m", 27, output, 27, C.opName, 27, C.debug, 27)
 		C.debug = ""
 	}
@@ -167,6 +166,7 @@ func (C *CPU) Init(dbus *databus.Bus, mem *mem.Memory, conf *confload.ConfigData
 
 	if conf.Debug.Dump != 0 {
 		C.Dump = conf.Debug.Dump
+		C.Zone = conf.Debug.Zone
 	}
 	if conf.Debug.Breakpoint != 0 {
 		C.BP = conf.Debug.Breakpoint
@@ -197,7 +197,7 @@ func (C *CPU) Run() {
 		}
 		switch r {
 		case 'd':
-			C.ram.Dump(C.Dump, mem.IO)
+			C.ram.Dump(C.Dump, C.Zone)
 			goto COMMAND
 		case 's':
 			fmt.Printf("\n")
@@ -205,7 +205,7 @@ func (C *CPU) Run() {
 			goto COMMAND
 		case 'z':
 			fmt.Printf("\n")
-			C.ram.Dump(0x0000)
+			C.ram.Dump(0x0000, mem.RAM)
 			goto COMMAND
 		}
 	}

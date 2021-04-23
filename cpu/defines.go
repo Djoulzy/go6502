@@ -38,6 +38,7 @@ type CPU struct {
 	BP      uint16
 	Step    bool
 	Dump    uint16
+	Zone    int
 	tty     *tty.TTY
 }
 
