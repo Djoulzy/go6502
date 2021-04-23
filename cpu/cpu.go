@@ -158,6 +158,13 @@ func (C *CPU) SetBreakpoint(bp uint16) {
 	C.BP = bp
 }
 
+func (C *CPU) irq() {
+	fmt.Printf("\nInterrupt ...")
+	C.pushWordStack(C.PC)
+	C.pushByteStack(C.S)
+	
+}
+
 func (C *CPU) Init(dbus *databus.Bus, mem *mem.Memory, conf *confload.ConfigData) {
 	C.Display = conf.Globals.Disassamble
 	C.ram = mem
@@ -186,7 +193,7 @@ func (C *CPU) Run() {
 
 	C.exec(C.ram)
 	if C.IRQ > 0 && C.S & ^I_mask == 0 {
-		fmt.Printf("\nInterrupt ...")
+		C.irq()
 	}
 
 	if C.Step {

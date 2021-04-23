@@ -133,8 +133,7 @@ func (C *CPU) op_CMP_IM(mem *mem.Memory) {
 	C.setC(C.A >= value)
 	res := C.A - value
 	C.opName = fmt.Sprintf("CMP #$%02X", value)
-	C.setZ(res)
-	C.setN(res)
+	C.setNZStatus(res)
 }
 
 func (C *CPU) op_CMP_ZP(mem *mem.Memory) {
@@ -142,29 +141,27 @@ func (C *CPU) op_CMP_ZP(mem *mem.Memory) {
 	value := C.readByte(uint16(zpAddress))
 	C.setC(C.A >= value)
 	res := C.A - value
-	C.opName = fmt.Sprintf("CMP $%02X -> %02X", zpAddress, value)
-	C.setZ(res)
-	C.setN(res)
+	C.opName = fmt.Sprintf("CMP $%02X", zpAddress)
+	C.setNZStatus(res)
 }
 
 func (C *CPU) op_CMP_ZPX(mem *mem.Memory) {
 	C.opName = "CMP ZP,X"
 	zpAddress := C.fetchByte(mem) + C.X
-	value := C.readByte(uint16(zpAddress))
+	dest := zpAddress + C.X
+	value := C.readByte(uint16(dest))
 	C.setC(C.A >= value)
 	res := C.A - value
-	C.setZ(res)
-	C.setN(res)
+	C.setNZStatus(res)
 }
 
 func (C *CPU) op_CMP_ABS(mem *mem.Memory) {
-	C.opName = "CMP Abs"
 	absAddress := C.fetchWord(mem)
+	C.opName = fmt.Sprintf("CMP $%04X", absAddress)
 	value := C.readByte(absAddress)
 	C.setC(C.A >= value)
 	res := C.A - value
-	C.setZ(res)
-	C.setN(res)
+	C.setNZStatus(res)
 }
 
 func (C *CPU) op_CMP_ABX(mem *mem.Memory) {
@@ -175,29 +172,27 @@ func (C *CPU) op_CMP_ABX(mem *mem.Memory) {
 	C.debug = fmt.Sprintf("($%04X) = %02X vs %02X", dest, value, C.A)
 	C.setC(C.A >= value)
 	res := C.A - value
-	C.setZ(res)
-	C.setN(res)
+	C.setNZStatus(res)
 }
 
 func (C *CPU) op_CMP_ABY(mem *mem.Memory) {
-	C.opName = "CMP Abs,Y"
 	absAddress := C.fetchWord(mem) + uint16(C.Y)
 	value := C.readByte(absAddress)
+	C.opName = fmt.Sprintf("CMP $%04X,Y", absAddress)
 	C.setC(C.A >= value)
 	res := C.A - value
-	C.setZ(res)
-	C.setN(res)
+	C.setNZStatus(res)
 }
 
 func (C *CPU) op_CMP_INX(mem *mem.Memory) {
-	C.opName = "CMP (ZP,X)"
 	zpAddr := C.fetchByte(mem)
 	wordZP := C.Indexed_indirect_X(zpAddr, C.X)
 	value := C.readByte(wordZP)
 	C.setC(C.A >= value)
 	res := C.A - value
-	C.setZ(res)
-	C.setN(res)
+	C.setNZStatus(res)
+	C.opName = fmt.Sprintf("CMP ($%02X,X)", zpAddr)
+	C.debug = fmt.Sprintf("%02X vs %02X", value, C.A)
 }
 
 func (C *CPU) op_CMP_INY(mem *mem.Memory) {
@@ -208,8 +203,7 @@ func (C *CPU) op_CMP_INY(mem *mem.Memory) {
 	C.debug = fmt.Sprintf("%02X vs %02X", value, C.A)
 	C.setC(C.A >= value)
 	res := C.A - value
-	C.setZ(res)
-	C.setN(res)
+	C.setNZStatus(res)
 }
 
 func (C *CPU) op_CPX_IM(mem *mem.Memory) {
@@ -217,37 +211,34 @@ func (C *CPU) op_CPX_IM(mem *mem.Memory) {
 	C.setC(C.X >= value)
 	res := C.X - value
 	C.opName = fmt.Sprintf("CPX #$%02X", value)
-	C.setZ(res)
-	C.setN(res)
+	C.setNZStatus(res)
 }
 
 func (C *CPU) op_CPX_ZP(mem *mem.Memory) {
-	C.opName = "CPX ZP"
 	zpAddress := C.fetchByte(mem)
 	value := C.readByte(uint16(zpAddress))
 	C.setC(C.X >= value)
 	res := C.X - value
-	C.setZ(res)
-	C.setN(res)
+	C.opName = fmt.Sprintf("CPX $%02X", zpAddress)
+	C.debug = fmt.Sprintf("-> %02X", value)
+	C.setNZStatus(res)
 }
 
 func (C *CPU) op_CPX_ABS(mem *mem.Memory) {
-	C.opName = "CPX Abs"
 	absAddress := C.fetchWord(mem)
+	C.opName = fmt.Sprintf("CPX $%04X", absAddress)
 	value := C.readByte(absAddress)
 	C.setC(C.X >= value)
 	res := C.X - value
-	C.setZ(res)
-	C.setN(res)
+	C.setNZStatus(res)
 }
 
 func (C *CPU) op_CPY_IM(mem *mem.Memory) {
-	C.opName = "CPY Im"
 	value := C.fetchByte(mem)
+	C.opName = fmt.Sprintf("CPY #$%02X", value)
 	C.setC(C.Y >= value)
 	res := C.Y - value
-	C.setZ(res)
-	C.setN(res)
+	C.setNZStatus(res)
 }
 
 func (C *CPU) op_CPY_ZP(mem *mem.Memory) {
@@ -255,17 +246,17 @@ func (C *CPU) op_CPY_ZP(mem *mem.Memory) {
 	value := C.readByte(uint16(zpAddress))
 	C.setC(C.Y >= value)
 	res := C.Y - value
-	C.opName = fmt.Sprintf("CPY $%02X -> %02X", zpAddress, value)
-	C.setZ(res)
-	C.setN(res)
+	C.opName = fmt.Sprintf("CPY $%02X", zpAddress)
+	C.debug = fmt.Sprintf("-> %02X", value)
+	C.setNZStatus(res)
 }
 
 func (C *CPU) op_CPY_ABS(mem *mem.Memory) {
 	C.opName = "CPY Abs"
 	absAddress := C.fetchWord(mem)
+	C.opName = fmt.Sprintf("CPY $%04X", absAddress)
 	value := C.readByte(absAddress)
 	C.setC(C.Y >= value)
 	res := C.Y - value
-	C.setZ(res)
-	C.setN(res)
+	C.setNZStatus(res)
 }

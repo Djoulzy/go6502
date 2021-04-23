@@ -49,7 +49,7 @@ func (m *Memory) Init() {
 	m.Mem[1].Zone[RAM] = 0x37 // Processor port / memory map configuration
 
 	for i := range m.Color {
-		m.Color[i].Zone[IO] = 0x0E
+		m.Color[i].Zone[RAM] = 0xF6
 	}
 }
 
