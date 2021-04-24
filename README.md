@@ -16,8 +16,9 @@ sequential process (except from CIA).
 # Dev status:
 - 6502 : 95% (some opcode are missing ... but nobody seems to use it :)
 - VIC-II : 50% (no sprites / no lightpen / only text mode) - only PAL
-- CIA : 10%
+- CIA : 10% - No keyboard input / no drive / no cassettes
 - SID : 0% (I don't think I would try to emulate this chip as it's beyound my purpose)
+
 
 # What could you expect:
 - Read and execute KERNALS (vanilla / JiffyDOS / Dolphin)
