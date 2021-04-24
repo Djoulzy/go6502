@@ -159,10 +159,11 @@ func (C *CPU) SetBreakpoint(bp uint16) {
 }
 
 func (C *CPU) irq() {
-	fmt.Printf("\nInterrupt ...")
+	//fmt.Printf("\nInterrupt ... Raster: %04X", C.readRasterLine())
 	C.pushWordStack(C.PC)
 	C.pushByteStack(C.S)
-	
+	C.setI(true)
+	C.PC = C.readWord(0xFFFE)
 }
 
 func (C *CPU) Init(dbus *databus.Bus, mem *mem.Memory, conf *confload.ConfigData) {
@@ -192,7 +193,7 @@ func (C *CPU) Run() {
 	}
 
 	C.exec(C.ram)
-	if C.IRQ > 0 && C.S & ^I_mask == 0 {
+	if (C.IRQ > 0) && (C.S & ^I_mask) == 0 {
 		C.irq()
 	}
 
@@ -375,6 +376,7 @@ func (C *CPU) initLanguage() {
 	Mnemonic[CodeAddr["JMP_IND"]] = C.op_JMP_IND
 	Mnemonic[CodeAddr["JSR"]] = C.op_JSR
 	Mnemonic[CodeAddr["RTS"]] = C.op_RTS
+	Mnemonic[CodeAddr["RTI"]] = C.op_RTI
 
 	Mnemonic[CodeAddr["CLC"]] = C.op_CLC
 	Mnemonic[CodeAddr["CLD"]] = C.op_CLD

@@ -63,9 +63,10 @@ type VIC struct {
 	ColorBuffer [40]byte
 	CharBuffer  [40]byte
 
-	IRQ_Pin *int
-	graph   graphic.Driver
-	ram     *mem.Memory
+	IRQ_Pin   *int
+	RasterIRQ uint16
+	graph     graphic.Driver
+	ram       *mem.Memory
 }
 
 const (

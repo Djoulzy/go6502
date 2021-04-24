@@ -28,6 +28,8 @@ func (m *Memory) Init() {
 		m.Mem[i].read = &m.PLA.ram
 		m.Mem[i].write = &m.PLA.ram
 		m.Mem[i].Zone[RAM] = fill
+		m.Mem[i].IsRead = false
+		m.Mem[i].IsWrite = false
 		cpt++
 		if cpt == 0x40 {
 			fill = ^fill
@@ -72,7 +74,7 @@ func (m *Memory) DumpChar(screenCode byte) {
 	cpt := uint16(screenCode) << 3
 	for j := 0; j < 4; j++ {
 		for i := 0; i < 8; i++ {
-			fmt.Printf("%04X : %08b\n", cpt, m.CharGen[cpt])
+			fmt.Printf("%04X : %08b\n", cpt, m.CharGen[cpt].Zone[CHAR])
 			cpt++
 		}
 		fmt.Println()
@@ -81,11 +83,13 @@ func (m *Memory) DumpChar(screenCode byte) {
 
 func (m *Memory) Read(addr uint16) byte {
 	cell := &m.Mem[addr]
+	cell.IsRead = true
 	return cell.Zone[*cell.read]
 }
 
 func (m *Memory) Write(addr uint16, value byte) {
 	cell := &m.Mem[addr]
+	cell.IsWrite = true
 	cell.Zone[*cell.write] = value
 }
 

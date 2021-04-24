@@ -36,3 +36,8 @@ func (C *CPU) op_RTS(mem *mem.Memory) {
 	C.PC = dest + 1
 	// clog.File("go6502", "RTS", "PC:%04X -> %04X - Pull: %04X - Call from: %04X", originPC, C.PC, dest, dest-2)
 }
+
+func (C *CPU) op_RTI(mem *mem.Memory) {
+	C.S = C.pullByteStack()
+	C.PC = C.pullWordStack()
+}

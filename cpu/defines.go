@@ -190,6 +190,7 @@ var CodeAddr = map[string]byte{
 	"JMP_IND": 0x6C,
 	"JSR":     0x20,
 	"RTS":     0x60,
+	"RTI":     0x40,
 
 	"CLC": 0x18,
 	"CLD": 0xD8,

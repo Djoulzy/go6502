@@ -1,5 +1,6 @@
 # .cache
 # Binaries for programs and plugins
+.DS_Store
 *.exe
 *.exe~
 *.dll

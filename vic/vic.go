@@ -1,7 +1,6 @@
 package vic
 
 import (
-	"fmt"
 	"go6502/graphic"
 	"go6502/mem"
 )
@@ -39,8 +38,6 @@ const (
 	// visibleLastCol  = 412
 )
 
-var rasterIRQ uint16 = 0x0000
-
 func (V *VIC) Init(memory *mem.Memory) {
 	V.graph = &graphic.SDLDriver{}
 	V.graph.Init(winWidth, winHeight)
@@ -53,7 +50,7 @@ func (V *VIC) Init(memory *mem.Memory) {
 	V.ram.Mem[REG_RASTER].Zone[mem.RAM] = 0b00000000
 	V.ram.Mem[REG_CTRL2].Zone[mem.IO] = 0b00001000
 	V.ram.Mem[PALNTSC].Zone[mem.RAM] = 0x01 // PAL
-	V.ram.Mem[REG_IRQ].Zone[mem.IO] = 0b00000000
+	V.ram.Mem[REG_IRQ].Zone[mem.IO] = 0b00001111
 	V.ram.Mem[REG_SETIRQ].Zone[mem.IO] = 0b00000000
 	V.ram.Mem[REG_SETIRQ].Zone[mem.RAM] = 0b00000000
 
@@ -62,6 +59,7 @@ func (V *VIC) Init(memory *mem.Memory) {
 	V.beamX = 0
 	V.beamY = 0
 	V.cycle = 1
+	V.RasterIRQ = 0xFFFF
 }
 
 func (V *VIC) saveRasterPos(val int) {
@@ -94,14 +92,14 @@ func (V *VIC) drawChar(X int, Y int) {
 			if charData&bit > 0 {
 				V.graph.DrawPixel(X+column, Y, Colors[V.ColorBuffer[V.VMLI]])
 			} else {
-				V.graph.DrawPixel(X+column, Y, Colors[V.ram.Mem[REG_B0C].Zone[mem.IO]&0b00001111])
+				V.graph.DrawPixel(X+column, Y, Colors[V.ram.Mem[REG_B0C].Zone[mem.RAM]&0b00001111])
 			}
 		}
 		V.VMLI++
 		V.VC++
 	} else if V.visibleArea {
 		for column := 0; column < 8; column++ {
-			V.graph.DrawPixel(X+column, Y, Colors[V.ram.Mem[REG_EC].Zone[mem.IO]&0b00001111])
+			V.graph.DrawPixel(X+column, Y, Colors[V.ram.Mem[REG_EC].Zone[mem.RAM]&0b00001111])
 		}
 	}
 }
@@ -109,18 +107,20 @@ func (V *VIC) drawChar(X int, Y int) {
 func (V *VIC) registersManagement() {
 	V.saveRasterPos(V.beamY)
 
-	intMask := V.ram.Mem[REG_SETIRQ].Zone[mem.RAM]
-	actualMask := V.ram.Mem[REG_SETIRQ].Zone[mem.IO]
-	if intMask != actualMask {
-		fmt.Println("ResetMask")
-		V.ram.Mem[REG_SETIRQ].Zone[mem.IO] = intMask
-		V.ram.Mem[REG_IRQ].Zone[mem.IO] = intMask
+	V.ram.Mem[REG_SETIRQ].Zone[mem.IO] = V.ram.Mem[REG_SETIRQ].Zone[mem.RAM]
+
+	if V.ram.Mem[REG_CTRL1].IsWrite || V.ram.Mem[REG_RASTER].IsWrite {
+		V.RasterIRQ = uint16(V.ram.Mem[REG_CTRL1].Zone[mem.RAM]&0b10000000) << 8
+		V.RasterIRQ += uint16(V.ram.Mem[REG_RASTER].Zone[mem.RAM])
+		V.ram.Mem[REG_CTRL1].IsWrite = false
+		V.ram.Mem[REG_RASTER].IsWrite = false
 	}
 
-	val := uint16(V.ram.Mem[0xD011].Zone[mem.RAM]&0b10000000) << 8
-	val += uint16(V.ram.Mem[0xD012].Zone[mem.RAM])
-	if val != rasterIRQ {
-		rasterIRQ = val
+	if V.ram.Mem[REG_IRQ].IsWrite {
+		V.ram.Mem[REG_IRQ].Zone[mem.IO] = V.ram.Mem[REG_IRQ].Zone[mem.RAM]
+		V.ram.Mem[REG_IRQ].Zone[mem.IO] &= 0b01111111
+		*V.IRQ_Pin = 0
+		V.ram.Mem[REG_IRQ].IsWrite = false
 	}
 }
 
@@ -138,11 +138,11 @@ func (V *VIC) Run() {
 
 	switch V.cycle {
 	case 1:
-		if V.ram.Mem[REG_IRQ].Zone[mem.IO]&IRQ_RASTER > 0 {
-			if rasterIRQ == uint16(V.beamY) {
-				fmt.Printf("\nIRQ: %04X - %04X", rasterIRQ, uint16(V.beamY))
+		if V.ram.Mem[REG_SETIRQ].Zone[mem.IO]&IRQ_RASTER > 0 {
+			if V.RasterIRQ == uint16(V.beamY) {
+				//fmt.Printf("\nIRQ: %04X - %04X", V.RasterIRQ, uint16(V.beamY))
 				*V.IRQ_Pin = 1
-				V.ram.Mem[REG_IRQ].Zone[mem.IO] |= 0b10000000
+				V.ram.Mem[REG_IRQ].Zone[mem.IO] |= 0b10000001
 			}
 		}
 	case 2:

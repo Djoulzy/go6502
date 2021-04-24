@@ -41,41 +41,122 @@
 
 ; ******** Source: /Users/jules/go/src/go6502/asm/irq.asm
      2  0801 0c0800009e323037...+start_at $0816
-     3                          ;============================================================
-     4                          ;    some initialization and interrupt redirect setup
-     5                          ;============================================================
-     6                          
-     7  0816 78                            sei         ; set interrupt disable flag
-     8                          
-     9  0817 a07f                          ldy #$7f    ; $7f = %01111111
-    10  0819 8c0ddc                        sty $dc0d   ; Turn off CIAs Timer interrupts
-    11  081c 8c0ddd                        sty $dd0d   ; Turn off CIAs Timer interrupts
-    12  081f ad0ddc                        lda $dc0d   ; cancel all CIA-IRQs in queue/unprocessed
-    13  0822 ad0ddd                        lda $dd0d   ; cancel all CIA-IRQs in queue/unprocessed
-    14                                    
-    15  0825 a901                          lda #$01    ; Set Interrupt Request Mask...
-    16  0827 8d1ad0                        sta $d01a   ; ...we want IRQ by Rasterbeam
-    17                          
-    18  082a a945                          lda #<irq   ; point IRQ Vector to our custom irq routine
-    19  082c a208                          ldx #>irq 
-    20  082e 8d1403                        sta $314    ; store in $314/$315
-    21  0831 8e1503                        stx $315   
-    22                          
-    23  0834 a901                          lda #$01    ; trigger first interrupt at row zero
-    24  0836 8d12d0                        sta $d012
-    25                          
-    26  0839 ad11d0                        lda $d011   ; Bit#0 of $d011 is basically...
-    27  083c 297f                          and #$7f    ; ...the 9th Bit for $d012
-    28  083e 8d11d0                        sta $d011   ; we need to make sure it is set to zero 
-    29                          
-    30  0841 58                            cli         ; clear interrupt disable flag
-    31  0842 4c4208                        jmp *       ; infinite loop
-    32                          
-    33                          
-    34                          ;============================================================
-    35                          ;    custom interrupt routine
-    36                          ;============================================================
-    37                          
-    38  0845 ce19d0             irq        dec $d019        ; acknowledge IRQ
+     3                          
+     4  0816 a200               init_screen      ldx #$00     ; set X to zero (black color code)
+     5  0818 8e21d0                              stx $d021    ; set background color
+     6  081b 8e20d0                              stx $d020    ; set border color
+     7  081e 20fe08                         jsr clear
+     8  0821 201e09                         jsr init_text
+     9                          ;============================================================
+    10                          ;    some initialization and interrupt redirect setup
+    11                          ;============================================================
+    12                          
+    13  0824 78                            sei         ; set interrupt disable flag
+    14                          
+    15  0825 a07f                          ldy #$7f    ; $7f = %01111111
+    16  0827 8c0ddc                        sty $dc0d   ; Turn off CIAs Timer interrupts
+    17  082a 8c0ddd                        sty $dd0d   ; Turn off CIAs Timer interrupts
+    18  082d ad0ddc                        lda $dc0d   ; cancel all CIA-IRQs in queue/unprocessed
+    19  0830 ad0ddd                        lda $dd0d   ; cancel all CIA-IRQs in queue/unprocessed
+    20                                    
+    21  0833 a901                          lda #$01    ; Set Interrupt Request Mask...
+    22  0835 8d1ad0                        sta $d01a   ; ...we want IRQ by Rasterbeam
+    23                          
+    24  0838 a953                          lda #<irq   ; point IRQ Vector to our custom irq routine
+    25  083a a208                          ldx #>irq 
+    26  083c 8d1403                        sta $314    ; store in $314/$315
+    27  083f 8e1503                        stx $315   
+    28                          
+    29  0842 a901                          lda #$01    ; trigger first interrupt at row zero
+    30  0844 8d12d0                        sta $d012
+    31                          
+    32  0847 ad11d0                        lda $d011   ; Bit#0 of $d011 is basically...
+    33  084a 297f                          and #$7f    ; ...the 9th Bit for $d012
+    34  084c 8d11d0                        sta $d011   ; we need to make sure it is set to zero 
+    35                          
+    36  084f 58                            cli         ; clear interrupt disable flag
+    37  0850 4c5008                        jmp *       ; infinite loop
+    38                          
     39                          
-    40                          
+    40                          ;============================================================
+    41                          ;    custom interrupt routine
+    42                          ;============================================================
+    43                          
+    44  0853 ce19d0             irq        dec $d019        ; acknowledge IRQ
+    45  0856 203209                        jsr colwash 
+    46  0859 4c81ea                        jmp $ea81        ; return to kernel interrupt routine
+    47                          
+    48  085c 0909020208         color        !byte $09,$09,$02,$02,$08 
+    49  0861 080a0a0f0f                      !byte $08,$0a,$0a,$0f,$0f 
+    50  0866 0707010101                      !byte $07,$07,$01,$01,$01 
+    51  086b 0101010101                      !byte $01,$01,$01,$01,$01 
+    52  0870 0101010101                      !byte $01,$01,$01,$01,$01 
+    53  0875 0101010707                      !byte $01,$01,$01,$07,$07 
+    54  087a 0f0f0a0a08                      !byte $0f,$0f,$0a,$0a,$08 
+    55  087f 0802020909                      !byte $08,$02,$02,$09,$09 
+    56                          
+    57  0884 0909020208         color2       !byte $09,$09,$02,$02,$08 
+    58  0889 080a0a0f0f                      !byte $08,$0a,$0a,$0f,$0f 
+    59  088e 0707010101                      !byte $07,$07,$01,$01,$01 
+    60  0893 0101010101                      !byte $01,$01,$01,$01,$01 
+    61  0898 0101010101                      !byte $01,$01,$01,$01,$01 
+    62  089d 0101010707                      !byte $01,$01,$01,$07,$07 
+    63  08a2 0f0f0a0a08                      !byte $0f,$0f,$0a,$0a,$08 
+    64  08a7 0802020909                      !byte $08,$02,$02,$09,$09 
+    65                          
+    66                          ; the two lines of text for color washer effect
+    67                          
+    68  08ac 2020202001031412...line1            !scr "    actraiser in 2013 presents...        "
+    69  08d5 200518010d100c05...line2            !scr " example effect for dustlayer tutorials  " 
+    70                          
+    71  08fe a920               clear            lda #$20     ; #$20 is the spacebar Screen Code
+    72  0900 9d0004                              sta $0400,x  ; fill four areas with 256 spacebar characters
+    73  0903 9d0005                              sta $0500,x 
+    74  0906 9d0006                              sta $0600,x 
+    75  0909 9de806                              sta $06e8,x 
+    76  090c a900                                lda #$00     ; set foreground to black in Color Ram 
+    77  090e 9d00d8                              sta $d800,x  
+    78  0911 9d00d9                              sta $d900,x
+    79  0914 9d00da                              sta $da00,x
+    80  0917 9de8da                              sta $dae8,x
+    81  091a e8                                  inx           ; increment X
+    82  091b d0e1                                bne clear     ; did X turn to zero yet?
+    83                                                         ; if not, continue with the loop
+    84  091d 60                                  rts           ; return from this subroutine
+    85                          
+    86  091e a200               init_text  ldx #$00         ; init X register with $00
+    87  0920 bdac08             loop_text  lda line1,x      ; read characters from line1 table of text...
+    88  0923 9d9005                        sta $0590,x      ; ...and store in screen ram near the center
+    89  0926 bdd508                        lda line2,x      ; read characters from line2 table of text...
+    90  0929 9de005                        sta $05e0,x      ; ...and put 2 rows below line1
+    91                          
+    92  092c e8                            inx 
+    93  092d e028                          cpx #$28         ; finished when all 40 cols of a line are processed
+    94  092f d0ef                          bne loop_text    ; loop if we are not done yet
+    95  0931 60                            rts
+    96                          
+    97  0932 a227               colwash   ldx #$27        ; load x-register with #$27 to work through 0-39 iterations
+    98  0934 ad8308                       lda color+$27   ; init accumulator with the last color from first color table
+    99                          
+   100  0937 bc5b08             cycle1    ldy color-1,x   ; remember the current color in color table in this iteration
+   101  093a 9d5b08                       sta color-1,x   ; overwrite that location with color from accumulator
+   102  093d 9d90d9                       sta $d990,x     ; put it into Color Ram into column x
+   103  0940 98                           tya             ; transfer our remembered color back to accumulator
+   104  0941 ca                           dex             ; decrement x-register to go to next iteration
+   105  0942 d0f3                         bne cycle1      ; repeat if there are iterations left
+   106  0944 8d8308                       sta color+$27   ; otherwise store te last color from accu into color table
+   107  0947 8d90d9                       sta $d990       ; ... and into Color Ram
+   108                                                    
+   109  094a a200               colwash2  ldx #$00        ; load x-register with #$00
+   110  094c adab08                       lda color2+$27  ; load the last color from the second color table
+   111                          
+   112  094f bc8408             cycle2    ldy color2,x    ; remember color at currently looked color2 table location
+   113  0952 9d8408                       sta color2,x    ; overwrite location with color from accumulator
+   114  0955 9de0d9                       sta $d9e0,x     ; ... and write it to Color Ram
+   115  0958 98                           tya             ; transfer our remembered color back to accumulator 
+   116  0959 e8                           inx             ; increment x-register to go to next iteraton
+   117  095a e026                         cpx #$26        ; have we gone through 39 iterations yet?
+   118  095c d0f1                         bne cycle2      ; if no, repeat
+   119  095e 8dab08                       sta color2+$27  ; if yes, store the final color from accu into color2 table
+   120  0961 8d07da                       sta $d9e0+$27   ; and write it into Color Ram
+   121                           
