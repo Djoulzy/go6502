@@ -15,11 +15,11 @@ sequential process (except from CIA).
 
 # Dev status:
 - 6502 : 95% (some opcode are missing ... but nobody seems to use it :)
-- VIC-II : 50% (no sprites / no lightpen / only text mode)
+- VIC-II : 50% (no sprites / no lightpen / only text mode) - only PAL
 - CIA : 10%
 - SID : 0% (I don't think I would try to emulate this chip as it's beyound my purpose)
 
-# What it can do:
+# What could you expect:
 - Read and execute KERNALS (vanilla / JiffyDOS / Dolphin)
 - Use CharROM
 - Read ans execute BasicROM
