@@ -61,7 +61,8 @@ func main() {
 	vic.Init(&mem)
 
 	vic.IRQ_Pin = &cpu.IRQ
-	cpu.PC = 0xFCE2
+	mem.Dump(0xFF00, 1)
+	cpu.PC = 0xFA62
 
 	if len(args) > 1 {
 		ass := assembler.Assembler{}

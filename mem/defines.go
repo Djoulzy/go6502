@@ -13,8 +13,10 @@ const (
 	intAddr     = 0xFFFA
 	resetAddr   = 0xFFFC
 	brkAddr     = 0xFFFE
-	KernalStart = 0xE000
-	KernalEnd   = 0xFFFF
+	CDStart     = 0xC000
+	CDEnd      = 0xDFFF
+	EFStart     = 0xE000
+	EFEnd      = 0xFFFF
 	BasicStart  = 0xA000
 	BasicEnd    = 0xC000
 	vic2        = 0x4000
@@ -51,7 +53,8 @@ type Cell struct {
 type Memory struct {
 	PLA     latch
 	Mem     [memorySize]Cell
-	Kernal  []Cell
+	CD_Rom  []Cell
+	EF_Rom  []Cell
 	Basic   []Cell
 	CharGen []Cell
 	Stack   []Cell

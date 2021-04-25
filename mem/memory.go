@@ -18,7 +18,8 @@ func (m *Memory) Init() {
 	m.Stack = m.Mem[stackStart : stackEnd+1]
 	m.Screen = m.Mem[screenStart : screenEnd+1]
 	m.Color = m.Mem[colorStart : colorEnd+1]
-	m.Kernal = m.Mem[KernalStart : KernalEnd+1]
+	m.CD_Rom = m.Mem[CDStart : CDEnd+1]
+	m.EF_Rom = m.Mem[EFStart : EFEnd+1]
 	m.Basic = m.Mem[BasicStart : BasicEnd+1]
 	m.CharGen = m.Mem[charStart : charEnd+1]
 
@@ -42,9 +43,10 @@ func (m *Memory) Init() {
 	m.Vic[2] = m.Mem[vic3 : vic4-1]
 	m.Vic[3] = m.Mem[vic4:0xFFFF]
 
-	m.loadRom("roms/kernal.bin", 8192, m.Kernal, &m.PLA.kernal, &m.PLA.ram)
-	m.loadRom("roms/basic.bin", 8192, m.Basic, &m.PLA.basic, &m.PLA.ram)
-	m.loadRom("roms/char.bin", 4096, m.CharGen, &m.PLA.char_io_r, &m.PLA.ram)
+	m.loadRom("roms/CD.bin", 8192, m.CD_Rom, &m.PLA.kernal, &m.PLA.ram)
+	m.loadRom("roms/EF.bin", 8192, m.EF_Rom, &m.PLA.kernal, &m.PLA.ram)
+	// m.loadRom("roms/basic.bin", 8192, m.Basic, &m.PLA.basic, &m.PLA.ram)
+	// m.loadRom("roms/char.bin", 4096, m.CharGen, &m.PLA.char_io_r, &m.PLA.ram)
 	m.PLA.char_io_r = IO
 
 	m.Mem[0].Zone[RAM] = 0x2F // Processor port data direction register
