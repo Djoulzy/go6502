@@ -2,6 +2,7 @@ package cpu
 
 import (
 	"fmt"
+	"go6502/clog"
 	"go6502/confload"
 	"go6502/databus"
 	"go6502/mem"
@@ -116,9 +117,9 @@ func (C *CPU) fetchWord(mem *mem.Memory) uint16 {
 	value := uint16(C.fetchByte(mem)) << 8
 	value += uint16(low)
 
-	// if value >= 0xDC00 && value <= 0xDDFF {
-	// 	clog.File("CPU", "CIA", "%04X at PC: %02X", value, C.PC-3)
-	// }
+	if value >= 0xDC00 && value <= 0xDDFF {
+		clog.File("CPU", "CIA", "%04X at PC: %02X", value, C.PC-3)
+	}
 	return value
 }
 
