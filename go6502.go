@@ -10,7 +10,6 @@ import (
 	"go6502/cpu"
 	"go6502/databus"
 	"go6502/mem"
-	"go6502/vic"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -45,24 +44,11 @@ func main() {
 	}
 
 	cpu := cpu.CPU{}
-	vic := vic.VIC{}
 	dbus := databus.Bus{}
 	mem := mem.Memory{}
-	cia1 := cia.CIA{}
-	cia2 := cia.CIA{}
 
 	mem.Init()
-	dbus.Init(&vic)
-	cia1.Init(mem.Mem[0xDC00:0xDCFF])
-	setCIA1(&cia1)
-	cia2.Init(mem.Mem[0xDD00:0xDDFF])
-	setCIA2(&cia2)
 	cpu.Init(&dbus, &mem, conf)
-	vic.Init(&mem)
-
-	vic.IRQ_Pin = &cpu.IRQ
-	mem.Dump(0xFF00, 1)
-	cpu.PC = 0xFA62
 
 	if len(args) > 1 {
 		ass := assembler.Assembler{}
@@ -83,7 +69,5 @@ func main() {
 
 	for {
 		cpu.Run()
-		cia1.Run()
-		cia2.Run()
 	}
 }

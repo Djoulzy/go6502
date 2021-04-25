@@ -19,9 +19,9 @@ func (B *Bus) Init(vic *vic.VIC) {
 }
 
 func (B *Bus) Release() {
-KEEPBUS:
-	B.vic.Run()
-	if !B.vic.BA {
-		goto KEEPBUS
-	}
+// KEEPBUS:
+	// B.vic.Run()
+	// if !B.vic.BA {
+	// 	goto KEEPBUS
+	// }
 }

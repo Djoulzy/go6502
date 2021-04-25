@@ -183,6 +183,7 @@ func (C *CPU) Init(dbus *databus.Bus, mem *mem.Memory, conf *confload.ConfigData
 	C.initLanguage()
 	C.reset(C.ram)
 	C.tty, _ = tty.Open()
+	C.PC = C.readWord(0xFFFC)
 }
 
 func (C *CPU) Run() {
