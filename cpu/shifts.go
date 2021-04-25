@@ -5,7 +5,13 @@ import (
 	"go6502/mem"
 )
 
-func (C *CPU) op_ASL_IM(mem *mem.Memory) { C.opName = "ToDO" }
+func (C *CPU) op_ASL_IM(mem *mem.Memory) { 
+	C.opName = "ASL"
+	result := uint16(C.A) << 1
+	C.setC(result > 0x00FF)
+	C.A <<= 1
+	C.setNZStatus(C.A)
+}
 
 func (C *CPU) op_ASL_ZP(mem *mem.Memory) {
 	zpAddress := C.fetchByte(mem)
@@ -33,7 +39,12 @@ func (C *CPU) op_ASL_ZPX(mem *mem.Memory) {
 func (C *CPU) op_ASL_ABS(mem *mem.Memory) { C.opName = "ToDO" }
 func (C *CPU) op_ASL_ABX(mem *mem.Memory) { C.opName = "ToDO" }
 
-func (C *CPU) op_LSR_IM(mem *mem.Memory) { C.opName = "ToDO" }
+func (C *CPU) op_LSR_IM(mem *mem.Memory) { 
+	C.opName = "LSR"
+	C.setC(C.A&0x01 == 0x01)
+	C.A >>= 1
+	C.setNZStatus(C.A)
+}
 
 func (C *CPU) op_LSR_ZP(mem *mem.Memory) {
 	zpAddress := C.fetchByte(mem)
@@ -57,7 +68,16 @@ func (C *CPU) op_LSR_ZPX(mem *mem.Memory) {
 	C.writeByte(uint16(dest), result)
 }
 
-func (C *CPU) op_LSR_ABS(mem *mem.Memory) { C.opName = "ToDO" }
+func (C *CPU) op_LSR_ABS(mem *mem.Memory) {
+	absAddress := C.fetchWord(mem)
+	C.opName = fmt.Sprintf("LSR $%04X", absAddress)
+	value := C.readByte(uint16(absAddress))
+	C.setC(value&0x01 == 0x01)
+	result := value >> 1
+	C.setNZStatus(result)
+	C.writeByte(uint16(absAddress), result)
+}
+
 func (C *CPU) op_LSR_ABX(mem *mem.Memory) { C.opName = "ToDO" }
 
 func (C *CPU) op_ROL_IM(mem *mem.Memory) {
