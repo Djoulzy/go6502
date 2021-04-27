@@ -1,4 +1,4 @@
-package vic
+package video
 
 import (
 	"go6502/graphic"
@@ -31,14 +31,9 @@ const (
 	lastVBlankLine   = 15
 	firstDisplayLine = 51
 	lastDisplayLine  = 250
-
-	// firstHBlankCol  = 453
-	// lastHBlankCol   = 50
-	// visibleFirstCol = 92
-	// visibleLastCol  = 412
 )
 
-func (V *VIC) Init(memory *mem.Memory) {
+func (V *Video) Init(memory *mem.Memory) {
 	V.graph = &graphic.SDLDriver{}
 	V.graph.Init(winWidth, winHeight)
 
@@ -62,7 +57,7 @@ func (V *VIC) Init(memory *mem.Memory) {
 	V.RasterIRQ = 0xFFFF
 }
 
-func (V *VIC) saveRasterPos(val int) {
+func (V *Video) saveRasterPos(val int) {
 	V.ram.Mem[REG_RASTER].Zone[mem.IO] = byte(val)
 	if (byte(uint16(val) >> 8)) == 0x1 {
 		V.ram.Mem[REG_CTRL1].Zone[mem.IO] |= RST8
@@ -72,14 +67,14 @@ func (V *VIC) saveRasterPos(val int) {
 	// fmt.Printf("val: %d - RST8: %08b - RASTER: %08b\n", val, V.ram.Data[REG_RST8], V.ram.Data[REG_RASTER])
 }
 
-func (V *VIC) readVideoMatrix() {
-	if !V.BA {
-		V.ColorBuffer[V.VMLI] = V.ram.Color[V.VC].Zone[mem.RAM] & 0b00001111
-		V.CharBuffer[V.VMLI] = V.ram.Screen[V.VC].Zone[mem.RAM]
-	}
+func (V *Video) readVideoMatrix() {
+	// if !V.BA {
+	// 	V.ColorBuffer[V.VMLI] = V.ram.Color[V.VC].Zone[mem.RAM] & 0b00001111
+	// 	V.CharBuffer[V.VMLI] = V.ram.Screen[V.VC].Zone[mem.RAM]
+	// }
 }
 
-func (V *VIC) drawChar(X int, Y int) {
+func (V *Video) drawChar(X int, Y int) {
 	if V.drawArea && (V.ram.Mem[REG_CTRL1].Zone[mem.IO]&DEN > 0) {
 		charAddr := (uint16(V.CharBuffer[V.VMLI]) << 3) + uint16(V.RC)
 		charData := V.ram.CharGen[charAddr].Zone[mem.CHAR]
@@ -104,7 +99,7 @@ func (V *VIC) drawChar(X int, Y int) {
 	}
 }
 
-func (V *VIC) registersManagement() {
+func (V *Video) registersManagement() {
 	V.saveRasterPos(V.beamY)
 
 	V.ram.Mem[REG_SETIRQ].Zone[mem.IO] = V.ram.Mem[REG_SETIRQ].Zone[mem.RAM]
@@ -124,7 +119,7 @@ func (V *VIC) registersManagement() {
 	}
 }
 
-func (V *VIC) Run() {
+func (V *Video) Run() {
 	V.registersManagement()
 
 	V.visibleArea = (V.beamY > lastVBlankLine) && (V.beamY < firstVBlankLine)

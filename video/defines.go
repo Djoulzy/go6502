@@ -1,4 +1,4 @@
-package vic
+package video
 
 import (
 	"go6502/graphic"
@@ -44,7 +44,7 @@ var Colors [16]graphic.RGB = [16]graphic.RGB{
 }
 
 // VIC :
-type VIC struct {
+type Video struct {
 	VML    [40]uint16 // Video Matrix Line
 	VMLI   byte       // Video Matrix Line Indexer
 	VC     uint16     // Vide Counter

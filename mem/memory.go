@@ -17,11 +17,10 @@ func (m *Memory) Init() {
 
 	m.Stack = m.Mem[stackStart : stackEnd+1]
 	m.Screen = m.Mem[screenStart : screenEnd+1]
-	m.Color = m.Mem[colorStart : colorEnd+1]
 	m.CD_Rom = m.Mem[CDStart : CDEnd+1]
 	m.EF_Rom = m.Mem[EFStart : EFEnd+1]
 	m.Basic = m.Mem[BasicStart : BasicEnd+1]
-	m.CharGen = m.Mem[charStart : charEnd+1]
+	m.CharGen = make([]Cell, 8192)
 
 	cpt := 0
 	fill := byte(0x00)
@@ -46,15 +45,11 @@ func (m *Memory) Init() {
 	m.loadRom("roms/CD.bin", 8192, m.CD_Rom, &m.PLA.kernal, &m.PLA.ram)
 	m.loadRom("roms/EF.bin", 8192, m.EF_Rom, &m.PLA.kernal, &m.PLA.ram)
 	// m.loadRom("roms/basic.bin", 8192, m.Basic, &m.PLA.basic, &m.PLA.ram)
-	// m.loadRom("roms/char.bin", 4096, m.CharGen, &m.PLA.char_io_r, &m.PLA.ram)
+	m.loadRom("roms/CHARGEN.bin", 8192, m.CharGen, &m.PLA.char_io_r, &m.PLA.ram)
 	m.PLA.char_io_r = IO
 
 	m.Mem[0].Zone[RAM] = 0x2F // Processor port data direction register
 	m.Mem[1].Zone[RAM] = 0x37 // Processor port / memory map configuration
-
-	for i := range m.Color {
-		m.Color[i].Zone[RAM] = 0xF6
-	}
 }
 
 func (m *Memory) loadRom(filename string, fileSize int, dest []Cell, rmode *int, wmode *int) {

@@ -6,8 +6,6 @@ const (
 	stackEnd    = 0x01FF
 	screenStart = 0x0400
 	screenEnd   = 0x07FF
-	charStart   = 0xD000
-	charEnd     = 0xDFFF
 	colorStart  = 0xD800
 	colorEnd    = 0xDBFF
 	intAddr     = 0xFFFA
@@ -59,6 +57,5 @@ type Memory struct {
 	CharGen []Cell
 	Stack   []Cell
 	Screen  []Cell
-	Color   []Cell
 	Vic     [4][]Cell
 }

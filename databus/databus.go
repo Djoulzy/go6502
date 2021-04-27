@@ -1,19 +1,17 @@
 package databus
 
 import (
-	"go6502/vic"
+	"go6502/video"
 	"sync"
 )
 
 type Bus struct {
-	// CPU    sync.Mutex
-	// VIC    sync.Mutex
 	Access sync.Mutex
 	level  bool // True: CPU / False: VIC
-	vic    *vic.VIC
+	vic    *video.Video
 }
 
-func (B *Bus) Init(vic *vic.VIC) {
+func (B *Bus) Init(vic *video.Video) {
 	B.level = false
 	B.vic = vic
 }
