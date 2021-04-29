@@ -134,7 +134,7 @@ func (C *CPU) fetchByte(mem *mem.Memory) byte {
 }
 
 func (C *CPU) exec(mem *mem.Memory) {
-
+	C.dbus.Get()
 	if C.exit {
 		os.Exit(1)
 	}
@@ -150,7 +150,7 @@ func (C *CPU) exec(mem *mem.Memory) {
 		os.Exit(1)
 	}
 	if C.Display {
-		fmt.Printf("%c[1;30m%-15s%c[0m %-15s%c[0;32m; %s%c[0m", 27, output, 27, C.opName, 27, C.debug, 27)
+		fmt.Printf("%c[1;30m%-15s%c[0m %-15s%c[0;32m; (%d) %s%c[0m", 27, output, 27, C.opName, 27, C.dbus.Cycles, C.debug, 27)
 		C.debug = ""
 	}
 }

@@ -36,7 +36,17 @@ func (C *CPU) op_ASL_ZPX(mem *mem.Memory) {
 	C.writeByte(uint16(dest), res8)
 }
 
-func (C *CPU) op_ASL_ABS(mem *mem.Memory) { C.opName = "ToDO" }
+func (C *CPU) op_ASL_ABS(mem *mem.Memory) { 
+	absAddress := C.fetchWord(mem)
+	C.opName = fmt.Sprintf("ASL $%04X", absAddress)
+	value := C.readByte(uint16(absAddress))
+	result := uint16(value) << 1
+	C.setC(result > 0x00FF)
+	res8 := byte(result)
+	C.setNZStatus(res8)
+	C.writeByte(uint16(absAddress), res8)
+}
+
 func (C *CPU) op_ASL_ABX(mem *mem.Memory) { C.opName = "ToDO" }
 
 func (C *CPU) op_LSR_IM(mem *mem.Memory) { 

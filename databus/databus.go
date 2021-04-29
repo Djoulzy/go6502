@@ -11,6 +11,7 @@ type Bus struct {
 	Access sync.Mutex
 	level  bool // True: CPU / False: VIC
 	vic    *vic.VIC
+	Cycles int
 }
 
 func (B *Bus) Init(vic *vic.VIC) {
@@ -18,9 +19,14 @@ func (B *Bus) Init(vic *vic.VIC) {
 	B.vic = vic
 }
 
+func (B *Bus) Get() {
+	B.Cycles = 0
+}
+
 func (B *Bus) Release() {
 KEEPBUS:
 	B.vic.Run()
+	B.Cycles++
 	if !B.vic.BA {
 		goto KEEPBUS
 	}

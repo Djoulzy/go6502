@@ -1,0 +1,80 @@
+
+; ******** Source: /Users/jules/go/src/go6502/asm/cia.asm
+
+; ******** Source: basic-boot.asm
+     1                          ; A BASIC booter, encodes `10 SYS <address>`.
+     2                          ; Macrofied from http://www.pouet.net/topic.php?which=6541
+     3                          
+
+; ******** Source: constants.asm
+     1                          
+     2                          ;; Start of BASIC program
+     3                          basic = $0801
+     4                          
+     5                          ;; Background color
+     6                          bgcol = $d021
+     7                          
+     8                          ;; Border color
+
+; ******** Source: basic-boot.asm
+     5                          
+     6                          !macro start_at .address {
+     7                            * = basic
+     8                            !byte $0c,$08,$00,$00,$9e
+     9                            !if .address >= 10000 { !byte 48 + ((.address / 10000) % 10) }
+    10                            !if .address >=  1000 { !byte 48 + ((.address /  1000) % 10) }
+    11                            !if .address >=   100 { !byte 48 + ((.address /   100) % 10) }
+    12                            !if .address >=    10 { !byte 48 + ((.address /    10) % 10) }
+    13                            !byte $30 + (.address % 10), $00, $00, $00
+    14                            * = .address
+    15                          }
+    16                          
+    17                          ; A cooler example is to write
+    18                          ;
+    19                          ;   10 SYS <address>: REM <backspaces>Your comment
+    20                          ;
+    21                          ; When the user types LIST, he will just see
+    22                          ;
+    23                          ;   10 Your comment
+    24                          ;
+    25                          ; but still be able to run it.
+
+; ******** Source: /Users/jules/go/src/go6502/asm/cia.asm
+     2  0801 0c0800009e323036...+start_at $0810
+     3                          
+     4  0810 a901                   lda #1
+     5  0812 8d00d8                 sta $d800
+     6  0815 a915                   lda #21
+     7  0817 8d0004                 sta $0400
+     8                          
+     9  081a 78                     sei
+    10  081b a952                   lda #%01010010 ; 
+    11  081d 8d0fdc                 sta $dc0f
+    12                          
+    13  0820 a903                   lda #$03    ; set timer A count value: $03FC
+    14  0822 8d04dc                 sta $dc04
+    15  0825 a9fc                   lda #$FC
+    16  0827 8d05dc                 sta $dc05
+    17                          
+    18  082a a9ff                   lda #$ff    ; set timer B count value: $FFFF
+    19  082c 8d06dc                 sta $dc06
+    20  082f 8d07dc                 sta $dc07
+    21                          
+    22  0832 a946                   lda #<timer
+    23  0834 8d1403                 sta $0314
+    24  0837 a908                   lda #>timer
+    25  0839 8d1503                 sta $0315
+    26  083c a911                   lda #%00010001
+    27  083e 8d0edc                 sta $dc0e
+    28  0841 58                     cli
+    29                          
+    30                          loop:
+    31  0842 4c4208                 jmp loop
+    32  0845 60                     rts
+    33                          
+    34                          timer:
+    35  0846 ee0004                 inc $0400
+    36  0849 a9ff                   lda #%11111111
+    37  084b 8d0ddc                 sta $dc0d
+    38  084e ad0ddc                 lda $dc0d
+    39  0851 4c31ea                 jmp $ea31

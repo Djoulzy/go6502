@@ -1,0 +1,77 @@
+
+; ******** Source: /Users/jules/go/src/go6502/asm/music.asm
+
+; ******** Source: basic-boot.asm
+     1                          ; A BASIC booter, encodes `10 SYS <address>`.
+     2                          ; Macrofied from http://www.pouet.net/topic.php?which=6541
+     3                          
+
+; ******** Source: constants.asm
+     1                          
+     2                          ;; Start of BASIC program
+     3                          basic = $0801
+     4                          
+     5                          ;; Background color
+     6                          bgcol = $d021
+     7                          
+     8                          ;; Border color
+
+; ******** Source: basic-boot.asm
+     5                          
+     6                          !macro start_at .address {
+     7                            * = basic
+     8                            !byte $0c,$08,$00,$00,$9e
+     9                            !if .address >= 10000 { !byte 48 + ((.address / 10000) % 10) }
+    10                            !if .address >=  1000 { !byte 48 + ((.address /  1000) % 10) }
+    11                            !if .address >=   100 { !byte 48 + ((.address /   100) % 10) }
+    12                            !if .address >=    10 { !byte 48 + ((.address /    10) % 10) }
+    13                            !byte $30 + (.address % 10), $00, $00, $00
+    14                            * = .address
+    15                          }
+    16                          
+    17                          ; A cooler example is to write
+    18                          ;
+    19                          ;   10 SYS <address>: REM <backspaces>Your comment
+    20                          ;
+    21                          ; When the user types LIST, he will just see
+    22                          ;
+    23                          ;   10 Your comment
+    24                          ;
+    25                          ; but still be able to run it.
+
+; ******** Source: /Users/jules/go/src/go6502/asm/music.asm
+     2  0801 0c0800009e323036...+start_at $0810
+     3                          
+     4  0810 a900               	lda #$00
+     5  0812 aa                 	tax
+     6  0813 a8                 	tay
+     7  0814 a901                   lda #1
+     8  0816 8d00d8                 sta $d800
+     9                          
+    10  0819 78                 	sei
+    11  081a a97f               	lda #$7f
+    12  081c 8d0ddc             	sta $dc0d
+    13  081f 8d0ddd             	sta $dd0d
+    14  0822 a901               	lda #$01
+    15  0824 8d1ad0             	sta $d01a
+    16  0827 a91b               	lda #$1b
+    17  0829 a208               	ldx #$08
+    18  082b a014               	ldy #$14
+    19  082d 8d11d0             	sta $d011
+    20  0830 8e16d0             	stx $d016
+    21  0833 8c18d0             	sty $d018
+    22  0836 a952               	lda #<irq
+    23  0838 a208               	ldx #>irq
+    24  083a a07e               	ldy #$7e
+    25  083c 8d1403             	sta $0314
+    26  083f 8e1503             	stx $0315
+    27  0842 8c12d0             	sty $d012
+    28  0845 ad0ddc             	lda $dc0d
+    29  0848 ad0ddd             	lda $dd0d
+    30  084b 0e19d0             	asl $d019
+    31  084e 58                 	cli
+    32                          loop:
+    33  084f 4c4f08             	jmp loop
+    34                          irq:
+    35  0852 ee0004             	inc $0400
+    36  0855 0e19d0             	asl $d019

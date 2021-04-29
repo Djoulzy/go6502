@@ -1,6 +1,7 @@
 package graphic
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/veandco/go-sdl2/sdl"
@@ -67,11 +68,16 @@ func (S *SDLDriver) DisplayFrame() {
 	S.renderer.Present()
 
 	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
-		switch event.GetType() {
-		case sdl.QUIT:
+		switch t := event.(type) {
+		case *sdl.QuitEvent:
 			os.Exit(1)
-		case sdl.K_KP_A:
-			os.Exit(1)
+		case *sdl.KeyboardEvent:
+			KeyCode := t.Keysym.Sym
+			fmt.Printf("%v\n", KeyCode)
+			switch KeyCode {
+			case sdl.K_KP_A:
+				fmt.Printf("A")
+			}
 		default:
 		}
 	}
