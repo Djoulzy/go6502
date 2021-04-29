@@ -43,7 +43,7 @@ type CPU struct {
 }
 
 // Mnemonic :
-var Mnemonic map[byte]func(*mem.Memory)
+var Mnemonic map[byte]func()
 var CodeAddr = map[string]byte{
 	"SHW": 0xEF,
 	"DMP": 0xFF,

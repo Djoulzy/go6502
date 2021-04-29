@@ -1,8 +1,6 @@
 package cpu
 
-import "go6502/mem"
-
-func (C *CPU) op_TXS(mem *mem.Memory) {
+func (C *CPU) op_TXS() {
 	C.SP = C.X
 	C.dbus.Release()
 
@@ -11,7 +9,7 @@ func (C *CPU) op_TXS(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) op_TSX(mem *mem.Memory) {
+func (C *CPU) op_TSX() {
 	C.X = C.SP
 	C.setNZStatus(C.X)
 	C.dbus.Release()
@@ -21,7 +19,7 @@ func (C *CPU) op_TSX(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) op_PHA(mem *mem.Memory) {
+func (C *CPU) op_PHA() {
 	C.pushByteStack(C.A)
 
 	if C.Display {
@@ -29,7 +27,7 @@ func (C *CPU) op_PHA(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) op_PLA(mem *mem.Memory) {
+func (C *CPU) op_PLA() {
 	C.A = C.pullByteStack()
 	C.setNZStatus(C.A)
 
@@ -38,7 +36,7 @@ func (C *CPU) op_PLA(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) op_PHP(mem *mem.Memory) {
+func (C *CPU) op_PHP() {
 	C.pushByteStack(C.S)
 	C.dbus.Release()
 
@@ -47,7 +45,7 @@ func (C *CPU) op_PHP(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) op_PLP(mem *mem.Memory) {
+func (C *CPU) op_PLP() {
 	C.dbus.Release()
 	C.S = C.pullByteStack()
 	C.dbus.Release()

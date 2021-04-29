@@ -7,7 +7,6 @@ import (
 	"go6502/databus"
 	"go6502/mem"
 	"log"
-	"os"
 
 	"github.com/mattn/go-tty"
 )
@@ -114,9 +113,9 @@ func (C *CPU) writeByte(addr uint16, value byte) {
 ////////// Read OpCode ///////////
 //////////////////////////////////
 
-func (C *CPU) fetchWord(mem *mem.Memory) uint16 {
-	low := C.fetchByte(mem)
-	value := uint16(C.fetchByte(mem)) << 8
+func (C *CPU) fetchWord() uint16 {
+	low := C.fetchByte()
+	value := uint16(C.fetchByte()) << 8
 	value += uint16(low)
 
 	if value >= 0xDC00 && value <= 0xDDFF {
@@ -125,7 +124,7 @@ func (C *CPU) fetchWord(mem *mem.Memory) uint16 {
 	return value
 }
 
-func (C *CPU) fetchByte(mem *mem.Memory) byte {
+func (C *CPU) fetchByte() byte {
 	value := C.ram.Read(C.PC)
 	C.PC++
 	if C.Display {
@@ -137,20 +136,20 @@ func (C *CPU) fetchByte(mem *mem.Memory) byte {
 
 func (C *CPU) exec() {
 	C.dbus.Get()
-	if C.exit {
-		os.Exit(1)
-	}
+	// if C.exit {
+	// 	os.Exit(1)
+	// }
 	if C.Display {
 		output = ""
 		fmt.Printf("\n%08b - A:%c[1;33m%02X%c[0m X:%c[1;33m%02X%c[0m Y:%c[1;33m%02X%c[0m SP:%c[1;33m%02X%c[0m", C.S, 27, C.A, 27, 27, C.X, 27, 27, C.Y, 27, 27, C.SP, 27)
 		fmt.Printf(" RastY: %c[1;31m%04X%c[0m RastX: - %c[1;31m%04X%c[0m:", 27, C.readRasterLine(), 27, 27, C.PC, 27)
 	}
-	opCode := C.fetchByte(C.ram)
-	Mnemonic[opCode](C.ram)
-	if C.opName == "ToDO" {
-		fmt.Printf("\n\nToDO : %02X\n\n", opCode)
-		os.Exit(1)
-	}
+	opCode := C.fetchByte()
+	Mnemonic[opCode]()
+	// if C.opName == "ToDO" {
+	// 	fmt.Printf("\n\nToDO : %02X\n\n", opCode)
+	// 	os.Exit(1)
+	// }
 	if C.Display {
 		fmt.Printf("%c[1;30m%-15s%c[0m %-15s%c[0;32m; (%d) %s%c[0m", 27, output, 27, C.opName, 27, C.dbus.Cycles, C.debug, 27)
 		C.debug = ""
@@ -231,7 +230,7 @@ func (C *CPU) Run() {
 // }
 
 func (C *CPU) initLanguage() {
-	Mnemonic = make(map[byte]func(*mem.Memory))
+	Mnemonic = make(map[byte]func())
 
 	Mnemonic[CodeAddr["SHW"]] = C.op_SHW
 	Mnemonic[CodeAddr["DMP"]] = C.op_DMP

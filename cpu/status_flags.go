@@ -1,9 +1,5 @@
 package cpu
 
-import (
-	"go6502/mem"
-)
-
 func (C *CPU) testN() bool {
 	return C.S & ^N_mask > 0
 }
@@ -88,7 +84,7 @@ func (C *CPU) testV() bool {
 	return C.S & ^V_mask > 0
 }
 
-func (C *CPU) op_CLC(mem *mem.Memory) {
+func (C *CPU) op_CLC() {
 	C.setC(false)
 	C.dbus.Release()
 
@@ -97,7 +93,7 @@ func (C *CPU) op_CLC(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) op_CLD(mem *mem.Memory) {
+func (C *CPU) op_CLD() {
 	C.setD(false)
 	C.dbus.Release()
 
@@ -106,7 +102,7 @@ func (C *CPU) op_CLD(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) op_CLI(mem *mem.Memory) {
+func (C *CPU) op_CLI() {
 	C.setI(false)
 	C.dbus.Release()
 
@@ -115,9 +111,9 @@ func (C *CPU) op_CLI(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) op_CLV(mem *mem.Memory) { C.opName = "ToDO" }
+func (C *CPU) op_CLV() { C.opName = "ToDO" }
 
-func (C *CPU) op_SEC(mem *mem.Memory) {
+func (C *CPU) op_SEC() {
 	C.setC(true)
 	C.dbus.Release()
 
@@ -126,9 +122,9 @@ func (C *CPU) op_SEC(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) op_SED(mem *mem.Memory) { C.opName = "ToDO" }
+func (C *CPU) op_SED() { C.opName = "ToDO" }
 
-func (C *CPU) op_SEI(mem *mem.Memory) {
+func (C *CPU) op_SEI() {
 	C.setI(true)
 	C.dbus.Release()
 

@@ -2,15 +2,14 @@ package cpu
 
 import (
 	"fmt"
-	"go6502/mem"
 )
 
 //////////////////////////////////
 ///////////// INC ////////////////
 //////////////////////////////////
 
-func (C *CPU) op_INC_ZP(mem *mem.Memory) {
-	zpAddress := C.fetchByte(mem)
+func (C *CPU) op_INC_ZP() {
+	zpAddress := C.fetchByte()
 	val := C.readByte(uint16(zpAddress))
 	val += 1
 	C.setNZStatus(val)
@@ -21,8 +20,8 @@ func (C *CPU) op_INC_ZP(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) op_INC_ZPX(mem *mem.Memory) {
-	zpAddress := C.fetchByte(mem) + C.X
+func (C *CPU) op_INC_ZPX() {
+	zpAddress := C.fetchByte() + C.X
 	val := C.readByte(uint16(zpAddress))
 	val += 1
 	C.setNZStatus(val)
@@ -33,8 +32,8 @@ func (C *CPU) op_INC_ZPX(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) op_INC_ABS(mem *mem.Memory) {
-	address := C.fetchWord(mem)
+func (C *CPU) op_INC_ABS() {
+	address := C.fetchWord()
 	C.dbus.Release()
 	val := C.readByte(address)
 	C.dbus.Release()
@@ -48,8 +47,8 @@ func (C *CPU) op_INC_ABS(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) op_INC_ABX(mem *mem.Memory) {
-	absAddress := C.fetchWord(mem) + uint16(C.X)
+func (C *CPU) op_INC_ABX() {
+	absAddress := C.fetchWord() + uint16(C.X)
 	val := C.readByte(absAddress)
 	val += 1
 	C.setNZStatus(val)
@@ -64,8 +63,8 @@ func (C *CPU) op_INC_ABX(mem *mem.Memory) {
 ///////////// DEC ////////////////
 //////////////////////////////////
 
-func (C *CPU) op_DEC_ZP(mem *mem.Memory) {
-	zpAddress := C.fetchByte(mem)
+func (C *CPU) op_DEC_ZP() {
+	zpAddress := C.fetchByte()
 	val := C.readByte(uint16(zpAddress))
 	val -= 1
 	C.setNZStatus(val)
@@ -77,8 +76,8 @@ func (C *CPU) op_DEC_ZP(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) op_DEC_ZPX(mem *mem.Memory) {
-	zpAddress := C.fetchByte(mem) + C.X
+func (C *CPU) op_DEC_ZPX() {
+	zpAddress := C.fetchByte() + C.X
 	val := C.readByte(uint16(zpAddress))
 	val -= 1
 	C.dbus.Release()
@@ -90,8 +89,8 @@ func (C *CPU) op_DEC_ZPX(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) op_DEC_ABS(mem *mem.Memory) {
-	address := C.fetchWord(mem)
+func (C *CPU) op_DEC_ABS() {
+	address := C.fetchWord()
 	val := C.readByte(address)
 	val -= 1
 	C.dbus.Release()
@@ -103,8 +102,8 @@ func (C *CPU) op_DEC_ABS(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) op_DEC_ABX(mem *mem.Memory) {
-	absAddress := C.fetchWord(mem) + uint16(C.X)
+func (C *CPU) op_DEC_ABX() {
+	absAddress := C.fetchWord() + uint16(C.X)
 	C.dbus.Release()
 	val := C.readByte(absAddress)
 	val -= 1
@@ -117,7 +116,7 @@ func (C *CPU) op_DEC_ABX(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) op_DEX(mem *mem.Memory) {
+func (C *CPU) op_DEX() {
 	C.X -= 1
 	C.setNZStatus(C.X)
 	C.dbus.Release()
@@ -127,7 +126,7 @@ func (C *CPU) op_DEX(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) op_DEY(mem *mem.Memory) {
+func (C *CPU) op_DEY() {
 	C.Y -= 1
 	C.setNZStatus(C.Y)
 	C.dbus.Release()
@@ -142,7 +141,7 @@ func (C *CPU) op_DEY(mem *mem.Memory) {
 //////////////////////////////////
 
 // op_INX : Increment X
-func (C *CPU) op_INX(mem *mem.Memory) {
+func (C *CPU) op_INX() {
 	C.X += 1
 	C.setNZStatus(C.X)
 	C.dbus.Release()
@@ -156,7 +155,7 @@ func (C *CPU) op_INX(mem *mem.Memory) {
 ///////////// INY ////////////////
 //////////////////////////////////
 
-func (C *CPU) op_INY(mem *mem.Memory) {
+func (C *CPU) op_INY() {
 	C.Y += 1
 	C.setNZStatus(C.Y)
 	C.dbus.Release()

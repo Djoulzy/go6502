@@ -2,19 +2,18 @@ package cpu
 
 import (
 	"fmt"
-	"go6502/mem"
 )
 
-func (C *CPU) op_JMP_ABS(mem *mem.Memory) {
-	C.PC = C.fetchWord(mem)
+func (C *CPU) op_JMP_ABS() {
+	C.PC = C.fetchWord()
 
 	if C.Display {
 		C.opName = fmt.Sprintf("JMP $%04X", C.PC)
 	}
 }
 
-func (C *CPU) op_JMP_IND(mem *mem.Memory) {
-	address := C.fetchWord(mem)
+func (C *CPU) op_JMP_IND() {
+	address := C.fetchWord()
 	C.PC = C.readWord(address)
 
 	if C.Display {
@@ -23,16 +22,16 @@ func (C *CPU) op_JMP_IND(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) op_JSR(mem *mem.Memory) {
+func (C *CPU) op_JSR() {
 	C.pushWordStack(C.PC + 1)
-	C.PC = C.fetchWord(mem)
+	C.PC = C.fetchWord()
 
 	if C.Display {
 		C.opName = fmt.Sprintf("JSR $%04X", C.PC)
 	}
 }
 
-func (C *CPU) op_RTS(mem *mem.Memory) {
+func (C *CPU) op_RTS() {
 	C.PC = C.pullWordStack() + 1
 
 	if C.Display {
@@ -41,7 +40,7 @@ func (C *CPU) op_RTS(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) op_RTI(mem *mem.Memory) {
+func (C *CPU) op_RTI() {
 	C.S = C.pullByteStack()
 	C.PC = C.pullWordStack()
 

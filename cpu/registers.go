@@ -1,8 +1,6 @@
 package cpu
 
-import "go6502/mem"
-
-func (C *CPU) op_TAX(mem *mem.Memory) {
+func (C *CPU) op_TAX() {
 	C.X = C.A
 	C.setNZStatus(C.X)
 	C.dbus.Release()
@@ -12,7 +10,7 @@ func (C *CPU) op_TAX(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) op_TAY(mem *mem.Memory) {
+func (C *CPU) op_TAY() {
 	C.Y = C.A
 	C.setNZStatus(C.Y)
 	C.dbus.Release()
@@ -22,7 +20,7 @@ func (C *CPU) op_TAY(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) op_TXA(mem *mem.Memory) {
+func (C *CPU) op_TXA() {
 	C.A = C.X
 	C.setNZStatus(C.A)
 	C.dbus.Release()
@@ -32,7 +30,7 @@ func (C *CPU) op_TXA(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) op_TYA(mem *mem.Memory) {
+func (C *CPU) op_TYA() {
 	C.A = C.Y
 	C.setNZStatus(C.A)
 	C.dbus.Release()

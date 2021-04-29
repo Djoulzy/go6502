@@ -2,10 +2,9 @@ package cpu
 
 import (
 	"fmt"
-	"go6502/mem"
 )
 
-func (C *CPU) op_ASL_IM(mem *mem.Memory) {
+func (C *CPU) op_ASL_IM() {
 	result := uint16(C.A) << 1
 	C.setC(result > 0x00FF)
 	C.A <<= 1
@@ -16,8 +15,8 @@ func (C *CPU) op_ASL_IM(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) op_ASL_ZP(mem *mem.Memory) {
-	zpAddress := C.fetchByte(mem)
+func (C *CPU) op_ASL_ZP() {
+	zpAddress := C.fetchByte()
 	value := C.readByte(uint16(zpAddress))
 	result := uint16(value) << 1
 	C.setC(result > 0x00FF)
@@ -30,8 +29,8 @@ func (C *CPU) op_ASL_ZP(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) op_ASL_ZPX(mem *mem.Memory) {
-	zpAddress := C.fetchByte(mem)
+func (C *CPU) op_ASL_ZPX() {
+	zpAddress := C.fetchByte()
 	dest := zpAddress + C.X
 	value := C.readByte(uint16(dest))
 	result := uint16(value) << 1
@@ -45,8 +44,8 @@ func (C *CPU) op_ASL_ZPX(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) op_ASL_ABS(mem *mem.Memory) {
-	absAddress := C.fetchWord(mem)
+func (C *CPU) op_ASL_ABS() {
+	absAddress := C.fetchWord()
 	value := C.readByte(uint16(absAddress))
 	result := uint16(value) << 1
 	C.setC(result > 0x00FF)
@@ -59,9 +58,9 @@ func (C *CPU) op_ASL_ABS(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) op_ASL_ABX(mem *mem.Memory) { C.opName = "ToDO" }
+func (C *CPU) op_ASL_ABX() { C.opName = "ToDO" }
 
-func (C *CPU) op_LSR_IM(mem *mem.Memory) {
+func (C *CPU) op_LSR_IM() {
 	C.setC(C.A&0x01 == 0x01)
 	C.A >>= 1
 	C.setNZStatus(C.A)
@@ -71,8 +70,8 @@ func (C *CPU) op_LSR_IM(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) op_LSR_ZP(mem *mem.Memory) {
-	zpAddress := C.fetchByte(mem)
+func (C *CPU) op_LSR_ZP() {
+	zpAddress := C.fetchByte()
 	value := C.readByte(uint16(zpAddress))
 	C.setC(value&0x01 == 0x01)
 	result := value >> 1
@@ -84,8 +83,8 @@ func (C *CPU) op_LSR_ZP(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) op_LSR_ZPX(mem *mem.Memory) {
-	zpAddress := C.fetchByte(mem)
+func (C *CPU) op_LSR_ZPX() {
+	zpAddress := C.fetchByte()
 	dest := zpAddress + C.X
 	value := C.readByte(uint16(dest))
 	C.setC(value&0x01 == 0x01)
@@ -99,8 +98,8 @@ func (C *CPU) op_LSR_ZPX(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) op_LSR_ABS(mem *mem.Memory) {
-	absAddress := C.fetchWord(mem)
+func (C *CPU) op_LSR_ABS() {
+	absAddress := C.fetchWord()
 	value := C.readByte(uint16(absAddress))
 	C.setC(value&0x01 == 0x01)
 	result := value >> 1
@@ -112,9 +111,9 @@ func (C *CPU) op_LSR_ABS(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) op_LSR_ABX(mem *mem.Memory) { C.opName = "ToDO" }
+func (C *CPU) op_LSR_ABX() { C.opName = "ToDO" }
 
-func (C *CPU) op_ROL_IM(mem *mem.Memory) {
+func (C *CPU) op_ROL_IM() {
 	result := uint16(C.A) << 1
 	if C.testC() {
 		result++
@@ -129,8 +128,8 @@ func (C *CPU) op_ROL_IM(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) op_ROL_ZP(mem *mem.Memory) {
-	zpAddress := C.fetchByte(mem)
+func (C *CPU) op_ROL_ZP() {
+	zpAddress := C.fetchByte()
 	value := C.readByte(uint16(zpAddress))
 	result := uint16(value) << 1
 	C.setC(result > 0x00FF)
@@ -143,11 +142,11 @@ func (C *CPU) op_ROL_ZP(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) op_ROL_ZPX(mem *mem.Memory) { C.opName = "ToDO" }
-func (C *CPU) op_ROL_ABS(mem *mem.Memory) { C.opName = "ToDO" }
-func (C *CPU) op_ROL_ABX(mem *mem.Memory) { C.opName = "ToDO" }
+func (C *CPU) op_ROL_ZPX() { C.opName = "ToDO" }
+func (C *CPU) op_ROL_ABS() { C.opName = "ToDO" }
+func (C *CPU) op_ROL_ABX() { C.opName = "ToDO" }
 
-func (C *CPU) op_ROR_IM(mem *mem.Memory) {
+func (C *CPU) op_ROR_IM() {
 	carry := C.A&0b00000001 > 0
 	C.A >>= 1
 	if C.testC() {
@@ -162,8 +161,8 @@ func (C *CPU) op_ROR_IM(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) op_ROR_ZP(mem *mem.Memory) {
-	zpAddress := C.fetchByte(mem)
+func (C *CPU) op_ROR_ZP() {
+	zpAddress := C.fetchByte()
 	value := C.readByte(uint16(zpAddress))
 	carry := value&0b00000001 > 0
 	value >>= 1
@@ -180,8 +179,8 @@ func (C *CPU) op_ROR_ZP(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) op_ROR_ZPX(mem *mem.Memory) {
-	zpAddress := C.fetchByte(mem)
+func (C *CPU) op_ROR_ZPX() {
+	zpAddress := C.fetchByte()
 	dest := zpAddress + C.X
 	value := C.readByte(uint16(dest))
 	carry := value&0b00000001 > 0
@@ -201,5 +200,5 @@ func (C *CPU) op_ROR_ZPX(mem *mem.Memory) {
 	}
 }
 
-func (C *CPU) op_ROR_ABS(mem *mem.Memory) { C.opName = "ToDO" }
-func (C *CPU) op_ROR_ABX(mem *mem.Memory) { C.opName = "ToDO" }
+func (C *CPU) op_ROR_ABS() { C.opName = "ToDO" }
+func (C *CPU) op_ROR_ABX() { C.opName = "ToDO" }
