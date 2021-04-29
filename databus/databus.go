@@ -45,19 +45,19 @@ func (B *Bus) Init(vic *vic.VIC) {
 
 	B.log = make(chan time.Duration)
 
-	go logTime(B.log)
+	// go logTime(B.log)
 }
 
 func (B *Bus) Get() {
-	start = time.Now()
+	// start = time.Now()
 	B.Cycles = 0
 }
 
 func (B *Bus) Release() {
 KEEPBUS:
-	// elapsed := time.Since(start)
-	// start = time.Now()
+	// time.Since(start)
 	// B.log <- elapsed
+	// start = time.Now()
 	B.vic.Run()
 	B.Cycles++
 	B.Timer++

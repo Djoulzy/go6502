@@ -2,7 +2,6 @@ package cpu
 
 import (
 	"fmt"
-	"go6502/clog"
 	"go6502/confload"
 	"go6502/databus"
 	"go6502/mem"
@@ -61,9 +60,9 @@ func (C *CPU) pushByteStack(val byte) {
 
 func (C *CPU) pullByteStack() byte {
 	C.SP++
-	if C.SP > 0xFF {
-		panic("Stack overflow")
-	}
+	// if C.SP > 0xFF {
+	// 	panic("Stack overflow")
+	// }
 	C.dbus.Release()
 	return C.ram.Stack[C.SP].Zone[mem.RAM]
 }
@@ -92,16 +91,14 @@ func (C *CPU) Indexed_indirect_X(addr byte, x byte) uint16 {
 func (C *CPU) readWord(addr uint16) uint16 {
 	low := C.ram.Read(addr)
 	C.dbus.Release()
-	value := uint16(C.ram.Read(addr+1)) << 8
-	value += uint16(low)
+	value := (uint16(C.ram.Read(addr+1)) << 8) + uint16(low)
 	C.dbus.Release()
 	return value
 }
 
 func (C *CPU) readByte(addr uint16) byte {
-	value := C.ram.Read(addr)
 	C.dbus.Release()
-	return value
+	return C.ram.Read(addr)
 }
 
 func (C *CPU) writeByte(addr uint16, value byte) {
@@ -115,13 +112,7 @@ func (C *CPU) writeByte(addr uint16, value byte) {
 
 func (C *CPU) fetchWord() uint16 {
 	low := C.fetchByte()
-	value := uint16(C.fetchByte()) << 8
-	value += uint16(low)
-
-	if value >= 0xDC00 && value <= 0xDDFF {
-		clog.File("CPU", "CIA", "%04X at PC: %02X", value, C.PC-3)
-	}
-	return value
+	return (uint16(C.fetchByte()) << 8) + uint16(low)
 }
 
 func (C *CPU) fetchByte() byte {
@@ -144,8 +135,7 @@ func (C *CPU) exec() {
 		fmt.Printf("\n%08b - A:%c[1;33m%02X%c[0m X:%c[1;33m%02X%c[0m Y:%c[1;33m%02X%c[0m SP:%c[1;33m%02X%c[0m", C.S, 27, C.A, 27, 27, C.X, 27, 27, C.Y, 27, 27, C.SP, 27)
 		fmt.Printf(" RastY: %c[1;31m%04X%c[0m RastX: - %c[1;31m%04X%c[0m:", 27, C.readRasterLine(), 27, 27, C.PC, 27)
 	}
-	opCode := C.fetchByte()
-	Mnemonic[opCode]()
+	Mnemonic[C.fetchByte()]()
 	// if C.opName == "ToDO" {
 	// 	fmt.Printf("\n\nToDO : %02X\n\n", opCode)
 	// 	os.Exit(1)
