@@ -6,8 +6,6 @@ import (
 )
 
 const (
-	cpuClock        = 985248                         // Mesure en Hz
-	cpuCycle        = (1 / float32(cpuClock)) * 1000 // 1 cycle en ms
 	screenWidthPAL  = 504
 	screenHeightPAL = 312
 	rasterWidthPAL  = 403
@@ -18,9 +16,9 @@ const (
 	rasterLine = rasterWidthPAL / 8 // Nb of cycle to draw a full line
 	fullRaster = rasterLine * rasterHeightPAL
 
-	lineRefresh   = cyclesPerLine * cpuCycle                   // Time for a line in ms
-	screenRefresh = screenHeightPAL * cyclesPerLine * cpuCycle // Time for a full screen display in ms
-	fps           = 1 / screenRefresh
+	// lineRefresh   = cyclesPerLine * cpuCycle                   // Time for a line in ms
+	// screenRefresh = screenHeightPAL * cyclesPerLine * cpuCycle // Time for a full screen display in ms
+	// fps           = 1 / screenRefresh
 
 	winWidth      = screenWidthPAL
 	winHeight     = screenHeightPAL
@@ -128,10 +126,13 @@ func (V *VIC) Run() {
 	V.registersManagement()
 
 	V.visibleArea = (V.beamY > lastVBlankLine) && (V.beamY < firstVBlankLine)
-	V.displayArea = (V.beamY >= firstDisplayLine) && (V.beamY <= lastDisplayLine) && V.visibleArea
-	V.BA = !(((V.beamY-firstDisplayLine)%8 == 0) && V.displayArea)
+	// V.displayArea = (V.beamY >= firstDisplayLine) && (V.beamY <= lastDisplayLine) && V.visibleArea
+	V.displayArea = (V.beamY >= firstDisplayLine) && (V.beamY <= lastDisplayLine)
 	V.beamX = (V.cycle - 1) * 8
 	V.drawArea = ((V.cycle > 15) && (V.cycle < 56)) && V.displayArea
+
+	V.BA = !(((V.beamY-firstDisplayLine)%8 == 0) && V.displayArea && (V.cycle > 11) && (V.cycle < 55))
+
 	// if V.drawArea {
 	// 	fmt.Printf("Raster: %d - Cycle: %d - BA: %t - VMLI: %d - VCBASE/VC: %d/%d - RC: %d - Char: %02X\n", V.beamY, V.cycle, V.BA, V.VMLI, V.VCBASE, V.VC, V.RC, V.CharBuffer[V.VMLI])
 	// }

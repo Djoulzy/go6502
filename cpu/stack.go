@@ -5,12 +5,14 @@ import "go6502/mem"
 func (C *CPU) op_TXS(mem *mem.Memory) {
 	C.opName = "TXS"
 	C.SP = C.X
+	C.dbus.Release()
 }
 
 func (C *CPU) op_TSX(mem *mem.Memory) {
 	C.opName = "TSX"
 	C.X = C.SP
 	C.setNZStatus(C.X)
+	C.dbus.Release()
 }
 
 func (C *CPU) op_PHA(mem *mem.Memory) {

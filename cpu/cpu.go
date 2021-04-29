@@ -57,6 +57,7 @@ func (C *CPU) pullWordStack() uint16 {
 func (C *CPU) pushByteStack(val byte) {
 	C.ram.Stack[C.SP].Zone[mem.RAM] = val
 	C.SP--
+	C.dbus.Release()
 }
 
 func (C *CPU) pullByteStack() byte {
@@ -64,6 +65,7 @@ func (C *CPU) pullByteStack() byte {
 	if C.SP > 0xFF {
 		panic("Stack overflow")
 	}
+	C.dbus.Release()
 	return C.ram.Stack[C.SP].Zone[mem.RAM]
 }
 

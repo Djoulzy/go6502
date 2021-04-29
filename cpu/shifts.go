@@ -126,6 +126,7 @@ func (C *CPU) op_ROR_IM(mem *mem.Memory) {
 	}
 	C.setC(carry)
 	C.setNZStatus(C.A)
+	C.dbus.Release()
 }
 
 func (C *CPU) op_ROR_ZP(mem *mem.Memory) {
@@ -140,6 +141,7 @@ func (C *CPU) op_ROR_ZP(mem *mem.Memory) {
 	C.setC(carry)
 	C.setNZStatus(value)
 	C.writeByte(uint16(zpAddress), value)
+	C.dbus.Release()
 }
 
 func (C *CPU) op_ROR_ZPX(mem *mem.Memory) {
@@ -148,6 +150,7 @@ func (C *CPU) op_ROR_ZPX(mem *mem.Memory) {
 	dest := zpAddress + C.X
 	value := C.readByte(uint16(dest))
 	carry := value&0b00000001 > 0
+	C.dbus.Release()
 	value >>= 1
 	if C.testC() {
 		value |= 0b10000000
@@ -156,6 +159,7 @@ func (C *CPU) op_ROR_ZPX(mem *mem.Memory) {
 	C.debug = fmt.Sprintf("#%02X -> $%02X", value, dest)
 	C.setNZStatus(value)
 	C.writeByte(uint16(dest), value)
+	C.dbus.Release()
 }
 
 func (C *CPU) op_ROR_ABS(mem *mem.Memory) { C.opName = "ToDO" }
