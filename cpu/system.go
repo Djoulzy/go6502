@@ -5,7 +5,11 @@ import (
 )
 
 func (C *CPU) op_NOP(mem *mem.Memory) {
-	C.opName = "NOP"
+	C.dbus.Release()
+
+	if C.Display {
+		C.opName = "NOP"
+	}
 }
 
 func (C *CPU) op_SHW(mem *mem.Memory) {
@@ -14,14 +18,16 @@ func (C *CPU) op_SHW(mem *mem.Memory) {
 }
 
 func (C *CPU) op_BRK(mem *mem.Memory) {
-	// C.op_SHW(mem)
-	C.opName = "\tBRK"
 	C.pushWordStack(C.PC)
 	C.pushByteStack(C.S)
 	address := C.readWord(0xFFFE)
 	C.PC = address
 	C.dbus.Release()
 	C.setB(true)
+
+	if C.Display {
+		C.opName = "\tBRK"
+	}
 }
 
 func (C *CPU) op_DMP(mem *mem.Memory) {

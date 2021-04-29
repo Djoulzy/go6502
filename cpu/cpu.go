@@ -126,7 +126,7 @@ func (C *CPU) fetchWord(mem *mem.Memory) uint16 {
 }
 
 func (C *CPU) fetchByte(mem *mem.Memory) byte {
-	value := mem.Read(C.PC)
+	value := C.ram.Read(C.PC)
 	C.PC++
 	if C.Display {
 		output = fmt.Sprintf("%s %02X", output, value)
@@ -135,7 +135,7 @@ func (C *CPU) fetchByte(mem *mem.Memory) byte {
 	return value
 }
 
-func (C *CPU) exec(mem *mem.Memory) {
+func (C *CPU) exec() {
 	C.dbus.Get()
 	if C.exit {
 		os.Exit(1)
@@ -145,8 +145,8 @@ func (C *CPU) exec(mem *mem.Memory) {
 		fmt.Printf("\n%08b - A:%c[1;33m%02X%c[0m X:%c[1;33m%02X%c[0m Y:%c[1;33m%02X%c[0m SP:%c[1;33m%02X%c[0m", C.S, 27, C.A, 27, 27, C.X, 27, 27, C.Y, 27, 27, C.SP, 27)
 		fmt.Printf(" RastY: %c[1;31m%04X%c[0m RastX: - %c[1;31m%04X%c[0m:", 27, C.readRasterLine(), 27, 27, C.PC, 27)
 	}
-	opCode := C.fetchByte(mem)
-	Mnemonic[opCode](mem)
+	opCode := C.fetchByte(C.ram)
+	Mnemonic[opCode](C.ram)
 	if C.opName == "ToDO" {
 		fmt.Printf("\n\nToDO : %02X\n\n", opCode)
 		os.Exit(1)
@@ -195,7 +195,7 @@ func (C *CPU) Run() {
 		C.Step = true
 	}
 
-	C.exec(C.ram)
+	C.exec()
 	if (C.IRQ > 0) && (C.S & ^I_mask) == 0 {
 		C.irq()
 	}

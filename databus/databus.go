@@ -3,13 +3,14 @@ package databus
 import (
 	"fmt"
 	"go6502/vic"
+	"os"
 	"sync"
 	"time"
 )
 
 const (
-	cpuClock = 985248                  // Mesure en Hz
-	cpuCycle = (1 / float32(cpuClock)) // 1 cycle en ms
+	cpuClock = 985248                            // Mesure en Hz
+	cpuCycle = (1 / float32(cpuClock)) * 1000000 // 1 cycle en µs
 )
 
 var start time.Time
@@ -22,6 +23,18 @@ type Bus struct {
 	vic    *vic.VIC
 	Cycles int
 	Timer  uint16
+	log    chan time.Duration
+}
+
+func logTime(log chan time.Duration) {
+	var c time.Duration
+
+	fileDesc, _ := os.Create("log/time.log")
+
+	for {
+		c = <-log
+		fileDesc.Write([]byte(fmt.Sprintf("%v\n", c)))
+	}
 }
 
 func (B *Bus) Init(vic *vic.VIC) {
@@ -29,6 +42,10 @@ func (B *Bus) Init(vic *vic.VIC) {
 	B.vic = vic
 	B.Cycles = 0
 	B.Timer = 0
+
+	B.log = make(chan time.Duration)
+
+	go logTime(B.log)
 }
 
 func (B *Bus) Get() {
@@ -40,7 +57,7 @@ func (B *Bus) Release() {
 	// KEEPBUS:
 	elapsed := time.Since(start)
 	start = time.Now()
-	fmt.Printf("%d - %v\n", B.Cycles, elapsed)
+	B.log <- elapsed
 	B.vic.Run()
 	B.Cycles++
 	B.Timer++
