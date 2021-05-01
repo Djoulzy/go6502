@@ -48,33 +48,33 @@
      7  0817 8d0004                 sta $0400
      8                          
      9  081a 78                     sei
-    10  081b a952                   lda #%01010010 ; 
-    11  081d 8d0fdc                 sta $dc0f
+    10                              ; lda #%01010010 ; 
+    11                              ; sta $dc0f
     12                          
-    13  0820 a903                   lda #$03    ; set timer A count value: $03FC
-    14  0822 8d04dc                 sta $dc04
-    15  0825 a9fc                   lda #$FC
-    16  0827 8d05dc                 sta $dc05
+    13  081b a903                   lda #$03    ; set timer A count value: $03FC
+    14  081d 8d04dc                 sta $dc04
+    15  0820 a9fc                   lda #$FC
+    16  0822 8d05dc                 sta $dc05
     17                          
-    18  082a a9ff                   lda #$ff    ; set timer B count value: $FFFF
-    19  082c 8d06dc                 sta $dc06
-    20  082f 8d07dc                 sta $dc07
+    18  0825 a9ff                   lda #$ff    ; set timer B count value: $FFFF
+    19  0827 8d06dc                 sta $dc06
+    20  082a 8d07dc                 sta $dc07
     21                          
-    22  0832 a946                   lda #<timer
-    23  0834 8d1403                 sta $0314
-    24  0837 a908                   lda #>timer
-    25  0839 8d1503                 sta $0315
-    26  083c a911                   lda #%00010001
-    27  083e 8d0edc                 sta $dc0e
-    28  0841 58                     cli
+    22  082d a941                   lda #<timer
+    23  082f 8d1403                 sta $0314
+    24  0832 a908                   lda #>timer
+    25  0834 8d1503                 sta $0315
+    26  0837 a911                   lda #%00010001
+    27  0839 8d0edc                 sta $dc0e
+    28  083c 58                     cli
     29                          
     30                          loop:
-    31  0842 4c4208                 jmp loop
-    32  0845 60                     rts
+    31  083d 4c3d08                 jmp loop
+    32  0840 60                     rts
     33                          
     34                          timer:
-    35  0846 ee0004                 inc $0400
-    36  0849 a9ff                   lda #%11111111
-    37  084b 8d0ddc                 sta $dc0d
-    38  084e ad0ddc                 lda $dc0d
-    39  0851 4c31ea                 jmp $ea31
+    35  0841 ee0004                 inc $0400
+    36  0844 a9ff                   lda #%11111111
+    37  0846 8d0ddc                 sta $dc0d
+    38  0849 ad0ddc                 lda $dc0d
+    39  084c 4c31ea                 jmp $ea31

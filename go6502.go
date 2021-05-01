@@ -53,14 +53,17 @@ func main() {
 
 	mem.Init()
 	dbus.Init(&vic)
-	cia1.Init(mem.Mem[0xDC00:0xDCFF])
+	cia1.Init(mem.Mem[0xDC00:0xDCFF], &dbus.Timer)
 	setCIA1(&cia1)
-	cia2.Init(mem.Mem[0xDD00:0xDDFF])
+	cia2.Init(mem.Mem[0xDD00:0xDDFF], &dbus.Timer)
 	setCIA2(&cia2)
 	cpu.Init(&dbus, &mem, conf)
 	vic.Init(&mem)
 
 	vic.IRQ_Pin = &cpu.IRQ
+	cia1.IRQ_Pin = &cpu.IRQ
+	cia2.IRQ_Pin = &cpu.IRQ
+
 	cpu.PC = 0xFCE2
 
 	if len(args) > 1 {

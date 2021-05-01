@@ -6,6 +6,7 @@ import (
 	"go6502/databus"
 	"go6502/mem"
 	"log"
+	"time"
 
 	"github.com/mattn/go-tty"
 )
@@ -31,6 +32,11 @@ func (C *CPU) readRasterLine() uint16 {
 	val := uint16(C.ram.Mem[0xD011].Zone[mem.IO]&0b10000000) << 8
 	val += uint16(C.ram.Mem[0xD012].Zone[mem.IO])
 	return val
+}
+
+func (C *CPU) timeTrack(start time.Time) {
+	elapsed := time.Since(start)
+	log.Printf("%s", elapsed)
 }
 
 //////////////////////////////////
@@ -186,6 +192,7 @@ func (C *CPU) Run() {
 
 	C.exec()
 	if (C.IRQ > 0) && (C.S & ^I_mask) == 0 {
+		log.Printf("IRQ")
 		C.irq()
 	}
 

@@ -3,5 +3,5 @@ al C:d021 .bgcol
 
 al C:0801 .basic
 
-al C:0842 .loop
-al C:0846 .timer
+al C:083d .loop
+al C:0841 .timer

@@ -7,8 +7,8 @@
     sta $0400
 
     sei
-    lda #%01010010 ; 
-    sta $dc0f
+    ; lda #%01010010 ; 
+    ; sta $dc0f
 
     lda #$03    ; set timer A count value: $03FC
     sta $dc04

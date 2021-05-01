@@ -54,14 +54,14 @@ func (B *Bus) Get() {
 }
 
 func (B *Bus) Release() {
-KEEPBUS:
+	// KEEPBUS:
 	// time.Since(start)
 	// B.log <- elapsed
 	// start = time.Now()
 	B.vic.Run()
 	B.Cycles++
 	B.Timer++
-	if !B.vic.BA {
-		goto KEEPBUS
-	}
+	// if !B.vic.BA {
+	// 	goto KEEPBUS
+	// }
 }

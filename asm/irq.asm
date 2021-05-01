@@ -65,8 +65,8 @@ color2       !byte $09,$09,$02,$02,$08
 
 ; the two lines of text for color washer effect
 
-line1            !scr "    actraiser in 2013 presents...        "
-line2            !scr " example effect for dustlayer tutorials  " 
+line1            !scr "     test raster irq and color cycle     "
+line2            !scr "      ca a l'air de bien marcher :)      " 
 
 clear            lda #$20     ; #$20 is the spacebar Screen Code
                  sta $0400,x  ; fill four areas with 256 spacebar characters
