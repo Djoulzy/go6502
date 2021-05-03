@@ -49,22 +49,20 @@ func main() {
 	dbus := databus.Bus{}
 	mem := mem.Memory{}
 	cia1 := cia.CIA{}
-	cia2 := cia.CIA{}
+	// cia2 := cia.CIA{}
 
 	mem.Init()
 	dbus.Init(&vic)
 	cia1.Init(mem.Mem[0xDC00:0xDCFF], &dbus.Timer)
 	setCIA1(&cia1)
-	cia2.Init(mem.Mem[0xDD00:0xDDFF], &dbus.Timer)
-	setCIA2(&cia2)
+	// cia2.Init(mem.Mem[0xDD00:0xDDFF], &dbus.Timer)
+	// setCIA2(&cia2)
 	cpu.Init(&dbus, &mem, conf)
 	vic.Init(&mem)
 
 	vic.IRQ_Pin = &cpu.IRQ
 	cia1.IRQ_Pin = &cpu.IRQ
-	cia2.IRQ_Pin = &cpu.IRQ
-
-	cpu.PC = 0xFCE2
+	// cia2.IRQ_Pin = &cpu.IRQ
 
 	if len(args) > 1 {
 		ass := assembler.Assembler{}
@@ -79,13 +77,12 @@ func main() {
 		case ".prg":
 			cpu.PC, _ = assembler.LoadPRG(&mem, args[1])
 		default:
-			cpu.PC = 0xFCE2 // Reset call
 		}
 	}
 
 	for {
 		cpu.Run()
 		cia1.Run()
-		cia2.Run()
+		// cia2.Run()
 	}
 }

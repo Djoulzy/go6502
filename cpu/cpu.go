@@ -181,6 +181,8 @@ func (C *CPU) Init(dbus *databus.Bus, mem *mem.Memory, conf *confload.ConfigData
 	C.initLanguage()
 	C.reset(C.ram)
 	C.tty, _ = tty.Open()
+	// Recupere l'addresse de boot du systeme
+	C.PC = (uint16(C.ram.Read(0xFFFC+1)) << 8) + uint16(C.ram.Read(0xFFFC))
 }
 
 func (C *CPU) Run() {
