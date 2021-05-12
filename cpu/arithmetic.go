@@ -28,7 +28,7 @@ func (C *CPU) op_ADC_ZP() {
 	C.setNZStatus(C.A)
 
 	if C.Display {
-		C.opName = "ADC ZP"
+		C.opName = fmt.Sprintf("ADC $%02X", zpAddress)
 	}
 }
 
@@ -42,7 +42,7 @@ func (C *CPU) op_ADC_ZPX() {
 	C.setNZStatus(C.A)
 
 	if C.Display {
-		C.opName = "ADC ZP,X"
+		C.opName = fmt.Sprintf("ADC $%02X,X", zpAddress)
 	}
 }
 
@@ -56,13 +56,13 @@ func (C *CPU) op_ADC_ABS() {
 	C.setNZStatus(C.A)
 
 	if C.Display {
-		C.opName = "ADC Abs"
+		C.opName = fmt.Sprintf("ADC $%04X", absAddress)
 	}
 }
 
 func (C *CPU) op_ADC_ABX() {
-	absAddress := C.fetchWord() + uint16(C.X)
-	value := C.readByte(absAddress)
+	absAddress := C.fetchWord()
+	value := C.readByte(absAddress + uint16(C.X))
 	result := uint16(C.A) + uint16(value) + uint16(C.getC())
 	C.setC(result > 0x0FF)
 	C.setV(C.A, value, byte(result))
@@ -70,13 +70,13 @@ func (C *CPU) op_ADC_ABX() {
 	C.setNZStatus(C.A)
 
 	if C.Display {
-		C.opName = "ADC Abs,X"
+		C.opName = fmt.Sprintf("ADC $%04X,X", absAddress)
 	}
 }
 
 func (C *CPU) op_ADC_ABY() {
-	absAddress := C.fetchWord() + uint16(C.Y)
-	value := C.readByte(absAddress)
+	absAddress := C.fetchWord()
+	value := C.readByte(absAddress + uint16(C.Y))
 	result := uint16(C.A) + uint16(value) + uint16(C.getC())
 	C.setC(result > 0x0FF)
 	C.setV(C.A, value, byte(result))
@@ -84,7 +84,7 @@ func (C *CPU) op_ADC_ABY() {
 	C.setNZStatus(C.A)
 
 	if C.Display {
-		C.opName = "ADC Abs,Y"
+		C.opName = fmt.Sprintf("ADC $%04X,Y", absAddress)
 	}
 }
 
@@ -99,7 +99,7 @@ func (C *CPU) op_ADC_INX() {
 	C.setNZStatus(C.A)
 
 	if C.Display {
-		C.opName = "ADC (ZP,X)"
+		C.opName = fmt.Sprintf("ADC ($%02X,X)", zpAddr)
 	}
 }
 
@@ -114,7 +114,7 @@ func (C *CPU) op_ADC_INY() {
 	C.setNZStatus(C.A)
 
 	if C.Display {
-		C.opName = "ADC (ZP),Y"
+		C.opName = fmt.Sprintf("ADC ($%02X),Y", zpAddr)
 	}
 }
 
@@ -129,7 +129,6 @@ func (C *CPU) op_SBC_IM() {
 
 	if C.Display {
 		C.opName = fmt.Sprintf("SBC #$%02X", addr)
-		C.debug = fmt.Sprintf("A - %02X = %02X", addr, result)
 	}
 }
 
@@ -145,16 +144,95 @@ func (C *CPU) op_SBC_ZP() {
 
 	if C.Display {
 		C.opName = fmt.Sprintf("SBC $%02X", zpAddress)
-		C.debug = fmt.Sprintf("A - %02X = %02X", content, result)
 	}
 }
 
-func (C *CPU) op_SBC_ZPX() { C.opName = "ToDO" }
-func (C *CPU) op_SBC_ABS() { C.opName = "ToDO" }
-func (C *CPU) op_SBC_ABX() { C.opName = "ToDO" }
-func (C *CPU) op_SBC_ABY() { C.opName = "ToDO" }
-func (C *CPU) op_SBC_INX() { C.opName = "ToDO" }
-func (C *CPU) op_SBC_INY() { C.opName = "ToDO" }
+func (C *CPU) op_SBC_ZPX() {
+	zpAddress := C.fetchByte()
+	content := C.readByte(uint16(zpAddress + C.X))
+	value := ^content
+	result := uint16(C.A) + uint16(value) + uint16(C.getC())
+	C.setC(result > 0x0FF)
+	C.setV(C.A, value, byte(result))
+	C.A = byte(result)
+	C.setNZStatus(C.A)
+
+	if C.Display {
+		C.opName = fmt.Sprintf("SBC $%02X,X", zpAddress)
+	}
+}
+
+func (C *CPU) op_SBC_ABS() {
+	absAddress := C.fetchWord()
+	value := C.readByte(absAddress)
+	result := uint16(C.A) + uint16(value) + uint16(C.getC())
+	C.setC(result > 0x0FF)
+	C.setV(C.A, value, byte(result))
+	C.A = byte(result)
+	C.setNZStatus(C.A)
+
+	if C.Display {
+		C.opName = fmt.Sprintf("SBC $%04X", absAddress)
+	}
+}
+
+func (C *CPU) op_SBC_ABX() {
+	absAddress := C.fetchWord()
+	value := C.readByte(absAddress + uint16(C.X))
+	result := uint16(C.A) + uint16(value) + uint16(C.getC())
+	C.setC(result > 0x0FF)
+	C.setV(C.A, value, byte(result))
+	C.A = byte(result)
+	C.setNZStatus(C.A)
+
+	if C.Display {
+		C.opName = fmt.Sprintf("SBC $%04X,X", absAddress)
+	}
+}
+
+func (C *CPU) op_SBC_ABY() {
+	absAddress := C.fetchWord()
+	value := C.readByte(absAddress + uint16(C.Y))
+	result := uint16(C.A) + uint16(value) + uint16(C.getC())
+	C.setC(result > 0x0FF)
+	C.setV(C.A, value, byte(result))
+	C.A = byte(result)
+	C.setNZStatus(C.A)
+
+	if C.Display {
+		C.opName = fmt.Sprintf("SBC $%04X,X", absAddress)
+	}
+}
+
+func (C *CPU) op_SBC_INX() {
+	zpAddr := C.fetchByte()
+	wordZP := C.Indexed_indirect_X(zpAddr, C.X)
+	value := C.readByte(wordZP)
+	result := uint16(C.A) + uint16(value) + uint16(C.getC())
+	C.setC(result > 0x0FF)
+	C.setV(C.A, value, byte(result))
+	C.A = byte(result)
+	C.setNZStatus(C.A)
+
+	if C.Display {
+		C.opName = fmt.Sprintf("SBC ($%02X,X)", zpAddr)
+	}
+}
+
+func (C *CPU) op_SBC_INY() {
+	zpAddr := C.fetchByte()
+	wordZP := C.Indirect_index_Y(zpAddr, C.Y)
+	value := C.readByte(wordZP)
+	result := uint16(C.A) + uint16(value) + uint16(C.getC())
+	C.setC(result > 0x0FF)
+	C.setV(C.A, value, byte(result))
+	C.A = byte(result)
+	C.setNZStatus(C.A)
+
+	if C.Display {
+		C.opName = fmt.Sprintf("SBC ($%02X),Y", zpAddr)
+	}
+}
 
 func (C *CPU) op_CMP_IM() {
 	value := C.fetchByte()

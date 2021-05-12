@@ -111,7 +111,14 @@ func (C *CPU) op_CLI() {
 	}
 }
 
-func (C *CPU) op_CLV() { C.opName = "ToDO" }
+func (C *CPU) op_CLV() {
+	C.S &= V_mask
+	C.dbus.Release()
+
+	if C.Display {
+		C.opName = "CLV"
+	}
+}
 
 func (C *CPU) op_SEC() {
 	C.setC(true)
@@ -122,7 +129,14 @@ func (C *CPU) op_SEC() {
 	}
 }
 
-func (C *CPU) op_SED() { C.opName = "ToDO" }
+func (C *CPU) op_SED() {
+	C.setD(true)
+	C.dbus.Release()
+
+	if C.Display {
+		C.opName = "SED"
+	}
+}
 
 func (C *CPU) op_SEI() {
 	C.setI(true)

@@ -81,7 +81,18 @@ func (C *CPU) op_BPL_REL() {
 		C.opName = fmt.Sprintf("BPL $%04X", val)
 	}
 }
-func (C *CPU) op_BVC_REL() { C.opName = "ToDO" }
+
+func (C *CPU) op_BVC_REL() {
+	relative := C.fetchByte()
+	val := C.getRelativeAddr(relative)
+	if !C.testV() {
+		C.PC = val
+	}
+
+	if C.Display {
+		C.opName = fmt.Sprintf("BVC $%04X", val)
+	}
+}
 
 func (C *CPU) op_BVS_REL() {
 	relative := C.fetchByte()

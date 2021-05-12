@@ -1,6 +1,7 @@
 package vic
 
 import (
+	"fmt"
 	"go6502/graphic"
 	"go6502/mem"
 )
@@ -117,7 +118,7 @@ func (V *VIC) registersManagement() {
 	if V.ram.Mem[REG_IRQ].IsWrite {
 		V.ram.Mem[REG_IRQ].Zone[mem.IO] = V.ram.Mem[REG_IRQ].Zone[mem.RAM]
 		V.ram.Mem[REG_IRQ].Zone[mem.IO] &= 0b01111111
-		*V.IRQ_Pin = 0
+		// *V.IRQ_Pin = 0
 		V.ram.Mem[REG_IRQ].IsWrite = false
 	}
 }
@@ -142,6 +143,7 @@ func (V *VIC) Run() {
 		if V.ram.Mem[REG_SETIRQ].Zone[mem.IO]&IRQ_RASTER > 0 {
 			if V.RasterIRQ == uint16(V.beamY) {
 				//fmt.Printf("\nIRQ: %04X - %04X", V.RasterIRQ, uint16(V.beamY))
+				fmt.Println("Rastrer Interrupt")
 				*V.IRQ_Pin = 1
 				V.ram.Mem[REG_IRQ].Zone[mem.IO] |= 0b10000001
 			}

@@ -158,6 +158,7 @@ func (C *CPU) SetBreakpoint(bp uint16) {
 
 func (C *CPU) irq() {
 	//fmt.Printf("\nInterrupt ... Raster: %04X", C.readRasterLine())
+	C.IRQ = 0
 	C.pushWordStack(C.PC)
 	C.pushByteStack(C.S)
 	C.setI(true)

@@ -20,17 +20,17 @@ func (C *CPU) op_AND_ZP() {
 	C.setNZStatus(C.A)
 
 	if C.Display {
-		C.opName = "AND ZP"
+		C.opName = fmt.Sprintf("AND $%02X", zpAddress)
 	}
 }
 
 func (C *CPU) op_AND_ZPX() {
-	zpAddress := C.fetchByte() + C.X
-	C.A &= C.readByte(uint16(zpAddress))
+	zpAddress := C.fetchByte()
+	C.A &= C.readByte(uint16(zpAddress + C.X))
 	C.setNZStatus(C.A)
 
 	if C.Display {
-		C.opName = "AND ZP,X"
+		C.opName = fmt.Sprintf("AND $%02X,X", zpAddress)
 	}
 }
 
@@ -40,24 +40,23 @@ func (C *CPU) op_AND_ABS() {
 	C.setNZStatus(C.A)
 
 	if C.Display {
-		C.opName = "AND Abs"
+		C.opName = fmt.Sprintf("AND $%04X", absAddress)
 	}
 }
 
 func (C *CPU) op_AND_ABX() {
-	absAddress := C.fetchWord() + uint16(C.X)
-	C.A &= C.readByte(absAddress)
+	absAddress := C.fetchWord()
+	C.A &= C.readByte(absAddress + uint16(C.X))
 	C.setNZStatus(C.A)
 
 	if C.Display {
-		C.opName = "AND Abs,X"
+		C.opName = fmt.Sprintf("AND $%04X,X", absAddress)
 	}
 }
 
 func (C *CPU) op_AND_ABY() {
 	absAddress := C.fetchWord()
-	dest := absAddress + uint16(C.Y)
-	C.A &= C.readByte(dest)
+	C.A &= C.readByte(absAddress + uint16(C.Y))
 	C.setNZStatus(C.A)
 
 	if C.Display {
@@ -107,12 +106,67 @@ func (C *CPU) op_EOR_ZP() {
 	}
 }
 
-func (C *CPU) op_EOR_ZPX() { C.opName = "ToDO" }
-func (C *CPU) op_EOR_ABS() { C.opName = "ToDO" }
-func (C *CPU) op_EOR_ABX() { C.opName = "ToDO" }
-func (C *CPU) op_EOR_ABY() { C.opName = "ToDO" }
-func (C *CPU) op_EOR_INX() { C.opName = "ToDO" }
-func (C *CPU) op_EOR_INY() { C.opName = "ToDO" }
+func (C *CPU) op_EOR_ZPX() {
+	zpAddress := C.fetchByte()
+	C.A ^= C.readByte(uint16(zpAddress + C.X))
+	C.setNZStatus(C.A)
+
+	if C.Display {
+		C.opName = fmt.Sprintf("EOR $%02X,X", zpAddress)
+	}
+}
+
+func (C *CPU) op_EOR_ABS() {
+	absAddress := C.fetchWord()
+	C.A ^= C.readByte(absAddress)
+	C.setNZStatus(C.A)
+
+	if C.Display {
+		C.opName = fmt.Sprintf("EOR $%04X", absAddress)
+	}
+}
+
+func (C *CPU) op_EOR_ABX() {
+	absAddress := C.fetchWord()
+	C.A ^= C.readByte(absAddress + uint16(C.X))
+	C.setNZStatus(C.A)
+
+	if C.Display {
+		C.opName = fmt.Sprintf("EOR $%04X,X", absAddress)
+	}
+}
+
+func (C *CPU) op_EOR_ABY() {
+	absAddress := C.fetchWord()
+	C.A ^= C.readByte(absAddress + uint16(C.Y))
+	C.setNZStatus(C.A)
+
+	if C.Display {
+		C.opName = fmt.Sprintf("EOR $%04X,Y", absAddress)
+	}
+}
+
+func (C *CPU) op_EOR_INX() {
+	zpAddr := C.fetchByte()
+	wordZP := C.Indexed_indirect_X(zpAddr, C.X)
+	C.A ^= C.readByte(wordZP)
+	C.setNZStatus(C.A)
+
+	if C.Display {
+		C.opName = fmt.Sprintf("EOR ($%02X,X)", zpAddr)
+	}
+}
+
+func (C *CPU) op_EOR_INY() {
+	zpAddr := C.fetchByte()
+	wordZP := C.Indirect_index_Y(zpAddr, C.Y)
+	C.A ^= C.readByte(wordZP)
+	C.setNZStatus(C.A)
+
+	if C.Display {
+		C.opName = fmt.Sprintf("EOR ($%02X),Y", zpAddr)
+	}
+}
 
 func (C *CPU) op_ORA_IM() {
 	val := C.fetchByte()
@@ -134,7 +188,15 @@ func (C *CPU) op_ORA_ZP() {
 	}
 }
 
-func (C *CPU) op_ORA_ZPX() { C.opName = "ToDO" }
+func (C *CPU) op_ORA_ZPX() {
+	zpAddress := C.fetchByte()
+	C.A |= C.readByte(uint16(zpAddress + C.X))
+	C.setNZStatus(C.A)
+
+	if C.Display {
+		C.opName = fmt.Sprintf("ORA $%02X,X", zpAddress)
+	}
+}
 
 func (C *CPU) op_ORA_ABS() {
 	absAddress := C.fetchWord()
@@ -146,10 +208,46 @@ func (C *CPU) op_ORA_ABS() {
 	}
 }
 
-func (C *CPU) op_ORA_ABX() { C.opName = "ToDO" }
-func (C *CPU) op_ORA_ABY() { C.opName = "ToDO" }
-func (C *CPU) op_ORA_INX() { C.opName = "ToDO" }
-func (C *CPU) op_ORA_INY() { C.opName = "ToDO" }
+func (C *CPU) op_ORA_ABX() {
+	absAddress := C.fetchWord()
+	C.A |= C.readByte(absAddress + +uint16(C.X))
+	C.setNZStatus(C.A)
+
+	if C.Display {
+		C.opName = fmt.Sprintf("ORA $%04X,X", absAddress)
+	}
+}
+func (C *CPU) op_ORA_ABY() {
+	absAddress := C.fetchWord()
+	C.A |= C.readByte(absAddress + +uint16(C.Y))
+	C.setNZStatus(C.A)
+
+	if C.Display {
+		C.opName = fmt.Sprintf("ORA $%04X,Y", absAddress)
+	}
+}
+
+func (C *CPU) op_ORA_INX() {
+	zpAddr := C.fetchByte()
+	wordZP := C.Indexed_indirect_X(zpAddr, C.X)
+	C.A |= C.readByte(wordZP)
+	C.setNZStatus(C.A)
+
+	if C.Display {
+		C.opName = fmt.Sprintf("ORA ($%04X,X)", zpAddr)
+	}
+}
+
+func (C *CPU) op_ORA_INY() {
+	zpAddr := C.fetchByte()
+	wordZP := C.Indirect_index_Y(zpAddr, C.Y)
+	C.A |= C.readByte(wordZP)
+	C.setNZStatus(C.A)
+
+	if C.Display {
+		C.opName = fmt.Sprintf("ORA ($%04X),Y", zpAddr)
+	}
+}
 
 func (C *CPU) op_BIT_ZP() {
 	zpAddress := C.fetchByte()
