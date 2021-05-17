@@ -37,13 +37,13 @@ const (
 	// visibleLastCol  = 412
 )
 
-func (V *VIC) Init(memory *mem.Memory) {
-	V.graph = &graphic.SDLDriver{}
+func (V *VIC) Init(memory *mem.Memory, video graphic.Driver) {
+	V.graph = video
 	V.graph.Init(winWidth, winHeight)
 
 	V.ram = memory
-	V.ram.Mem[REG_EC].Zone[mem.IO] = 0xFE  // Border Color : Lightblue
-	V.ram.Mem[REG_B0C].Zone[mem.IO] = 0xF6 // Background Color : Blue
+	V.ram.Mem[REG_EC].Zone[mem.RAM] = 0xFE  // Border Color : Lightblue
+	V.ram.Mem[REG_B0C].Zone[mem.RAM] = 0xF6 // Background Color : Blue
 	V.ram.Mem[REG_CTRL1].Zone[mem.IO] = 0b10011011
 	V.ram.Mem[REG_CTRL1].Zone[mem.RAM] = 0b00000000
 	V.ram.Mem[REG_RASTER].Zone[mem.RAM] = 0b00000000
@@ -319,7 +319,7 @@ func (V *VIC) Run() {
 		if V.beamY >= screenHeightPAL {
 			V.beamY = 0
 			V.VCBASE = 0
-			V.graph.DisplayFrame()
+			V.graph.UpdateFrame()
 		}
 	}
 

@@ -9,6 +9,7 @@ import (
 	"go6502/confload"
 	"go6502/cpu"
 	"go6502/databus"
+	"go6502/graphic"
 	"go6502/mem"
 	"go6502/vic"
 	"os"
@@ -17,6 +18,7 @@ import (
 )
 
 var conf = &confload.ConfigData{}
+var video graphic.Driver
 
 func init() {
 	// This is needed to arrange that main() runs on main thread.
@@ -34,6 +36,8 @@ func main() {
 		clog.EnableFileLog(conf.FileLog)
 	}
 
+	video = &graphic.SDLDriver{}
+
 	cpu := cpu.CPU{}
 	vic := vic.VIC{}
 	dbus := databus.Bus{}
@@ -46,7 +50,7 @@ func main() {
 	cia1.Init("CIA1", mem.Mem[0xDC00:0xDCFF+1], &dbus.Timer)
 	cia2.Init("CIA2", mem.Mem[0xDD00:0xDDFF+1], &dbus.Timer)
 	cpu.Init(&dbus, &mem, conf)
-	vic.Init(&mem)
+	vic.Init(&mem, video)
 
 	vic.IRQ_Pin = &cpu.IRQ
 	cia1.Signal_Pin = &cpu.IRQ
@@ -70,6 +74,7 @@ func main() {
 
 	for {
 		cpu.Run()
+		video.IOEvents()
 		cia1.Run()
 		cia2.Run()
 	}

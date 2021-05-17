@@ -87,6 +87,7 @@ func (C *CIA) SetValue(port byte, value byte) {
 func (C *CIA) updateStates() {
 	if C.mem[ICR].IsRead {
 		C.mem[ICR].Zone[mem.IO] = 0
+		*C.Signal_Pin = 0
 		C.mem[ICR].IsRead = false
 	}
 

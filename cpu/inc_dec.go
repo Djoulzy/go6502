@@ -43,7 +43,7 @@ func (C *CPU) op_INC_ABS() {
 	C.writeByte(address, val)
 
 	if C.Display {
-		C.opName = "INC Abs"
+		C.opName = fmt.Sprintf("INC $%04X", address)
 	}
 }
 
@@ -55,7 +55,7 @@ func (C *CPU) op_INC_ABX() {
 	C.writeByte(absAddress, val)
 
 	if C.Display {
-		C.opName = "INC Abs,X"
+		C.opName = fmt.Sprintf("INC $%04X,X", absAddress)
 	}
 }
 

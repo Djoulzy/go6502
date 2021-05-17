@@ -234,6 +234,7 @@ func (C *CPU) Run() {
 			fmt.Printf("\n")
 			C.ram.Dump(0x0000, mem.RAM)
 			goto COMMAND
+		default:
 		}
 	}
 }

@@ -61,7 +61,7 @@ func (S *SDLDriver) Init(winWidth, winHeight int) {
 	S.screen = make([]byte, S.winWidth*S.winHeight*3)
 }
 
-func (S *SDLDriver) DisplayFrame() {
+func (S *SDLDriver) UpdateFrame() {
 
 	S.texture.Update(nil, S.screen, S.winWidth*3)
 	S.renderer.Copy(S.texture, nil, nil)
@@ -74,11 +74,29 @@ func (S *SDLDriver) DisplayFrame() {
 		case *sdl.KeyboardEvent:
 			KeyCode := t.Keysym.Sym
 			fmt.Printf("%v\n", KeyCode)
+			fmt.Printf("%v\n", sdl.K_a)
 			switch KeyCode {
-			case sdl.K_KP_A:
+			case sdl.K_a:
 				fmt.Printf("A")
 			}
 		default:
 		}
 	}
+}
+
+func (S *SDLDriver) IOEvents() {
+	// event := sdl.PollEvent()
+	// switch t := event.(type) {
+	// case *sdl.QuitEvent:
+	// 	os.Exit(1)
+	// case *sdl.KeyboardEvent:
+	// 	KeyCode := t.Keysym.Sym
+	// 	fmt.Printf("%v\n", KeyCode)
+	// 	fmt.Printf("%v\n", sdl.K_a)
+	// 	switch KeyCode {
+	// 	case sdl.K_a:
+	// 		fmt.Printf("A")
+	// 	}
+	// default:
+	// }
 }
