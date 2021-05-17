@@ -113,6 +113,20 @@ func (m *Memory) DumpStack(SP byte, nbline int) {
 	}
 }
 
+func (m *Memory) DumpCIA() {
+	cia1 := 0xDC00
+	fmt.Printf("\n")
+
+	fmt.Printf("CIA1 RAM: ")
+	for i := 0; i < 16; i++ {
+		fmt.Printf("%02X ", m.Mem[cia1+i].Zone[RAM])
+	}
+	fmt.Printf("\nCIA1 IO : ")
+	for i := 0; i < 16; i++ {
+		fmt.Printf("%02X ", m.Mem[cia1+i].Zone[IO])
+	}
+}
+
 func (m *Memory) Dump(startAddr uint16, zone int) {
 	cpt := startAddr
 	fmt.Printf("\n")

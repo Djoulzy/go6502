@@ -29,6 +29,7 @@ type CPU struct {
 	S  byte
 
 	IRQ     int
+	NMI     int
 	opName  string
 	debug   string
 	exit    bool

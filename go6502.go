@@ -49,8 +49,8 @@ func main() {
 	vic.Init(&mem)
 
 	vic.IRQ_Pin = &cpu.IRQ
-	cia1.IRQ_Pin = &cpu.IRQ
-	cia2.IRQ_Pin = &cpu.IRQ
+	cia1.Signal_Pin = &cpu.IRQ
+	cia2.Signal_Pin = &cpu.NMI
 
 	if len(args) > 1 {
 		ass := assembler.Assembler{}

@@ -2,7 +2,6 @@ package cia
 
 import (
 	"go6502/mem"
-	"log"
 )
 
 func (C *CIA) TimerA() {
@@ -25,8 +24,8 @@ func (C *CIA) TimerA() {
 					// log.Println("underflow timer A")
 					if (C.mem[ICR].Zone[mem.RAM]&0b00000001 > 0) && (C.mem[ICR].Zone[mem.IO]&0b1000000 == 0) {
 						C.mem[ICR].Zone[mem.IO] |= 0b10000001
-						log.Printf("%s: Int timer A\n", C.name)
-						*C.IRQ_Pin = 1
+						// log.Printf("%s: Int timer A\n", C.name)
+						*C.Signal_Pin = 1
 					}
 					if C.mem[CRA].Zone[mem.IO]&0b00001000 > 0 {
 						return
@@ -43,9 +42,9 @@ func (C *CIA) TimerA() {
 
 func (C *CIA) TimerB() {
 	defer func() {
-		C.timerArunning = false
+		C.timerBrunning = false
 	}()
-	C.timerArunning = true
+	C.timerBrunning = true
 
 	last := *C.systemCycle
 	for {
@@ -61,8 +60,8 @@ func (C *CIA) TimerB() {
 					// log.Println("underflow timer B")
 					if (C.mem[ICR].Zone[mem.RAM]&0b00000010 > 0) && (C.mem[ICR].Zone[mem.IO]&0b1000000 == 0) {
 						C.mem[ICR].Zone[mem.IO] |= 0b10000010
-						log.Printf("%s: Int timer B\n", C.name)
-						*C.IRQ_Pin = 1
+						// log.Printf("%s: Int timer B\n", C.name)
+						*C.Signal_Pin = 1
 					}
 					if C.mem[CRB].Zone[mem.IO]&0b00001000 > 0 {
 						return

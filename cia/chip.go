@@ -7,7 +7,7 @@ import (
 type CIA struct {
 	name        string
 	mem         []mem.Cell
-	IRQ_Pin     *int
+	Signal_Pin  *int
 	systemCycle *uint16
 
 	timerArunning bool
@@ -85,6 +85,11 @@ func (C *CIA) SetValue(port byte, value byte) {
 // }
 
 func (C *CIA) updateStates() {
+	if C.mem[ICR].IsRead {
+		C.mem[ICR].Zone[mem.IO] = 0
+		C.mem[ICR].IsRead = false
+	}
+
 	if C.mem[ICR].IsWrite {
 		order := C.mem[ICR].Zone[mem.RAM]
 		mask := order & 0b00001111

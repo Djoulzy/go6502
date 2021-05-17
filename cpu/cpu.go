@@ -24,6 +24,7 @@ func (C *CPU) reset(mem *mem.Memory) {
 	C.Step = false
 
 	C.IRQ = 0
+	C.NMI = 0
 }
 
 var output = ""
@@ -158,11 +159,19 @@ func (C *CPU) SetBreakpoint(bp uint16) {
 
 func (C *CPU) irq() {
 	//fmt.Printf("\nInterrupt ... Raster: %04X", C.readRasterLine())
-	C.IRQ = 0
+	// C.IRQ = 0
 	C.pushWordStack(C.PC)
 	C.pushByteStack(C.S)
 	C.setI(true)
 	C.PC = C.readWord(0xFFFE)
+}
+
+func (C *CPU) nmi() {
+	//fmt.Printf("\nInterrupt ... Raster: %04X", C.readRasterLine())
+	// C.NMI = 0
+	C.pushWordStack(C.PC)
+	C.pushByteStack(C.S)
+	C.PC = C.readWord(0xFFFA)
 }
 
 func (C *CPU) Init(dbus *databus.Bus, mem *mem.Memory, conf *confload.ConfigData) {
@@ -194,18 +203,26 @@ func (C *CPU) Run() {
 	}
 
 	C.exec()
+	if C.NMI > 0 {
+		log.Printf("NMI")
+		C.nmi()
+	}
 	if (C.IRQ > 0) && (C.S & ^I_mask) == 0 {
 		log.Printf("IRQ")
 		C.irq()
 	}
 
 	if C.Step {
+		// C.ram.DumpCIA()
 	COMMAND:
 		r, err := C.tty.ReadRune()
 		if err != nil {
 			log.Fatal(err)
 		}
 		switch r {
+		case 'c':
+			C.ram.DumpCIA()
+			goto COMMAND
 		case 'd':
 			C.ram.Dump(C.Dump, C.Zone)
 			goto COMMAND
