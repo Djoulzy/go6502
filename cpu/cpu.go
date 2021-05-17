@@ -204,11 +204,11 @@ func (C *CPU) Run() {
 
 	C.exec()
 	if C.NMI > 0 {
-		log.Printf("NMI")
+		// log.Printf("NMI")
 		C.nmi()
 	}
 	if (C.IRQ > 0) && (C.S & ^I_mask) == 0 {
-		log.Printf("IRQ")
+		// log.Printf("IRQ")
 		C.irq()
 	}
 

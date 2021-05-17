@@ -64,17 +64,18 @@
     23  082f 8d1403                 sta $0314
     24  0832 a908                   lda #>timer
     25  0834 8d1503                 sta $0315
-    26  0837 a911                   lda #%00010001
-    27  0839 8d0edc                 sta $dc0e
-    28  083c 58                     cli
-    29                          
-    30                          loop:
-    31  083d 4c3d08                 jmp loop
-    32  0840 60                     rts
-    33                          
-    34                          timer:
-    35  0841 ee0004                 inc $0400
-    36  0844 a9ff                   lda #%11111111
-    37  0846 8d0ddc                 sta $dc0d
-    38  0849 ad0ddc                 lda $dc0d
-    39  084c 4c31ea                 jmp $ea31
+    26                              ; lda #%00010001
+    27  0837 a9ff                   lda #%11111111
+    28  0839 8d0edc                 sta $dc0e
+    29  083c 58                     cli
+    30                          
+    31                          loop:
+    32  083d 4c3d08                 jmp loop
+    33  0840 60                     rts
+    34                          
+    35                          timer:
+    36  0841 ee0004                 inc $0400
+    37  0844 a9ff                   lda #%11111111
+    38  0846 8d0ddc                 sta $dc0d
+    39  0849 ad0ddc                 lda $dc0d
+    40  084c 4c31ea                 jmp $ea31

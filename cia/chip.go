@@ -50,7 +50,7 @@ func (C *CIA) Init(name string, memCells []mem.Cell, timer *uint16) {
 	C.timerBlatch = 0
 	C.timerBcom = make(chan int)
 
-	C.SetValue(PRA, 0x81)
+	C.SetValue(PRA, 0x0)
 	C.SetValue(PRB, 0xFF)
 	C.SetValue(DDRA, 0)
 	C.SetValue(DDRB, 0)
@@ -105,27 +105,28 @@ func (C *CIA) updateStates() {
 	}
 
 	if C.mem[CRA].IsWrite {
-		C.mem[CRA].Zone[mem.IO] = C.mem[CRA].Zone[mem.RAM]
 		C.mem[CRA].IsWrite = false
-		if C.mem[CRA].Zone[mem.IO]&0b00010000 > 0 {
+		// Load Latch Once
+		if C.mem[CRA].Zone[mem.RAM]&0b00010000 > 0 {
 			C.timerAlatch = int32(C.mem[TAHI].Zone[mem.RAM])<<8 + int32(C.mem[TALO].Zone[mem.RAM])
 		}
-		if C.mem[CRA].Zone[mem.IO]&0b00000001 == 1 && !C.timerArunning {
+		// Start or stop timer
+		if C.mem[CRA].Zone[mem.RAM]&0b00000001 == 1 && C.mem[CRA].Zone[mem.IO]&0b00000001 == 0 {
 			go C.TimerA()
-		} else {
-			if C.timerArunning {
-				C.timerAcom <- 1
-			}
 		}
+		if C.mem[CRA].Zone[mem.RAM]&0b00000001 == 0 && C.mem[CRA].Zone[mem.IO]&0b00000001 == 1 {
+			C.timerAcom <- 1
+		}
+		C.mem[CRA].Zone[mem.IO] = C.mem[CRA].Zone[mem.RAM] & 0b11101111
 	}
 
 	if C.mem[CRB].IsWrite {
-		C.mem[CRB].Zone[mem.IO] = C.mem[CRB].Zone[mem.RAM]
 		C.mem[CRB].IsWrite = false
-		if C.mem[CRB].Zone[mem.IO]&0b00010000 > 0 {
+		if C.mem[CRB].Zone[mem.RAM]&0b00010000 > 0 {
 			C.timerAlatch = int32(C.mem[TBHI].Zone[mem.RAM])<<8 + int32(C.mem[TBLO].Zone[mem.RAM])
 		}
-		if C.mem[CRB].Zone[mem.IO]&0b00000001 == 1 && !C.timerBrunning {
+		if C.mem[CRB].Zone[mem.RAM]&0b00000001 == 1 && !C.timerBrunning {
+			C.mem[CRB].Zone[mem.IO] |= 0b00000001
 			go C.TimerB()
 		} else {
 			if C.timerBrunning {

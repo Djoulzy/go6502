@@ -42,7 +42,9 @@ func (V *VIC) Init(memory *mem.Memory, video graphic.Driver) {
 	V.graph.Init(winWidth, winHeight)
 
 	V.ram = memory
-	V.ram.Mem[REG_EC].Zone[mem.RAM] = 0xFE  // Border Color : Lightblue
+	V.ram.Mem[REG_EC].Read = &V.ram.PLA.Ram
+	V.ram.Mem[REG_EC].Zone[mem.RAM] = 0xFE // Border Color : Lightblue
+	V.ram.Mem[REG_B0C].Read = &V.ram.PLA.Ram
 	V.ram.Mem[REG_B0C].Zone[mem.RAM] = 0xF6 // Background Color : Blue
 	V.ram.Mem[REG_CTRL1].Zone[mem.IO] = 0b10011011
 	V.ram.Mem[REG_CTRL1].Zone[mem.RAM] = 0b00000000

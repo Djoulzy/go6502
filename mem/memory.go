@@ -8,11 +8,11 @@ import (
 // Init :
 func (m *Memory) Init() {
 	m.PLA = latch{
-		kernal:    KERNAL,
-		basic:     BASIC,
-		char_io_r: CHAR,
-		char_io_w: RAM,
-		ram:       RAM,
+		Kernal:    KERNAL,
+		Basic:     BASIC,
+		Char_io_r: CHAR,
+		Char_io_w: RAM,
+		Ram:       RAM,
 	}
 
 	m.Stack = m.Mem[stackStart : stackEnd+1]
@@ -25,8 +25,8 @@ func (m *Memory) Init() {
 	cpt := 0
 	fill := byte(0x00)
 	for i := range m.Mem {
-		m.Mem[i].read = &m.PLA.ram
-		m.Mem[i].write = &m.PLA.ram
+		m.Mem[i].Read = &m.PLA.Ram
+		m.Mem[i].Write = &m.PLA.Ram
 		m.Mem[i].Zone[RAM] = fill
 		m.Mem[i].IsRead = false
 		m.Mem[i].IsWrite = false
@@ -42,10 +42,10 @@ func (m *Memory) Init() {
 	m.Vic[2] = m.Mem[vic3 : vic4-1]
 	m.Vic[3] = m.Mem[vic4:0xFFFF]
 
-	m.loadRom("roms/kernal.bin", 8192, m.Kernal, &m.PLA.kernal, &m.PLA.ram)
-	m.loadRom("roms/basic.bin", 8192, m.Basic, &m.PLA.basic, &m.PLA.ram)
-	m.loadRom("roms/char.bin", 4096, m.CharGen, &m.PLA.char_io_r, &m.PLA.ram)
-	m.PLA.char_io_r = IO
+	m.loadRom("roms/kernal.bin", 8192, m.Kernal, &m.PLA.Kernal, &m.PLA.Ram)
+	m.loadRom("roms/basic.bin", 8192, m.Basic, &m.PLA.Basic, &m.PLA.Ram)
+	m.loadRom("roms/char.bin", 4096, m.CharGen, &m.PLA.Char_io_r, &m.PLA.Ram)
+	m.PLA.Char_io_r = IO
 
 	m.Mem[0].Zone[RAM] = 0x2F // Processor port data direction register
 	m.Mem[1].Zone[RAM] = 0x37 // Processor port / memory map configuration
@@ -64,8 +64,8 @@ func (m *Memory) loadRom(filename string, fileSize int, dest []Cell, rmode *int,
 		panic("Bad ROM Size")
 	}
 	for i := 0; i < fileSize; i++ {
-		dest[i].read = rmode
-		dest[i].write = wmode
+		dest[i].Read = rmode
+		dest[i].Write = wmode
 		dest[i].Zone[*rmode] = byte(data[i])
 	}
 }
@@ -84,13 +84,13 @@ func (m *Memory) DumpChar(screenCode byte) {
 func (m *Memory) Read(addr uint16) byte {
 	cell := &m.Mem[addr]
 	cell.IsRead = true
-	return cell.Zone[*cell.read]
+	return cell.Zone[*cell.Read]
 }
 
 func (m *Memory) Write(addr uint16, value byte) {
 	cell := &m.Mem[addr]
 	cell.IsWrite = true
-	cell.Zone[*cell.write] = value
+	cell.Zone[*cell.Write] = value
 }
 
 func (m *Memory) DumpStack(SP byte, nbline int) {

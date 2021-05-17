@@ -32,16 +32,16 @@ const (
 )
 
 type latch struct {
-	kernal    int
-	basic     int
-	char_io_r int
-	char_io_w int
-	ram       int
+	Kernal    int
+	Basic     int
+	Char_io_r int
+	Char_io_w int
+	Ram       int
 }
 
 type Cell struct {
-	read    *int
-	write   *int
+	Read    *int
+	Write   *int
 	Zone    [3]byte
 	IsRead  bool
 	IsWrite bool
