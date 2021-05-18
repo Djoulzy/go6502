@@ -10,11 +10,9 @@ type CIA struct {
 	Signal_Pin  *int
 	systemCycle *uint16
 
-	timerArunning bool
 	timerAlatch   int32
 	timerAcom     chan int
 
-	timerBrunning bool
 	timerBlatch   int32
 	timerBcom     chan int
 }
@@ -43,10 +41,8 @@ func (C *CIA) Init(name string, memCells []mem.Cell, timer *uint16) {
 	C.mem = memCells
 	C.systemCycle = timer
 
-	C.timerArunning = false
 	C.timerAlatch = 0
 	C.timerAcom = make(chan int)
-	C.timerBrunning = false
 	C.timerBlatch = 0
 	C.timerBcom = make(chan int)
 
@@ -122,17 +118,18 @@ func (C *CIA) updateStates() {
 
 	if C.mem[CRB].IsWrite {
 		C.mem[CRB].IsWrite = false
+		// Load Latch Once
 		if C.mem[CRB].Zone[mem.RAM]&0b00010000 > 0 {
-			C.timerAlatch = int32(C.mem[TBHI].Zone[mem.RAM])<<8 + int32(C.mem[TBLO].Zone[mem.RAM])
+			C.timerBlatch = int32(C.mem[TBHI].Zone[mem.RAM])<<8 + int32(C.mem[TBLO].Zone[mem.RAM])
 		}
-		if C.mem[CRB].Zone[mem.RAM]&0b00000001 == 1 && !C.timerBrunning {
-			C.mem[CRB].Zone[mem.IO] |= 0b00000001
+		// Start or stop timer
+		if C.mem[CRB].Zone[mem.RAM]&0b00000001 == 1 && C.mem[CRB].Zone[mem.IO]&0b00000001 == 0 {
 			go C.TimerB()
-		} else {
-			if C.timerBrunning {
-				C.timerBcom <- 1
-			}
 		}
+		if C.mem[CRB].Zone[mem.RAM]&0b00000001 == 0 && C.mem[CRB].Zone[mem.IO]&0b00000001 == 1 {
+			C.timerBcom <- 1
+		}
+		C.mem[CRB].Zone[mem.IO] = C.mem[CRB].Zone[mem.RAM] & 0b11101111
 	}
 
 	if C.mem[TALO].IsWrite {

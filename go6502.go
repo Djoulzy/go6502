@@ -3,6 +3,7 @@
 package main
 
 import (
+	"fmt"
 	"go6502/assembler"
 	"go6502/cia"
 	"go6502/clog"
@@ -13,12 +14,12 @@ import (
 	"go6502/mem"
 	"go6502/vic"
 	"os"
-	"path/filepath"
 	"runtime"
 )
 
 var conf = &confload.ConfigData{}
 var video graphic.Driver
+var char uint
 
 func init() {
 	// This is needed to arrange that main() runs on main thread.
@@ -56,26 +57,35 @@ func main() {
 	cia1.Signal_Pin = &cpu.IRQ
 	cia2.Signal_Pin = &cpu.NMI
 
-	if len(args) > 1 {
-		ass := assembler.Assembler{}
-		ass.Init()
+	// if len(args) > 1 {
+	// 	ass := assembler.Assembler{}
+	// 	ass.Init()
 
-		switch filepath.Ext(args[1]) {
-		case ".asm":
-			code := ass.Assemble(args[1])
-			cpu.PC, _ = assembler.LoadHex(&mem, code)
-		case ".hex":
-			cpu.PC, _ = assembler.LoadFile(&mem, args[1])
-		case ".prg":
-			cpu.PC, _ = assembler.LoadPRG(&mem, args[1])
-		default:
-		}
-	}
+	// 	switch filepath.Ext(args[1]) {
+	// 	case ".asm":
+	// 		code := ass.Assemble(args[1])
+	// 		cpu.PC, _ = assembler.LoadHex(&mem, code)
+	// 	case ".hex":
+	// 		cpu.PC, _ = assembler.LoadFile(&mem, args[1])
+	// 	case ".prg":
+	// 		cpu.PC, _ = assembler.LoadPRG(&mem, args[1])
+	// 	default:
+	// 	}
+	// }
 
 	for {
 		cpu.Run()
-		video.IOEvents()
 		cia1.Run()
 		cia2.Run()
+		char = video.IOEvents()
+		switch char {
+		case 108:
+			if len(args) > 1 {
+				cpu.PC, _ = assembler.LoadPRG(&mem, args[1])
+			}
+		case 0:
+		default:
+			fmt.Println(char)
+		}
 	}
 }

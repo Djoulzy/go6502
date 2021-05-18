@@ -5,11 +5,6 @@ import (
 )
 
 func (C *CIA) TimerA() {
-	defer func() {
-		C.timerArunning = false
-	}()
-	C.timerArunning = true
-
 	last := *C.systemCycle
 	for {
 		select {
@@ -41,11 +36,6 @@ func (C *CIA) TimerA() {
 }
 
 func (C *CIA) TimerB() {
-	defer func() {
-		C.timerBrunning = false
-	}()
-	C.timerBrunning = true
-
 	last := *C.systemCycle
 	for {
 		select {

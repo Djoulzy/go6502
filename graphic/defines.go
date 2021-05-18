@@ -10,6 +10,6 @@ type Driver interface {
 	Init(int, int)
 	DrawPixel(int, int, RGB)
 	UpdateFrame()
-	IOEvents()
+	IOEvents() uint
 	CloseAll()
 }
