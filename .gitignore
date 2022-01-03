@@ -1,5 +1,6 @@
 # .cache
 # Binaries for programs and plugins
+.DS_Store
 *.exe
 *.exe~
 *.dll
@@ -14,6 +15,6 @@ go6502
 *.out
 
 # Dependency directories (remove the comment below to include it)
-# vendor/
+vendor/
 log/*
 !log/.gitkeep
