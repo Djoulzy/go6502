@@ -8,11 +8,11 @@ import (
 // Init :
 func (m *Memory) Init() {
 	m.PLA = latch{
-		kernal:    KERNAL,
-		basic:     BASIC,
-		char_io_r: CHAR,
-		char_io_w: RAM,
-		ram:       RAM,
+		Kernal:    KERNAL,
+		Basic:     BASIC,
+		Char_io_r: CHAR,
+		Char_io_w: RAM,
+		Ram:       RAM,
 	}
 
 	m.Stack = m.Mem[stackStart : stackEnd+1]
@@ -25,9 +25,11 @@ func (m *Memory) Init() {
 	cpt := 0
 	fill := byte(0x00)
 	for i := range m.Mem {
-		m.Mem[i].read = &m.PLA.ram
-		m.Mem[i].write = &m.PLA.ram
+		m.Mem[i].Read = &m.PLA.Ram
+		m.Mem[i].Write = &m.PLA.Ram
 		m.Mem[i].Zone[RAM] = fill
+		m.Mem[i].IsRead = false
+		m.Mem[i].IsWrite = false
 		cpt++
 		if cpt == 0x40 {
 			fill = ^fill
@@ -40,17 +42,16 @@ func (m *Memory) Init() {
 	m.Vic[2] = m.Mem[vic3 : vic4-1]
 	m.Vic[3] = m.Mem[vic4:0xFFFF]
 
-	m.loadRom("roms/kernal.bin", 8192, m.Kernal, &m.PLA.kernal, &m.PLA.ram)
-	m.loadRom("roms/basic.bin", 8192, m.Basic, &m.PLA.basic, &m.PLA.ram)
-	m.loadRom("roms/char.bin", 4096, m.CharGen, &m.PLA.char_io_r, &m.PLA.char_io_w)
-	m.PLA.char_io_r = IO
-	m.PLA.char_io_w = IO
+	m.loadRom("roms/kernal.bin", 8192, m.Kernal, &m.PLA.Kernal, &m.PLA.Ram)
+	m.loadRom("roms/basic.bin", 8192, m.Basic, &m.PLA.Basic, &m.PLA.Ram)
+	m.loadRom("roms/char.bin", 4096, m.CharGen, &m.PLA.Char_io_r, &m.PLA.Ram)
+	m.PLA.Char_io_r = IO
 
 	m.Mem[0].Zone[RAM] = 0x2F // Processor port data direction register
 	m.Mem[1].Zone[RAM] = 0x37 // Processor port / memory map configuration
 
 	for i := range m.Color {
-		m.Color[i].Zone[IO] = 0x0E
+		m.Color[i].Zone[RAM] = 0xF6
 	}
 }
 
@@ -63,8 +64,8 @@ func (m *Memory) loadRom(filename string, fileSize int, dest []Cell, rmode *int,
 		panic("Bad ROM Size")
 	}
 	for i := 0; i < fileSize; i++ {
-		dest[i].read = rmode
-		dest[i].write = wmode
+		dest[i].Read = rmode
+		dest[i].Write = wmode
 		dest[i].Zone[*rmode] = byte(data[i])
 	}
 }
@@ -73,7 +74,7 @@ func (m *Memory) DumpChar(screenCode byte) {
 	cpt := uint16(screenCode) << 3
 	for j := 0; j < 4; j++ {
 		for i := 0; i < 8; i++ {
-			fmt.Printf("%04X : %08b\n", cpt, m.CharGen[cpt])
+			fmt.Printf("%04X : %08b\n", cpt, m.CharGen[cpt].Zone[CHAR])
 			cpt++
 		}
 		fmt.Println()
@@ -82,12 +83,14 @@ func (m *Memory) DumpChar(screenCode byte) {
 
 func (m *Memory) Read(addr uint16) byte {
 	cell := &m.Mem[addr]
-	return cell.Zone[*cell.read]
+	cell.IsRead = true
+	return cell.Zone[*cell.Read]
 }
 
 func (m *Memory) Write(addr uint16, value byte) {
 	cell := &m.Mem[addr]
-	cell.Zone[*cell.write] = value
+	cell.IsWrite = true
+	cell.Zone[*cell.Write] = value
 }
 
 func (m *Memory) DumpStack(SP byte, nbline int) {
@@ -110,14 +113,27 @@ func (m *Memory) DumpStack(SP byte, nbline int) {
 	}
 }
 
-func (m *Memory) Dump(startAddr uint16) {
+func (m *Memory) DumpCIA() {
+	cia1 := 0xDC00
+	fmt.Printf("\n")
+
+	fmt.Printf("CIA1 RAM: ")
+	for i := 0; i < 16; i++ {
+		fmt.Printf("%02X ", m.Mem[cia1+i].Zone[RAM])
+	}
+	fmt.Printf("\nCIA1 IO : ")
+	for i := 0; i < 16; i++ {
+		fmt.Printf("%02X ", m.Mem[cia1+i].Zone[IO])
+	}
+}
+
+func (m *Memory) Dump(startAddr uint16, zone int) {
 	cpt := startAddr
+	fmt.Printf("\n")
 	for j := 0; j < 16; j++ {
 		fmt.Printf("%04X : ", cpt)
-		for i := 0; i < 8; i++ {
-			fmt.Printf("%02X", m.Read(cpt))
-			cpt++
-			fmt.Printf("%02X ", m.Read(cpt))
+		for i := 0; i < 16; i++ {
+			fmt.Printf("%02X ", m.Mem[cpt].Zone[zone])
 			cpt++
 		}
 		fmt.Println()

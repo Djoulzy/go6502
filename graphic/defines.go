@@ -9,6 +9,7 @@ type RGB struct {
 type Driver interface {
 	Init(int, int)
 	DrawPixel(int, int, RGB)
-	DisplayFrame()
+	UpdateFrame()
+	IOEvents() uint
 	CloseAll()
 }

@@ -6,7 +6,7 @@ import (
 	"go6502/databus"
 	"go6502/mem"
 	"log"
-	"os"
+	"time"
 
 	"github.com/mattn/go-tty"
 )
@@ -22,9 +22,23 @@ func (C *CPU) reset(mem *mem.Memory) {
 
 	C.exit = false
 	C.Step = false
+
+	C.IRQ = 0
+	C.NMI = 0
 }
 
 var output = ""
+
+func (C *CPU) readRasterLine() uint16 {
+	val := uint16(C.ram.Mem[0xD011].Zone[mem.IO]&0b10000000) << 8
+	val += uint16(C.ram.Mem[0xD012].Zone[mem.IO])
+	return val
+}
+
+func (C *CPU) timeTrack(start time.Time) {
+	elapsed := time.Since(start)
+	log.Printf("%s", elapsed)
+}
 
 //////////////////////////////////
 //////// Stack Operations ////////
@@ -48,13 +62,15 @@ func (C *CPU) pullWordStack() uint16 {
 func (C *CPU) pushByteStack(val byte) {
 	C.ram.Stack[C.SP].Zone[mem.RAM] = val
 	C.SP--
+	C.dbus.Release()
 }
 
 func (C *CPU) pullByteStack() byte {
 	C.SP++
-	if C.SP > 0xFF {
-		panic("Stack overflow")
-	}
+	// if C.SP > 0xFF {
+	// 	panic("Stack overflow")
+	// }
+	C.dbus.Release()
 	return C.ram.Stack[C.SP].Zone[mem.RAM]
 }
 
@@ -82,16 +98,14 @@ func (C *CPU) Indexed_indirect_X(addr byte, x byte) uint16 {
 func (C *CPU) readWord(addr uint16) uint16 {
 	low := C.ram.Read(addr)
 	C.dbus.Release()
-	value := uint16(C.ram.Read(addr+1)) << 8
-	value += uint16(low)
+	value := (uint16(C.ram.Read(addr+1)) << 8) + uint16(low)
 	C.dbus.Release()
 	return value
 }
 
 func (C *CPU) readByte(addr uint16) byte {
-	value := C.ram.Read(addr)
 	C.dbus.Release()
-	return value
+	return C.ram.Read(addr)
 }
 
 func (C *CPU) writeByte(addr uint16, value byte) {
@@ -103,15 +117,13 @@ func (C *CPU) writeByte(addr uint16, value byte) {
 ////////// Read OpCode ///////////
 //////////////////////////////////
 
-func (C *CPU) fetchWord(mem *mem.Memory) uint16 {
-	low := C.fetchByte(mem)
-	value := uint16(C.fetchByte(mem)) << 8
-	value += uint16(low)
-	return value
+func (C *CPU) fetchWord() uint16 {
+	low := C.fetchByte()
+	return (uint16(C.fetchByte()) << 8) + uint16(low)
 }
 
-func (C *CPU) fetchByte(mem *mem.Memory) byte {
-	value := mem.Read(C.PC)
+func (C *CPU) fetchByte() byte {
+	value := C.ram.Read(C.PC)
 	C.PC++
 	if C.Display {
 		output = fmt.Sprintf("%s %02X", output, value)
@@ -120,25 +132,46 @@ func (C *CPU) fetchByte(mem *mem.Memory) byte {
 	return value
 }
 
-func (C *CPU) exec(mem *mem.Memory) {
-
-	if C.exit {
-		os.Exit(1)
-	}
+func (C *CPU) exec() {
+	C.dbus.Get()
+	// if C.exit {
+	// 	os.Exit(1)
+	// }
 	if C.Display {
 		output = ""
-		fmt.Printf("\n%08b - A:%c[1;33m%02X%c[0m X:%c[1;33m%02X%c[0m Y:%c[1;33m%02X%c[0m SP:%c[1;33m%02X%c[0m - %c[1;31m%04X%c[0m:", C.S, 27, C.A, 27, 27, C.X, 27, 27, C.Y, 27, 27, C.SP, 27, 27, C.PC, 27)
+		fmt.Printf("\n%08b - A:%c[1;33m%02X%c[0m X:%c[1;33m%02X%c[0m Y:%c[1;33m%02X%c[0m SP:%c[1;33m%02X%c[0m", C.S, 27, C.A, 27, 27, C.X, 27, 27, C.Y, 27, 27, C.SP, 27)
+		fmt.Printf(" RastY: %c[1;31m%04X%c[0m RastX: - %c[1;31m%04X%c[0m:", 27, C.readRasterLine(), 27, 27, C.PC, 27)
 	}
-	opCode := C.fetchByte(mem)
-	Mnemonic[opCode](mem)
+	Mnemonic[C.fetchByte()]()
+	// if C.opName == "ToDO" {
+	// 	fmt.Printf("\n\nToDO : %02X\n\n", opCode)
+	// 	os.Exit(1)
+	// }
 	if C.Display {
-		fmt.Printf("%c[1;30m%-15s%c[0m %-15s%c[0;32m; %s%c[0m", 27, output, 27, C.opName, 27, C.debug, 27)
+		fmt.Printf("%c[1;30m%-15s%c[0m %-15s%c[0;32m; (%d) %s%c[0m", 27, output, 27, C.opName, 27, C.dbus.Cycles, C.debug, 27)
 		C.debug = ""
 	}
 }
 
 func (C *CPU) SetBreakpoint(bp uint16) {
 	C.BP = bp
+}
+
+func (C *CPU) irq() {
+	//fmt.Printf("\nInterrupt ... Raster: %04X", C.readRasterLine())
+	// C.IRQ = 0
+	C.pushWordStack(C.PC)
+	C.pushByteStack(C.S)
+	C.setI(true)
+	C.PC = C.readWord(0xFFFE)
+}
+
+func (C *CPU) nmi() {
+	//fmt.Printf("\nInterrupt ... Raster: %04X", C.readRasterLine())
+	// C.NMI = 0
+	C.pushWordStack(C.PC)
+	C.pushByteStack(C.S)
+	C.PC = C.readWord(0xFFFA)
 }
 
 func (C *CPU) Init(dbus *databus.Bus, mem *mem.Memory, conf *confload.ConfigData) {
@@ -149,58 +182,59 @@ func (C *CPU) Init(dbus *databus.Bus, mem *mem.Memory, conf *confload.ConfigData
 
 	if conf.Debug.Dump != 0 {
 		C.Dump = conf.Debug.Dump
+		C.Zone = conf.Debug.Zone
 	}
 	if conf.Debug.Breakpoint != 0 {
 		C.BP = conf.Debug.Breakpoint
 	}
 
 	C.initLanguage()
-	// if C.Display {
-	// 	C.initOutput(C.ram)
-	// }
-
 	C.reset(C.ram)
-	// // NMI
-	// C.ram.Mem[0xFFFA].Ram = 0x43
-	// C.ram.Mem[0xFFFB].Ram = 0xFE
-	// // Cold Start
-	// C.ram.Mem[0xFFFC].Ram = 0xE2
-	// C.ram.Mem[0xFFFD].Ram = 0xFC
-	// // IRQ
-	// C.ram.Mem[0xFFFE].Ram = 0x48
-	// C.ram.Mem[0xFFFF].Ram = 0xFF
+	C.tty, _ = tty.Open()
+	// Recupere l'addresse de boot du systeme
+	C.PC = (uint16(C.ram.Read(0xFFFC+1)) << 8) + uint16(C.ram.Read(0xFFFC))
 }
 
 func (C *CPU) Run() {
-	tty, err := tty.Open()
-	if err != nil {
-		log.Fatal(err)
+	// t0 := time.Now()
+	if C.PC == C.BP {
+		C.Display = true
+		C.Step = true
 	}
-	defer tty.Close()
 
-	for {
-		if C.PC == C.BP {
-			C.Display = true
-			C.Step = true
+	C.exec()
+	if C.NMI > 0 {
+		// log.Printf("NMI")
+		C.nmi()
+	}
+	if (C.IRQ > 0) && (C.S & ^I_mask) == 0 {
+		// log.Printf("IRQ")
+		C.irq()
+	}
+
+	if C.Step {
+		// C.ram.DumpCIA()
+	COMMAND:
+		r, err := C.tty.ReadRune()
+		if err != nil {
+			log.Fatal(err)
 		}
-
-		C.exec(C.ram)
-
-		if C.Step {
-		COMMAND:
-			r, err := tty.ReadRune()
-			if err != nil {
-				log.Fatal(err)
-			}
-			switch r {
-			case 'd':
-				C.ram.Dump(C.Dump)
-				goto COMMAND
-			case 's':
-				fmt.Printf("\n")
-				C.ram.DumpStack(C.SP, 0)
-				goto COMMAND
-			}
+		switch r {
+		case 'c':
+			C.ram.DumpCIA()
+			goto COMMAND
+		case 'd':
+			C.ram.Dump(C.Dump, C.Zone)
+			goto COMMAND
+		case 's':
+			fmt.Printf("\n")
+			C.ram.DumpStack(C.SP, 0)
+			goto COMMAND
+		case 'z':
+			fmt.Printf("\n")
+			C.ram.Dump(0x0000, mem.RAM)
+			goto COMMAND
+		default:
 		}
 	}
 }
@@ -214,7 +248,7 @@ func (C *CPU) Run() {
 // }
 
 func (C *CPU) initLanguage() {
-	Mnemonic = make(map[byte]func(*mem.Memory))
+	Mnemonic = make(map[byte]func())
 
 	Mnemonic[CodeAddr["SHW"]] = C.op_SHW
 	Mnemonic[CodeAddr["DMP"]] = C.op_DMP
@@ -362,6 +396,7 @@ func (C *CPU) initLanguage() {
 	Mnemonic[CodeAddr["JMP_IND"]] = C.op_JMP_IND
 	Mnemonic[CodeAddr["JSR"]] = C.op_JSR
 	Mnemonic[CodeAddr["RTS"]] = C.op_RTS
+	Mnemonic[CodeAddr["RTI"]] = C.op_RTI
 
 	Mnemonic[CodeAddr["CLC"]] = C.op_CLC
 	Mnemonic[CodeAddr["CLD"]] = C.op_CLD

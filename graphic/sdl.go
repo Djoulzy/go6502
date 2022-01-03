@@ -6,6 +6,8 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
+var buffer uint
+
 type SDLDriver struct {
 	winHeight int
 	winWidth  int
@@ -60,23 +62,45 @@ func (S *SDLDriver) Init(winWidth, winHeight int) {
 	S.screen = make([]byte, S.winWidth*S.winHeight*3)
 }
 
-func (S *SDLDriver) DisplayFrame() {
+func (S *SDLDriver) UpdateFrame() {
 
 	S.texture.Update(nil, S.screen, S.winWidth*3)
 	S.renderer.Copy(S.texture, nil, nil)
 	S.renderer.Present()
-	event := sdl.PollEvent()
-	if event != nil {
-		if event.GetType() == sdl.QUIT {
+
+	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
+		switch t := event.(type) {
+		case *sdl.QuitEvent:
 			os.Exit(1)
+		case *sdl.KeyboardEvent:
+			buffer = uint(t.Keysym.Sym)
+			// switch KeyCode {
+			// case sdl.K_l:
+			// 	fmt.Printf("A")
+			// }
+		default:
+			buffer = 0
 		}
 	}
+}
 
-	// for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
-	// 	switch event.(type) {
-	// 	case *sdl.QuitEvent:
-	// 		os.Exit(1)
+func (S *SDLDriver) IOEvents() uint {
+	defer func() {
+		buffer = 0
+	}()
+	return buffer
+	// event := sdl.PollEvent()
+	// switch t := event.(type) {
+	// case *sdl.QuitEvent:
+	// 	os.Exit(1)
+	// case *sdl.KeyboardEvent:
+	// 	KeyCode := t.Keysym.Sym
+	// 	fmt.Printf("%v\n", KeyCode)
+	// 	fmt.Printf("%v\n", sdl.K_a)
+	// 	switch KeyCode {
+	// 	case sdl.K_a:
+	// 		fmt.Printf("A")
 	// 	}
+	// default:
 	// }
-
 }

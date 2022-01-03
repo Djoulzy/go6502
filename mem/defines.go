@@ -6,8 +6,8 @@ const (
 	stackEnd    = 0x01FF
 	screenStart = 0x0400
 	screenEnd   = 0x07FF
-	charStart	= 0xD000
-	charEnd		= 0xDFFF
+	charStart   = 0xD000
+	charEnd     = 0xDFFF
 	colorStart  = 0xD800
 	colorEnd    = 0xDBFF
 	intAddr     = 0xFFFA
@@ -32,17 +32,19 @@ const (
 )
 
 type latch struct {
-	kernal    int
-	basic     int
-	char_io_r int
-	char_io_w int
-	ram       int
+	Kernal    int
+	Basic     int
+	Char_io_r int
+	Char_io_w int
+	Ram       int
 }
 
 type Cell struct {
-	read  *int
-	write *int
-	Zone  [3]byte
+	Read    *int
+	Write   *int
+	Zone    [3]byte
+	IsRead  bool
+	IsWrite bool
 }
 
 // Memory :

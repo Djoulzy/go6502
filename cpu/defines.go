@@ -3,6 +3,8 @@ package cpu
 import (
 	"go6502/databus"
 	"go6502/mem"
+
+	"github.com/mattn/go-tty"
 )
 
 //
@@ -26,6 +28,8 @@ type CPU struct {
 	Y  byte
 	S  byte
 
+	IRQ     int
+	NMI     int
 	opName  string
 	debug   string
 	exit    bool
@@ -35,10 +39,12 @@ type CPU struct {
 	BP      uint16
 	Step    bool
 	Dump    uint16
+	Zone    int
+	tty     *tty.TTY
 }
 
 // Mnemonic :
-var Mnemonic map[byte]func(*mem.Memory)
+var Mnemonic map[byte]func()
 var CodeAddr = map[string]byte{
 	"SHW": 0xEF,
 	"DMP": 0xFF,
@@ -185,6 +191,7 @@ var CodeAddr = map[string]byte{
 	"JMP_IND": 0x6C,
 	"JSR":     0x20,
 	"RTS":     0x60,
+	"RTI":     0x40,
 
 	"CLC": 0x18,
 	"CLD": 0xD8,

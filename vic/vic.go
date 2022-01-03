@@ -1,13 +1,12 @@
 package vic
 
 import (
+	"fmt"
 	"go6502/graphic"
 	"go6502/mem"
 )
 
 const (
-	cpuClock        = 985248                         // Mesure en Hz
-	cpuCycle        = (1 / float32(cpuClock)) * 1000 // 1 cycle en ms
 	screenWidthPAL  = 504
 	screenHeightPAL = 312
 	rasterWidthPAL  = 403
@@ -18,9 +17,9 @@ const (
 	rasterLine = rasterWidthPAL / 8 // Nb of cycle to draw a full line
 	fullRaster = rasterLine * rasterHeightPAL
 
-	lineRefresh   = cyclesPerLine * cpuCycle                   // Time for a line in ms
-	screenRefresh = screenHeightPAL * cyclesPerLine * cpuCycle // Time for a full screen display in ms
-	fps           = 1 / screenRefresh
+	// lineRefresh   = cyclesPerLine * cpuCycle                   // Time for a line in ms
+	// screenRefresh = screenHeightPAL * cyclesPerLine * cpuCycle // Time for a full screen display in ms
+	// fps           = 1 / screenRefresh
 
 	winWidth      = screenWidthPAL
 	winHeight     = screenHeightPAL
@@ -38,21 +37,30 @@ const (
 	// visibleLastCol  = 412
 )
 
-func (V *VIC) Init(memory *mem.Memory) {
-	V.graph = &graphic.SDLDriver{}
+func (V *VIC) Init(memory *mem.Memory, video graphic.Driver) {
+	V.graph = video
 	V.graph.Init(winWidth, winHeight)
 
 	V.ram = memory
-	V.ram.Mem[REG_EC].Zone[mem.IO] = 0xFE  // Border Color : Lightblue
-	V.ram.Mem[REG_B0C].Zone[mem.IO] = 0xF6 // Background Color : Blue
-	V.ram.Mem[REG_CTRL1].Zone[mem.IO] = 0x1B
+	V.ram.Mem[REG_EC].Read = &V.ram.PLA.Ram
+	V.ram.Mem[REG_EC].Zone[mem.RAM] = 0xFE // Border Color : Lightblue
+	V.ram.Mem[REG_B0C].Read = &V.ram.PLA.Ram
+	V.ram.Mem[REG_B0C].Zone[mem.RAM] = 0xF6 // Background Color : Blue
+	V.ram.Mem[REG_CTRL1].Zone[mem.IO] = 0b10011011
+	V.ram.Mem[REG_CTRL1].Zone[mem.RAM] = 0b00000000
+	V.ram.Mem[REG_RASTER].Zone[mem.RAM] = 0b00000000
+	V.ram.Mem[REG_CTRL2].Zone[mem.IO] = 0b00001000
 	V.ram.Mem[PALNTSC].Zone[mem.RAM] = 0x01 // PAL
+	V.ram.Mem[REG_IRQ].Zone[mem.IO] = 0b00001111
+	V.ram.Mem[REG_SETIRQ].Zone[mem.IO] = 0b00000000
+	V.ram.Mem[REG_SETIRQ].Zone[mem.RAM] = 0b00000000
 
 	V.BA = true
 	V.VCBASE = 0
 	V.beamX = 0
 	V.beamY = 0
 	V.cycle = 1
+	V.RasterIRQ = 0xFFFF
 }
 
 func (V *VIC) saveRasterPos(val int) {
@@ -67,7 +75,7 @@ func (V *VIC) saveRasterPos(val int) {
 
 func (V *VIC) readVideoMatrix() {
 	if !V.BA {
-		V.ColorBuffer[V.VMLI] = V.ram.Color[V.VC].Zone[mem.IO]
+		V.ColorBuffer[V.VMLI] = V.ram.Color[V.VC].Zone[mem.RAM] & 0b00001111
 		V.CharBuffer[V.VMLI] = V.ram.Screen[V.VC].Zone[mem.RAM]
 	}
 }
@@ -85,31 +93,63 @@ func (V *VIC) drawChar(X int, Y int) {
 			if charData&bit > 0 {
 				V.graph.DrawPixel(X+column, Y, Colors[V.ColorBuffer[V.VMLI]])
 			} else {
-				V.graph.DrawPixel(X+column, Y, Colors[V.ram.Mem[REG_B0C].Zone[mem.IO]&0b00001111])
+				V.graph.DrawPixel(X+column, Y, Colors[V.ram.Mem[REG_B0C].Zone[mem.RAM]&0b00001111])
 			}
 		}
 		V.VMLI++
 		V.VC++
 	} else if V.visibleArea {
 		for column := 0; column < 8; column++ {
-			V.graph.DrawPixel(X+column, Y, Colors[V.ram.Mem[REG_EC].Zone[mem.IO]&0b00001111])
+			V.graph.DrawPixel(X+column, Y, Colors[V.ram.Mem[REG_EC].Zone[mem.RAM]&0b00001111])
 		}
 	}
 }
 
-func (V *VIC) Run() {
+func (V *VIC) registersManagement() {
 	V.saveRasterPos(V.beamY)
+
+	V.ram.Mem[REG_SETIRQ].Zone[mem.IO] = V.ram.Mem[REG_SETIRQ].Zone[mem.RAM]
+
+	if V.ram.Mem[REG_CTRL1].IsWrite || V.ram.Mem[REG_RASTER].IsWrite {
+		V.RasterIRQ = uint16(V.ram.Mem[REG_CTRL1].Zone[mem.RAM]&0b10000000) << 8
+		V.RasterIRQ += uint16(V.ram.Mem[REG_RASTER].Zone[mem.RAM])
+		V.ram.Mem[REG_CTRL1].IsWrite = false
+		V.ram.Mem[REG_RASTER].IsWrite = false
+	}
+
+	if V.ram.Mem[REG_IRQ].IsWrite {
+		V.ram.Mem[REG_IRQ].Zone[mem.IO] = V.ram.Mem[REG_IRQ].Zone[mem.RAM]
+		V.ram.Mem[REG_IRQ].Zone[mem.IO] &= 0b01111111
+		// *V.IRQ_Pin = 0
+		V.ram.Mem[REG_IRQ].IsWrite = false
+	}
+}
+
+func (V *VIC) Run() {
+	V.registersManagement()
+
 	V.visibleArea = (V.beamY > lastVBlankLine) && (V.beamY < firstVBlankLine)
-	V.displayArea = (V.beamY >= firstDisplayLine) && (V.beamY <= lastDisplayLine) && V.visibleArea
-	V.BA = !(((V.beamY-firstDisplayLine)%8 == 0) && V.displayArea)
+	// V.displayArea = (V.beamY >= firstDisplayLine) && (V.beamY <= lastDisplayLine) && V.visibleArea
+	V.displayArea = (V.beamY >= firstDisplayLine) && (V.beamY <= lastDisplayLine)
 	V.beamX = (V.cycle - 1) * 8
 	V.drawArea = ((V.cycle > 15) && (V.cycle < 56)) && V.displayArea
+
+	V.BA = !(((V.beamY-firstDisplayLine)%8 == 0) && V.displayArea && (V.cycle > 11) && (V.cycle < 55))
+
 	// if V.drawArea {
 	// 	fmt.Printf("Raster: %d - Cycle: %d - BA: %t - VMLI: %d - VCBASE/VC: %d/%d - RC: %d - Char: %02X\n", V.beamY, V.cycle, V.BA, V.VMLI, V.VCBASE, V.VC, V.RC, V.CharBuffer[V.VMLI])
 	// }
 
 	switch V.cycle {
 	case 1:
+		if V.ram.Mem[REG_SETIRQ].Zone[mem.IO]&IRQ_RASTER > 0 {
+			if V.RasterIRQ == uint16(V.beamY) {
+				//fmt.Printf("\nIRQ: %04X - %04X", V.RasterIRQ, uint16(V.beamY))
+				fmt.Println("Rastrer Interrupt")
+				*V.IRQ_Pin = 1
+				V.ram.Mem[REG_IRQ].Zone[mem.IO] |= 0b10000001
+			}
+		}
 	case 2:
 	case 3:
 	case 4:
@@ -281,7 +321,7 @@ func (V *VIC) Run() {
 		if V.beamY >= screenHeightPAL {
 			V.beamY = 0
 			V.VCBASE = 0
-			V.graph.DisplayFrame()
+			V.graph.UpdateFrame()
 		}
 	}
 
