@@ -23,8 +23,8 @@
     sta $0314
     lda #>timer
     sta $0315
-    ; lda #%00010001
-    lda #%11111111
+    lda #%00010001
+    ; lda #%11111111
     sta $dc0e
     cli
 
